@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { Decision } from 'src/app/model/decision';
 import { Sector, User } from 'src/app/model/user';
@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-addadecision',
   templateUrl: './addadecision.component.html',
-  styleUrls: ['./addadecision.component.css']
+  styleUrls: ['./addadecision.component.css'],
 })
 export class AddadecisionComponent implements OnInit {
   showFormModal = false;
@@ -18,16 +18,14 @@ export class AddadecisionComponent implements OnInit {
 
   form: any = {
     title: '',
-    sector: [], // Array of ObjectId
+    sector: [], 
     supervisor: '',
-    isPresidentDecision: false
+    isPresidentDecision: false,
   };
 
   sectors: Sector[] = [];
   reviewers: User[] = [];
   decisions: Decision[] = [];
-
-  // ⭐ Multi-select
   selectedSectors: Sector[] = [];
   filteredSectors: Sector[] = [];
   searchSector = '';
@@ -43,9 +41,18 @@ export class AddadecisionComponent implements OnInit {
     this.loadSectors();
     this.loadDecisionTypes();
   }
-getSectorNames(sectors: Sector[]): string {
-  return sectors?.map(s => s.sector).join('، ') || '—';
-}
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.custom-multiselect')) {
+      this.dropdownOpen = false;
+    }
+  }
+
+  getSectorNames(sectors: Sector[]): string {
+    return sectors?.map((s) => s.sector).join('، ') || '—';
+  }
 
   openFormModal() {
     this.resetForm();
@@ -65,32 +72,43 @@ getSectorNames(sectors: Sector[]): string {
   }
 
   filterSectors() {
-    this.filteredSectors = this.sectors.filter(s =>
-      s.sector.toLowerCase().includes(this.searchSector.toLowerCase()) &&
-      !this.selectedSectors.find(sel => sel._id === s._id)
+    this.filteredSectors = this.sectors.filter(
+      (s) =>
+        s.sector.toLowerCase().includes(this.searchSector.toLowerCase()) &&
+        !this.selectedSectors.find((sel) => sel._id === s._id)
     );
   }
 
   toggleDropdown() {
     this.dropdownOpen = !this.dropdownOpen;
+    if (this.dropdownOpen) {
+      this.filterSectors();
+    }
   }
 
   selectSector(sector: Sector) {
-  if (!this.selectedSectors.find(s => s._id === sector._id)) {
-    this.selectedSectors.push(sector);
-    this.form.sector = this.selectedSectors.map(s => s._id);
-  }
-  this.searchSector = '';
-  this.filterSectors();
+    if (!this.selectedSectors.find((s) => s._id === sector._id)) {
+      this.selectedSectors.push(sector);
+      this.form.sector = this.selectedSectors.map((s) => s._id);
+    }
+    this.searchSector = '';
+    this.filterSectors();
+    this.dropdownOpen = false;
 
-  // تحديث المشرفين بعد أي تغيير في القطاعات
-  this.loadReviewers(this.form.sector);
-}
+    this.loadReviewers(this.form.sector);
+  }
 
   removeSector(index: number) {
     this.selectedSectors.splice(index, 1);
-    this.form.sector = this.selectedSectors.map(s => s._id);
+    this.form.sector = this.selectedSectors.map((s) => s._id);
     this.filterSectors();
+
+    if (this.form.sector.length > 0) {
+      this.loadReviewers(this.form.sector);
+    } else {
+      this.reviewers = [];
+      this.form.supervisor = '';
+    }
   }
 
   loadDecisionTypes() {
@@ -106,7 +124,7 @@ getSectorNames(sectors: Sector[]): string {
         Swal.fire({
           icon: 'error',
           title: 'حدث خطأ أثناء تحميل البيانات',
-          text: err.message || 'حدث خطأ أثناء تحميل البيانات'
+          text: err.message || 'حدث خطأ أثناء تحميل البيانات',
         });
       }
     );
@@ -125,22 +143,44 @@ getSectorNames(sectors: Sector[]): string {
     this.form.supervisor = this.form.supervisor || null;
 
     if (this.editingId) {
-      this.decisionService.updateDecisionType(this.editingId, this.form).subscribe(
-        () => {
-          Swal.fire({ icon: 'success', title: 'تم تعديل نوع القرار بنجاح', timer: 2000, showConfirmButton: false });
-          this.closeFormModal();
-          this.loadDecisionTypes();
-        },
-        (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء التعديل', text: err.message || '' })
-      );
+      this.decisionService
+        .updateDecisionType(this.editingId, this.form)
+        .subscribe(
+          () => {
+            Swal.fire({
+              icon: 'success',
+              title: 'تم تعديل نوع القرار بنجاح',
+              timer: 2000,
+              showConfirmButton: false,
+            });
+            this.closeFormModal();
+            this.loadDecisionTypes();
+          },
+          (err) =>
+            Swal.fire({
+              icon: 'error',
+              title: 'حدث خطأ أثناء التعديل',
+              text: err.message || '',
+            })
+        );
     } else {
       this.decisionService.addDecisionType(this.form).subscribe(
         () => {
-          Swal.fire({ icon: 'success', title: 'تم إضافة نوع القرار بنجاح', timer: 2000, showConfirmButton: false });
+          Swal.fire({
+            icon: 'success',
+            title: 'تم إضافة نوع القرار بنجاح',
+            timer: 2000,
+            showConfirmButton: false,
+          });
           this.closeFormModal();
           this.loadDecisionTypes();
         },
-        (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء الإضافة', text: err.message || '' })
+        (err) =>
+          Swal.fire({
+            icon: 'error',
+            title: 'حدث خطأ أثناء الإضافة',
+            text: err.message || '',
+          })
       );
     }
   }
@@ -150,11 +190,15 @@ getSectorNames(sectors: Sector[]): string {
     this.selectedSectors = decision.sector || [];
     this.form = {
       title: decision.title,
-      sector: this.selectedSectors.map(s => s._id),
-      supervisor: decision.supervisor?._id || decision.supervisor,
-      isPresidentDecision: decision.isPresidentDecision
+      sector: this.selectedSectors.map((s) => s._id),
+      supervisor: decision.supervisor?._id || decision.supervisor || '',
+      isPresidentDecision: decision.isPresidentDecision || false,
     };
-    this.loadReviewers(this.form.sector[0]); // يمكنك تعديل المنطق لو تريد مراجعين لكل قطاع
+
+    if (this.form.sector.length > 0) {
+      this.loadReviewers(this.form.sector);
+    }
+
     this.showFormModal = true;
   }
 
@@ -166,47 +210,83 @@ getSectorNames(sectors: Sector[]): string {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'نعم، احذفه',
-      cancelButtonText: 'إلغاء'
+      cancelButtonText: 'إلغاء',
     }).then((result) => {
       if (result.isConfirmed) {
         this.decisionService.deleteDecisionType(id).subscribe(
           () => {
-            Swal.fire({ icon: 'success', title: 'تم الحذف', timer: 2000, showConfirmButton: false });
+            Swal.fire({
+              icon: 'success',
+              title: 'تم الحذف',
+              timer: 2000,
+              showConfirmButton: false,
+            });
             this.loadDecisionTypes();
           },
-          (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء الحذف', text: err.message || '' })
+          (err) =>
+            Swal.fire({
+              icon: 'error',
+              title: 'حدث خطأ أثناء الحذف',
+              text: err.message || '',
+            })
         );
       }
     });
   }
 
   resetForm() {
-    this.form = { title: '', sector: [], supervisor: '', isPresidentDecision: false };
+    this.form = {
+      title: '',
+      sector: [],
+      supervisor: '',
+      isPresidentDecision: false,
+    };
     this.editingId = null;
     this.reviewers = [];
     this.selectedSectors = [];
     this.filteredSectors = [...this.sectors];
     this.searchSector = '';
+    this.dropdownOpen = false;
   }
 
   loadReviewers(sectorIds: string[]) {
-  if (!sectorIds || !sectorIds.length) {
-    this.reviewers = [];
-    return;
-  }
+    if (!sectorIds || !sectorIds.length) {
+      this.reviewers = [];
+      this.form.supervisor = '';
+      return;
+    }
 
-  // نجمع المشرفين لكل قطاع
-  const allReviewers: User[] = [];
-  sectorIds.forEach(sectorId => {
-    this.userservice.getusersbyrole(sectorId).subscribe((res: any) => {
-      res?.forEach((u: User) => {
-        if (!allReviewers.find(r => r._id === u._id)) {
-          allReviewers.push(u);
+    const allReviewers = new Set<User>();
+    let completedRequests = 0;
+    const totalRequests = sectorIds.length;
+
+    sectorIds.forEach((sectorId) => {
+      this.userservice.getusersbyrole(sectorId).subscribe(
+        (res: any) => {
+          res?.forEach((u: User) => {
+            allReviewers.add(u);
+          });
+
+          completedRequests++;
+
+          if (completedRequests === totalRequests) {
+            this.reviewers = Array.from(allReviewers);
+
+            if (
+              this.form.supervisor &&
+              !this.reviewers.find((r) => r._id === this.form.supervisor)
+            ) {
+              this.form.supervisor = '';
+            }
+          }
+        },
+        (error) => {
+          completedRequests++;
+          if (completedRequests === totalRequests) {
+            this.reviewers = Array.from(allReviewers);
+          }
         }
-      });
-      this.reviewers = [...allReviewers];
+      );
     });
-  });
-}
-
+  }
 }

@@ -28,12 +28,10 @@
           <label>نوع القرار:</label>
           <input class="form-control" placeholder="نوع القرار" [(ngModel)]="form.title" />
 
-          <!-- ⭐⭐ Multi Select قطاعات ⭐⭐ -->
           <label>القطاعات:</label>
 
           <div class="custom-multiselect" (click)="toggleDropdown()" [class.open]="dropdownOpen">
             
-            <!-- Selected Tags -->
             <div class="selected-tags">
               <span class="tag" *ngFor="let item of selectedSectors; let i = index">
                 {{ item.sector }}
@@ -48,7 +46,6 @@
                      (click)="dropdownOpen = true; $event.stopPropagation();">
             </div>
 
-            <!-- Dropdown -->
             <div class="dropdown" *ngIf="dropdownOpen">
               <div class="option"
                    *ngFor="let s of filteredSectors"
