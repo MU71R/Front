@@ -1,0 +1,62 @@
+<div class="page">
+
+  <h2 class="title">الخطابات المرفوضة</h2>
+
+  <div *ngIf="loading" class="loading">جارِ التحميل...</div>
+
+  <div class="table-container" *ngIf="!loading && rejectedLetters.length">
+
+    <table class="modern-table">
+
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>العنوان</th>
+          <th>المرسل</th>
+          <th>نوع القرار</th>
+          <th>التاريخ</th>
+          <th>الحالة</th>
+          <th>عرض</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let letter of rejectedLetters; let i = index" (click)="goToDetails(letter._id)">
+
+          <td data-label="#"> {{ i + 1 }} </td>
+
+          <td data-label="العنوان" class="title-cell">
+            <i class="fa-solid fa-file-circle-xmark icon-red"></i>
+            {{ letter.title }}
+          </td>
+
+          <td data-label="المرسل">{{ letter.user.fullname }}</td>
+
+          <td data-label="نوع القرار">{{ letter.decision.title }}</td>
+
+          <td data-label="التاريخ">{{ letter.createdAt | date:'short' }}</td>
+
+          <td data-label="الحالة">
+            <span class="badge badge-rejected">مرفوض</span>
+          </td>
+
+          <td data-label="عرض">
+            <button class="btn-view">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </td>
+
+        </tr>
+
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+  <div *ngIf="!loading && !rejectedLetters.length" class="no-data">
+    لا يوجد خطابات مرفوضة
+  </div>
+
+</div>

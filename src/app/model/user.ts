@@ -8,7 +8,7 @@ export interface User {
   username: string;
   fullname: string;
   role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' |  string;
-  sector: string;
+  sector: string[];
   status?: 'active' | 'inactive';
   sectorName?: string; 
   department?: string;
@@ -37,7 +37,7 @@ export interface Department {
   fullname: string;
   password: string;
   role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' |  string;
-  sector: string;
+  sector: string[];
 }
 
 

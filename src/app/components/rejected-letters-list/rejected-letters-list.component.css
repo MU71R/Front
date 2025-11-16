@@ -1,0 +1,141 @@
+/* أساسيات الصفحة */
+.page {
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f9f9f9;
+  direction: rtl; /* لتفعيل RTL */
+  text-align: right; /* محاذاة النصوص لليمين */
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* تحميل */
+.loading {
+  text-align: center;
+  font-size: 18px;
+  color: #555;
+}
+
+/* لا توجد بيانات */
+.no-data {
+  text-align: center;
+  font-size: 18px;
+  color: #777;
+  padding: 40px 0;
+}
+
+/* حاوية الجدول */
+.table-container {
+  overflow-x: auto; /* يسمح بالتمرير أفقيًا على الشاشات الصغيرة */
+}
+
+/* تصميم الجدول */
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* للحفاظ على شكل الجدول على الشاشات الكبيرة */
+  direction: rtl; /* RTL للجدول */
+}
+
+.modern-table th,
+.modern-table td {
+  padding: 12px 15px;
+  text-align: right; /* محاذاة النصوص داخل الجدول لليمين */
+  border-bottom: 1px solid #ddd;
+  vertical-align: middle;
+}
+
+.modern-table th {
+  background-color: #f1f1f1;
+  font-weight: 600;
+  color: #333;
+}
+
+/* الأيقونات */
+.icon-red {
+  color: #e74c3c;
+  margin-left: 5px; /* تغيير المسافة من اليمين بدل اليسار */
+  margin-right: 0;
+}
+
+/* البادجات */
+.badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: #fff;
+  display: inline-block;
+}
+
+.badge-rejected {
+  background-color: #e74c3c;
+}
+
+/* زر العرض */
+.btn-view {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-view i {
+  pointer-events: none;
+}
+
+/* تفاعلية السطر */
+.modern-table tbody tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .modern-table {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .modern-table thead {
+    display: none; /* إخفاء رأس الجدول */
+  }
+
+  .modern-table tbody tr {
+    display: block;
+    margin-bottom: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
+
+  .modern-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: none;
+    border-bottom: 1px solid #eee;
+    text-align: right; /* RTL */
+  }
+
+  .modern-table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #555;
+    margin-left: 10px; /* للـ RTL */
+  }
+}
+
+

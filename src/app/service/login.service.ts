@@ -55,7 +55,7 @@ export class LoginService {
                   fullname: decoded.name ?? '',
                   username: decoded.email ?? '',
                   role: decoded.role ?? 'user',
-                  sector: '',
+                  sector: [],
                   status: 'active',
                 };
                 this.setUser(user);

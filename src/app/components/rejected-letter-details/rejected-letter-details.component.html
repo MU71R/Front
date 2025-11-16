@@ -1,0 +1,63 @@
+<div class="page modern-details">
+
+  <div class="details-card glass-effect">
+
+    <h2 class="title">
+      <i class="fa-solid fa-circle-xmark icon-red"></i>
+      تفاصيل الخطاب المرفوض
+    </h2>
+
+    <div *ngIf="loading" class="loading">جارِ التحميل...</div>
+
+    <div *ngIf="!loading && letter" class="content">
+
+      <div class="info-grid">
+
+        <div class="info-item">
+          <label><i class="fa-solid fa-heading"></i> العنوان</label>
+          <p>{{ letter.title }}</p>
+        </div>
+
+        <div class="info-item">
+          <label><i class="fa-solid fa-user"></i> المرسل</label>
+          <p>{{ letter.user.fullname }}</p>
+        </div>
+
+        <div class="info-item">
+          <label><i class="fa-solid fa-circle-check"></i> نوع القرار</label>
+          <p>{{ letter.decision?.title }}</p>
+        </div>
+
+        <div class="info-item">
+          <label><i class="fa-solid fa-calendar-days"></i> التاريخ</label>
+          <p>{{ letter.createdAt | date:'fullDate' }}</p>
+        </div>
+
+        <div class="info-item full-width">
+          <label><i class="fa-solid fa-rotate-left"></i> تمت إعادة القرار للتعديل في:</label>
+          <p class="reject">{{ letter.reasonForRejection || 'لا يوجد سبب محدد' }}</p>
+        </div>
+
+        <div class="info-item full-width" *ngIf="rejectedBy">
+          <label><i class="fa-solid fa-user-shield"></i> تم المراجعة بواسطة</label>
+          <p class="reject-by">{{ rejectedBy.fullname }}</p>
+        </div>
+
+        <div class="info-item full-width" *ngIf="letter.pdfUrl">
+          <label><i class="fa-solid fa-paperclip"></i> المرفقات</label>
+          <a class="file-link modern-link" [href]="letter.pdfUrl" target="_blank">
+            <i class="fa-solid fa-file-arrow-down"></i> تحميل المرفق
+          </a>
+        </div>
+
+      </div>
+
+      <button class="btn-back modern-btn" (click)="goBack()">
+        <i class="fa-solid fa-arrow-right"></i> رجوع
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

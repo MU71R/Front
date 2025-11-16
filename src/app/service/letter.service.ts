@@ -3,7 +3,8 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Letter } from '../model/Letter';
 import { map } from 'rxjs/operators';
-import { LetterDetail } from '../model/letter-detail';
+import { LetterDetail, RecentActivit } from '../model/letter-detail';
+import { RecentActivity } from './home.service';
 
 export interface PDFFile {
   _id: string;
@@ -256,6 +257,21 @@ export class LetterService {
       حقيقية: 'حقيقية',
     };
     return signatureMap[signatureType] || signatureType;
+  }
+
+  recentLetters(): Observable<{ success: boolean; activities: RecentActivit[] }> {
+    return this.http.get<{ success: boolean; activities: RecentActivit[] }>(
+      `${this.baseUrl}/recent-letters`
+    );
+  }
+
+  getRejectedLetters(): Observable<{ success: boolean; letters: LetterDetail[] }> {
+    return this.http.get<{ success: boolean; letters: LetterDetail[] }>(
+      `${this.baseUrl}/get-all-rejected-letters`
+    );
+  }
+  getLetterById(id: string): Observable<LetterDetail | null> {
+    return this.http.get<LetterDetail | null>(`${this.baseUrl}/get-rejected-letters/${id}`);
   }
 
 }

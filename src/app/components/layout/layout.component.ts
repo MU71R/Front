@@ -32,7 +32,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
  isUserLoggedIn(): boolean {
   const loggedIn = this.authService.isLoggedIn();
-  console.log('isUserLoggedIn:', loggedIn);
   return loggedIn;
 }
 

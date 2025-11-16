@@ -27,6 +27,8 @@ import { HomeComponent } from './components/home/home.component';
 import { LetterDetailsComponent } from './components/archived-letter-details/archived-letter-details.component';
 import { NotificationComponent } from './components/notification/notification.component';
 import { PdfListComponent } from './components/pdf-list/pdf-list.component';
+import { RejectedLettersListComponent } from './components/rejected-letters-list/rejected-letters-list.component';
+import { RejectedLetterDetailsComponent } from './components/rejected-letter-details/rejected-letter-details.component';
 
 
 
@@ -48,6 +50,8 @@ import { PdfListComponent } from './components/pdf-list/pdf-list.component';
     LetterDetailsComponent,
     NotificationComponent,
     PdfListComponent,
+    RejectedLettersListComponent,
+    RejectedLetterDetailsComponent,
   ],
   imports: [
     BrowserModule,

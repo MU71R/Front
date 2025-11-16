@@ -15,6 +15,8 @@ import { PdfListComponent } from './components/pdf-list/pdf-list.component';
 
 import { AuthGuard } from './guards/auth.guard';
 import { LoggedInGuard } from './guards/logged-in.guard';
+import { RejectedLettersListComponent } from './components/rejected-letters-list/rejected-letters-list.component';
+import { RejectedLetterDetailsComponent } from './components/rejected-letter-details/rejected-letter-details.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [LoggedInGuard] },
@@ -33,7 +35,8 @@ const routes: Routes = [
     { path: 'archive', component: ArchiveComponent, canActivate: [AuthGuard] },
     { path: 'archive-detail', component: ArchiveDetailComponent, canActivate: [AuthGuard] },
     { path: 'pdf-list', component: PdfListComponent, canActivate: [AuthGuard] },
-
+    { path: 'rejected-letters', component: RejectedLettersListComponent, canActivate: [AuthGuard] },
+    { path: 'rejected-letter-details/:id', component: RejectedLetterDetailsComponent, canActivate: [AuthGuard] },
     // صفحة بدون AuthGuard
     { path: 'letter-detail/:id', component: LetterDetailsComponent },
   ],

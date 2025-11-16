@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Decision } from 'src/app/model/decision';
 import { Sector, User } from 'src/app/model/user';
 import { DecisionService } from 'src/app/service/decision.service';
 import { AdministrationService } from 'src/app/service/user.service';
@@ -17,14 +18,20 @@ export class AddadecisionComponent implements OnInit {
 
   form: any = {
     title: '',
-    sector: '',
+    sector: [], // Array of ObjectId
     supervisor: '',
     isPresidentDecision: false
   };
 
   sectors: Sector[] = [];
   reviewers: User[] = [];
-  decisions: any[] = [];
+  decisions: Decision[] = [];
+
+  // ⭐ Multi-select
+  selectedSectors: Sector[] = [];
+  filteredSectors: Sector[] = [];
+  searchSector = '';
+  dropdownOpen = false;
 
   constructor(
     private decisionService: DecisionService,
@@ -36,6 +43,9 @@ export class AddadecisionComponent implements OnInit {
     this.loadSectors();
     this.loadDecisionTypes();
   }
+getSectorNames(sectors: Sector[]): string {
+  return sectors?.map(s => s.sector).join('، ') || '—';
+}
 
   openFormModal() {
     this.resetForm();
@@ -50,18 +60,37 @@ export class AddadecisionComponent implements OnInit {
   loadSectors() {
     this.userservice.getAllSectors().subscribe((res: any) => {
       this.sectors = res?.data || [];
+      this.filteredSectors = [...this.sectors];
     });
   }
 
-  onSectorChange(event: any) {
-    const sectorId = event.target.value;
-    if (sectorId) {
-      this.userservice.getusersbyrole(sectorId).subscribe((res: any) => {
-        this.reviewers = res || [];
-      });
-    } else {
-      this.reviewers = [];
-    }
+  filterSectors() {
+    this.filteredSectors = this.sectors.filter(s =>
+      s.sector.toLowerCase().includes(this.searchSector.toLowerCase()) &&
+      !this.selectedSectors.find(sel => sel._id === s._id)
+    );
+  }
+
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  selectSector(sector: Sector) {
+  if (!this.selectedSectors.find(s => s._id === sector._id)) {
+    this.selectedSectors.push(sector);
+    this.form.sector = this.selectedSectors.map(s => s._id);
+  }
+  this.searchSector = '';
+  this.filterSectors();
+
+  // تحديث المشرفين بعد أي تغيير في القطاعات
+  this.loadReviewers(this.form.sector);
+}
+
+  removeSector(index: number) {
+    this.selectedSectors.splice(index, 1);
+    this.form.sector = this.selectedSectors.map(s => s._id);
+    this.filterSectors();
   }
 
   loadDecisionTypes() {
@@ -77,80 +106,58 @@ export class AddadecisionComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'حدث خطأ أثناء تحميل البيانات',
-          text: err.message || ''
+          text: err.message || 'حدث خطأ أثناء تحميل البيانات'
         });
       }
     );
   }
 
   saveDecisionType() {
-    if (!this.form.title || !this.form.sector) {
+    if (!this.form.title || !this.form.sector.length) {
       Swal.fire({
         icon: 'warning',
         title: 'من فضلك املأ الحقول المطلوبة',
       });
       return;
     }
-  
+
     this.form.isPresidentDecision = !!this.form.isPresidentDecision;
     this.form.supervisor = this.form.supervisor || null;
-  
+
     if (this.editingId) {
       this.decisionService.updateDecisionType(this.editingId, this.form).subscribe(
         () => {
-          Swal.fire({
-            icon: 'success',
-            title: 'تم تعديل نوع القرار بنجاح',
-            timer: 2000,
-            showConfirmButton: false,
-          });
+          Swal.fire({ icon: 'success', title: 'تم تعديل نوع القرار بنجاح', timer: 2000, showConfirmButton: false });
           this.closeFormModal();
           this.loadDecisionTypes();
         },
-        (err) => {
-          Swal.fire({
-            icon: 'error',
-            title: 'حدث خطأ أثناء التعديل',
-            text: err.message || '',
-          });
-        }
+        (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء التعديل', text: err.message || '' })
       );
     } else {
       this.decisionService.addDecisionType(this.form).subscribe(
         () => {
-          Swal.fire({
-            icon: 'success',
-            title: 'تم إضافة نوع القرار بنجاح',
-            timer: 2000,
-            showConfirmButton: false,
-          });
+          Swal.fire({ icon: 'success', title: 'تم إضافة نوع القرار بنجاح', timer: 2000, showConfirmButton: false });
           this.closeFormModal();
           this.loadDecisionTypes();
         },
-        (err) => {
-          Swal.fire({
-            icon: 'error',
-            title: 'حدث خطأ أثناء الإضافة',
-            text: err.message || '',
-          });
-        }
+        (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء الإضافة', text: err.message || '' })
       );
     }
   }
-  
 
   editDecisionType(decision: any) {
+    this.editingId = decision._id;
+    this.selectedSectors = decision.sector || [];
     this.form = {
       title: decision.title,
-      sector: decision.sector?._id || decision.sector, 
+      sector: this.selectedSectors.map(s => s._id),
       supervisor: decision.supervisor?._id || decision.supervisor,
       isPresidentDecision: decision.isPresidentDecision
     };
-    this.editingId = decision._id;
-    this.loadReviewers(this.form.sector);
+    this.loadReviewers(this.form.sector[0]); // يمكنك تعديل المنطق لو تريد مراجعين لكل قطاع
     this.showFormModal = true;
   }
-  
+
   deleteDecisionType(id: string) {
     Swal.fire({
       title: 'هل أنت متأكد من الحذف؟',
@@ -164,42 +171,42 @@ export class AddadecisionComponent implements OnInit {
       if (result.isConfirmed) {
         this.decisionService.deleteDecisionType(id).subscribe(
           () => {
-            Swal.fire({
-              icon: 'success',
-              title: 'تم الحذف',
-              timer: 2000,
-              showConfirmButton: false,
-            });
+            Swal.fire({ icon: 'success', title: 'تم الحذف', timer: 2000, showConfirmButton: false });
             this.loadDecisionTypes();
           },
-          (err) => {
-            Swal.fire({
-              icon: 'error',
-              title: 'حدث خطأ أثناء الحذف',
-              text: err.message || '',
-            });
-          }
+          (err) => Swal.fire({ icon: 'error', title: 'حدث خطأ أثناء الحذف', text: err.message || '' })
         );
       }
     });
   }
 
   resetForm() {
-    this.form = {
-      title: '',
-      sector: '',
-      supervisor: '',
-      isPresidentDecision: false
-    };
+    this.form = { title: '', sector: [], supervisor: '', isPresidentDecision: false };
     this.editingId = null;
     this.reviewers = [];
+    this.selectedSectors = [];
+    this.filteredSectors = [...this.sectors];
+    this.searchSector = '';
   }
 
-  loadReviewers(sectorId: string) {
-    if (sectorId) {
-      this.userservice.getusersbyrole(sectorId).subscribe((res: any) => {
-        this.reviewers = res || [];
-      });
-    }
+  loadReviewers(sectorIds: string[]) {
+  if (!sectorIds || !sectorIds.length) {
+    this.reviewers = [];
+    return;
   }
+
+  // نجمع المشرفين لكل قطاع
+  const allReviewers: User[] = [];
+  sectorIds.forEach(sectorId => {
+    this.userservice.getusersbyrole(sectorId).subscribe((res: any) => {
+      res?.forEach((u: User) => {
+        if (!allReviewers.find(r => r._id === u._id)) {
+          allReviewers.push(u);
+        }
+      });
+      this.reviewers = [...allReviewers];
+    });
+  });
+}
+
 }

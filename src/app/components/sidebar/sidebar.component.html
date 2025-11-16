@@ -38,6 +38,11 @@
         <span>الأرشيف</span>
       </a>
 
+      <a routerLink="/rejected-letters" routerLinkActive="active" class="menu-item">
+        <i class="fa-solid fa-box-archive"></i>
+        <span>القرارات المرفوضة</span>
+      </a>
+
       <a *ngIf="user?.role === 'admin'" routerLink="/add-decision" routerLinkActive="active" class="menu-item">
         <i class="fa-solid fa-file-circle-plus"></i>
         <span>إضافة قرار جديد</span>

@@ -1,0 +1,112 @@
+.page.modern-details {
+  direction: rtl;
+  display: flex;
+  justify-content: center;
+  padding: 25px;
+  background: #f5f6fa;
+}
+
+.details-card {
+  width: 100%;
+  max-width: 750px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 25px 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.title {
+  font-size: 24px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c0392b;
+}
+
+.icon-red {
+  color: #e74c3c;
+  font-size: 28px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 18px;
+  color: #555;
+}
+
+/* Grid تصميم */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 25px;
+}
+
+.info-item {
+  background: #f8f9fb;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.info-item.full-width {
+  grid-column: span 2;
+}
+
+.info-item label {
+  font-size: 14px;
+  color: #7f8c8d;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.info-item p {
+  margin: 0;
+  font-size: 17px;
+  color: #2c3e50;
+}
+
+.reject {
+  color: #c0392b;
+  font-weight: bold;
+}
+
+.modern-link {
+  background: #3498db;
+  padding: 8px 12px;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-link:hover {
+  background: #2980b9;
+}
+
+.modern-btn {
+  background: #2ecc71;
+  border: none;
+  padding: 12px 20px;
+  color: white;
+  border-radius: 10px;
+  margin-top: 25px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modern-btn:hover {
+  background: #27ae60;
+}

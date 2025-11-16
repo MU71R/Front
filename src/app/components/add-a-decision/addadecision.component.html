@@ -24,14 +24,43 @@
         </div>
 
         <div class="modal-body d-flex flex-column gap-3">
+
           <label>نوع القرار:</label>
           <input class="form-control" placeholder="نوع القرار" [(ngModel)]="form.title" />
 
-          <label>القطاع:</label>
-          <select class="form-select" [(ngModel)]="form.sector" (change)="onSectorChange($event)">
-            <option value="" disabled>اختر القطاع</option>
-            <option *ngFor="let s of sectors" [value]="s._id">{{ s.sector }}</option>
-          </select>
+          <!-- ⭐⭐ Multi Select قطاعات ⭐⭐ -->
+          <label>القطاعات:</label>
+
+          <div class="custom-multiselect" (click)="toggleDropdown()" [class.open]="dropdownOpen">
+            
+            <!-- Selected Tags -->
+            <div class="selected-tags">
+              <span class="tag" *ngFor="let item of selectedSectors; let i = index">
+                {{ item.sector }}
+                <span class="remove-tag"
+                      (click)="removeSector(i); $event.stopPropagation();">×</span>
+              </span>
+
+              <input type="text"
+                     placeholder="اختر..."
+                     [(ngModel)]="searchSector"
+                     (keyup)="filterSectors()"
+                     (click)="dropdownOpen = true; $event.stopPropagation();">
+            </div>
+
+            <!-- Dropdown -->
+            <div class="dropdown" *ngIf="dropdownOpen">
+              <div class="option"
+                   *ngFor="let s of filteredSectors"
+                   (click)="selectSector(s)">
+                {{ s.sector }}
+              </div>
+
+              <div class="no-results" *ngIf="filteredSectors.length === 0">
+                لا توجد نتائج
+              </div>
+            </div>
+          </div>
 
           <label>جهة المراجعة:</label>
           <select class="form-select" [(ngModel)]="form.supervisor">
@@ -40,15 +69,18 @@
           </select>
 
           <div class="form-check mt-2">
-            <input class="form-check-input" type="checkbox" [(ngModel)]="form.isPresidentDecision"
-              id="presidentSignature">
+            <input class="form-check-input" type="checkbox"
+                   [(ngModel)]="form.isPresidentDecision"
+                   id="presidentSignature">
             <label class="form-check-label" for="presidentSignature">صادر من رئيس الجامعة</label>
           </div>
         </div>
 
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeFormModal()">إلغاء</button>
-          <button class="btn btn-primary" (click)="saveDecisionType()">{{ editingId ? 'تحديث' : 'حفظ' }}</button>
+          <button class="btn btn-primary" (click)="saveDecisionType()">
+            {{ editingId ? 'تحديث' : 'حفظ' }}
+          </button>
         </div>
 
       </div>
@@ -68,16 +100,23 @@
       </thead>
       <tbody>
         <tr *ngFor="let d of decisions">
-          <td class="decision-type">{{ d.title }}</td>
-          <td class="sector">{{ d.sector?.sector || '—' }}</td>
-          <td class="supervisor">{{ d.supervisor?.fullname || '—' }}</td>
-          <td class="president-signature">
-            <i class="fas"
-              [ngClass]="d.isPresidentDecision ? 'fa-check-circle text-success' : 'fa-times-circle text-secondary'"></i>
+          <td>{{ d.title }}</td>
+          <td>
+            <span *ngIf="d.sector?.length; else noSector">
+              {{ getSectorNames(d.sector) }}
+            </span>
+            <ng-template #noSector>—</ng-template>
           </td>
-          <td class="actions">
-            <div class="d-flex justify-content-center gap-2 action-buttons">
-              <button class="btn btn-sm btn-danger" (click)="deleteDecisionType(d._id)">
+          <td>{{ d.supervisor?.fullname || '—' }}</td>
+          <td>
+            <i class="fas"
+              [ngClass]="d.isPresidentDecision ? 'fa-check-circle text-success' : 'fa-times-circle text-secondary'">
+            </i>
+          </td>
+          <td>
+            <div class="d-flex justify-content-center gap-2">
+              <button class="btn btn-sm btn-danger" 
+                  (click)="d._id ? deleteDecisionType(d._id) : null">
                 <i class="fas fa-trash"></i>
               </button>
               <button class="btn btn-sm btn-primary" (click)="editDecisionType(d)">
@@ -88,6 +127,7 @@
         </tr>
       </tbody>
     </table>
+
     <div *ngIf="decisions.length === 0" class="text-center py-3 text-muted">
       لا يوجد أنواع قرارات لعرضها
     </div>

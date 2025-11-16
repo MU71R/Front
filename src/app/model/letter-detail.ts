@@ -18,6 +18,14 @@ export interface User {
   sector?: string;
 }
 
+export interface RecentActivit {
+  id: string;
+  message: string; // نص جاهز
+  time: string;    // وقت جاهز
+  status?: string;
+  // user: User;
+}
+
 export interface LetterDetail {
   _id: string;
   title: string;
@@ -26,6 +34,7 @@ export interface LetterDetail {
   signatureType: string;
   pdfUrl: string;
   decision: Decision; 
+  reasonForRejection: string;
   date: string;
   status: 'pending' | 'approved' | 'rejected' | 'in_progress';
   user: User;

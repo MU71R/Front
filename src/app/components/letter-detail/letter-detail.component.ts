@@ -252,30 +252,6 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // regeneratePdf(): void {
-  //   if (!this.original?._id) return;
-
-  //   this.pdfGenerating = true;
-  //   this.letterService.generateOfficialLetterPDF(this.original._id).subscribe({
-  //     next: (result) => {
-  //       this.pdfGenerating = false;
-  //       if (result.pdfUrl) {
-  //         this.pdfUrl = result.pdfUrl;
-  //         this.pdfFilename = this.extractFilenameFromUrl(result.pdfUrl);
-  //         this.savePdfUrlToDatabase(result.pdfUrl);
-
-  //         // إعادة تحميل معلومات PDF
-  //         this.loadPdfByLetterId(this.original._id);
-  //       }
-  //     },
-  //     error: (err) => {
-  //       this.pdfGenerating = false;
-  //       console.error('خطأ في إعادة إنشاء PDF:', err);
-  //       alert('حدث خطأ أثناء إعادة إنشاء PDF');
-  //     },
-  //   });
-  // }
-
   // دالة لفتح PDF في نافذة جديدة
   openPdf(): void {
     if (!this.pdfUrl) return;

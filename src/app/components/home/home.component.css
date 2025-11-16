@@ -681,3 +681,50 @@
         padding: 15px;
     }
 }
+
+
+
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* مسافة بين كل نشاط */
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fafafa;
+  position: relative;
+}
+
+.activity-icon {
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  color: #007bff;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-description {
+  margin: 0 0 0.5rem 0;
+  white-space: pre-line;
+}
+
+.activity-meta {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+/* .activity-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+} */
