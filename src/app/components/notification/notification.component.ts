@@ -71,17 +71,27 @@ export class NotificationComponent implements OnInit, OnDestroy {
     this.updateFilteredNotifications();
   }
 
-  updateFilteredNotifications(): void {
-    if (this.activeFilter === 'all') {
-      this.filteredNotifications = this.notifications;
-    } else if (this.activeFilter === 'unread') {
-      this.filteredNotifications = this.notifications.filter((n) => !n.read);
-    } else {
-      this.filteredNotifications = this.notifications.filter(
-        (n) => n.type === this.activeFilter
-      );
-    }
+ updateFilteredNotifications(): void {
+  if (this.activeFilter === 'all') {
+    this.filteredNotifications = [...this.notifications].sort((a, b) => {
+      // رفض أولاً
+      if (a.type === 'error' && b.type !== 'error') return -1;
+      if (a.type !== 'error' && b.type === 'error') return 1;
+
+      // موافقة ثانيًا
+      if (a.type === 'success' && b.type !== 'success') return -1;
+      if (a.type !== 'success' && b.type === 'success') return 1;
+
+      // الباقي أبجدي حسب الوقت
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+    });
+  } else if (this.activeFilter === 'unread') {
+    this.filteredNotifications = this.notifications.filter(n => !n.read);
+  } else {
+    this.filteredNotifications = this.notifications.filter(n => n.type === this.activeFilter);
   }
+}
+
 
   markAsReadAndDelete(_id: string): void {
     this.notificationService.markAsRead(_id).subscribe({

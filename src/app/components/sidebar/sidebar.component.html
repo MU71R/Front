@@ -38,7 +38,7 @@
         <span>الأرشيف</span>
       </a>
 
-      <a routerLink="/rejected-letters" routerLinkActive="active" class="menu-item">
+      <a *ngIf="user?.role === 'preparer' || user?.role === 'supervisor'" routerLink="/rejected-letters" routerLinkActive="active" class="menu-item">
         <i class="fa-solid fa-box-archive"></i>
         <span>القرارات المرفوضة</span>
       </a>

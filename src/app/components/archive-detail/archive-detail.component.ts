@@ -304,6 +304,7 @@ export class ArchiveDetailComponent implements OnInit {
       'وزارة التعليم العالي': 'أرشيف وزارة التعليم العالي',
       'رئاسة الوزراء': 'أرشيف رئاسة الوزراء',
       عامة: 'الأرشيف العام',
+      اخرى: 'الأرشيف اخرى',
     };
     return titles[this.type] || `أرشيف ${this.type}`;
   }
@@ -316,6 +317,7 @@ export class ArchiveDetailComponent implements OnInit {
       'وزارة التعليم العالي': 'قرارات ووثائق وزارة التعليم العالي',
       'رئاسة الوزراء': 'قرارات مجلس الوزراء الرسمية',
       عامة: 'قرارات ووثائق الجامعة الرسمية',
+      اخرى: 'قرارات ووثائق الجامعة الرسمية',
     };
     return (
       subtitles[this.type] || 'قائمة القرارت والأوامر المعتمدة ضمن هذا التصنيف'
@@ -339,6 +341,7 @@ export class ArchiveDetailComponent implements OnInit {
       'رئاسة الوزراء',
       'رئاسة الجمهورية',
       'وزارة التعليم العالي',
+      'اخرى'
     ];
     return allowed.includes(this.type);
   }

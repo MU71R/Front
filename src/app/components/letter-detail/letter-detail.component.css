@@ -553,7 +553,7 @@
   margin-top: 1rem;
 }
 
-/* Responsive */
+/* Responsive Enhancements */
 @media (max-width: 768px) {
   .page-header {
     padding: 1.5rem;
@@ -589,7 +589,6 @@
     width: 100%;
   }
 
-  /* تحسينات للشاشات الصغيرة */
   .content-textarea {
     min-height: 150px;
   }
@@ -599,4 +598,47 @@
   }
 }
 
+@media (max-width: 576px) {
+  .page-header {
+    padding: 1rem;
+  }
 
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .page-meta {
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .action-buttons,
+  .action-buttons-grid,
+  .approval-options {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .content-textarea {
+    min-height: 120px;
+  }
+
+  .rationale-textarea {
+    min-height: 80px;
+  }
+
+  .progress-step {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .step-header {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+}

@@ -51,15 +51,12 @@ export class DashboardService {
   getRecentActivities(): Observable<RecentActivity[]> {
     return this.letterService.getLetterTypes().pipe(
       map((letters: any) => {
-        console.log('Raw Activities Data:', letters);
-
         let lettersData = letters;
         if (letters && (letters as any).data) {
           lettersData = (letters as any).data;
         }
 
         if (!Array.isArray(lettersData)) {
-          console.log('No letters data found');
           return [];
         }
 
@@ -91,7 +88,6 @@ export class DashboardService {
               new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
           );
 
-        console.log('Processed Activities:', activities);
         return activities;
       })
     );

@@ -5,6 +5,7 @@ import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { Letter } from 'src/app/model/Letter';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-letter-detail',
@@ -81,8 +82,6 @@ export class LetterDetailComponent implements OnInit {
         });
         this.previewHtml = this.original?.description || '';
 
-        console.log('بيانات القرار:', this.original);
-
         // البحث عن PDF باستخدام getPDFbyLetterId
         this.loadPdfByLetterId(id);
 
@@ -109,10 +108,6 @@ export class LetterDetailComponent implements OnInit {
           this.pdfFilename = this.extractFilenameFromUrl(
             response.pdfFile.pdfurl
           );
-          console.log(
-            'تم العثور على PDF باستخدام getPDFbyLetterId:',
-            this.pdfFile
-          );
         } else {
           // إذا لم يتم العثور على PDF، البحث بطرق أخرى
           this.findAndSetPdfUrl();
@@ -133,7 +128,6 @@ export class LetterDetailComponent implements OnInit {
     if (this.original?.pdfUrl) {
       this.pdfUrl = this.original.pdfUrl;
       this.pdfFilename = this.extractFilenameFromUrl(this.original.pdfUrl);
-      console.log('تم العثور على PDF في البيانات الأصلية:', this.pdfUrl);
       return;
     }
 
@@ -146,7 +140,6 @@ export class LetterDetailComponent implements OnInit {
 
       if (presidentApproval) {
         this.generatePdfFilenameFromLetterData();
-        console.log('تم العثور على موافقة رئيس - نفترض وجود PDF');
         return;
       }
     }
@@ -155,8 +148,6 @@ export class LetterDetailComponent implements OnInit {
     if (this.original?.status === 'approved') {
       this.checkForPdfInServer();
     }
-
-    console.log('لم يتم العثور على PDF');
   }
 
   // توليد اسم ملف PDF من بيانات القرار
@@ -169,7 +160,6 @@ export class LetterDetailComponent implements OnInit {
       : 'قرار';
 
     this.pdfFilename = `letter_${letterId}_${title}.pdf`;
-    console.log('تم توليد اسم PDF:', this.pdfFilename);
   }
 
   // التحقق من وجود PDF في الخادم
@@ -238,7 +228,6 @@ export class LetterDetailComponent implements OnInit {
           this.pdfUrl = result.pdfUrl;
           this.pdfFilename = this.extractFilenameFromUrl(result.pdfUrl);
           this.savePdfUrlToDatabase(result.pdfUrl);
-          console.log('تم إنشاء PDF جديد:', result.pdfUrl);
 
           // إعادة تحميل معلومات PDF
           this.loadPdfByLetterId(this.original._id);
@@ -277,7 +266,6 @@ export class LetterDetailComponent implements OnInit {
   downloadPdf() {
     if (this.pdfFilename) {
       const downloadName = this.generateDownloadName();
-      console.log('تنزيل PDF باسم:', this.pdfFilename, 'كـ:', downloadName);
       this.letterService.downloadPDF(this.pdfFilename, downloadName);
     } else if (this.pdfUrl) {
       // إذا كان رابط مباشر، استخدام الطريقة القديمة
@@ -353,8 +341,6 @@ export class LetterDetailComponent implements OnInit {
     Rationale: this.stripHtml(this.form.value.rationale || '').trim()
   };
 
-  console.log('Payload to update:', payload);
-
   this.processing = true;
   this.letterService.updateLetter(this.original._id, payload).subscribe({
     next: (res) => {
@@ -362,7 +348,6 @@ export class LetterDetailComponent implements OnInit {
       this.previewHtml = payload.description;
       this.isEditing = false;
       this.processing = false;
-      console.log('Update successful:', this.original);
     },
     error: (err) => {
       console.error(err);
@@ -391,7 +376,12 @@ onRationaleChange() {
   // الدالة المحدثة - ترسل تحديثات الحيثيات للباك إند
   confirmRejection() {
     if (!this.rejectionReason.trim()) {
-      alert('يرجى إدخال سبب الرفض');
+      Swal.fire({
+        icon: 'error',
+        title: 'يرجى إدخال سبب الرفض',
+        showConfirmButton: false,
+        timer: 1500
+      });
       return;
     }
 
@@ -461,8 +451,6 @@ onRationaleChange() {
         this.showRejectionReason = false;
         this.rejectionReason = '';
         this.processing = false;
-
-        console.log('تم رفض القرار وحفظ التعديلات بنجاح');
       },
       (err) => {
         console.error('خطأ في رفض القرار:', err);
@@ -534,7 +522,6 @@ onRationaleChange() {
                       );
                       // حفظ PDF في قاعدة البيانات
                       this.savePdfUrlToDatabase(letter.pdfUrl);
-                      console.log('تم إنشاء PDF جديد:', letter.pdfUrl);
                     } else {
                       alert('لم يتم توليد ملف PDF بعد.');
                     }
@@ -564,8 +551,6 @@ onRationaleChange() {
           this.pdfFilename = this.extractFilenameFromUrl(result.pdfUrl);
           // حفظ PDF في قاعدة البيانات
           this.savePdfUrlToDatabase(result.pdfUrl);
-          console.log('تم إنشاء PDF تلقائياً:', result.pdfUrl);
-
           // إعادة تحميل معلومات PDF
           this.loadPdfByLetterId(this.original._id);
         }
@@ -581,7 +566,6 @@ onRationaleChange() {
     const updateData = { pdfUrl: pdfUrl };
     this.letterService.updateLetter(this.original._id, updateData).subscribe({
       next: () => {
-        console.log('تم حفظ رابط PDF في قاعدة البيانات');
         // تحديث البيانات المحلية
         this.original.pdfUrl = pdfUrl;
       },

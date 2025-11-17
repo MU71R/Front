@@ -197,3 +197,85 @@
     color: #bbb;
   }
 }
+
+
+.archive-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 20px;
+}
+
+.archive-table td {
+  padding: 0;
+  vertical-align: top;
+  width: 33.33%; /* كل خانة تأخذ ثلث العرض */
+}
+
+.archive-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 130px;
+  border-radius: 12px;
+  background: #2537ac;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 15px;
+}
+
+.archive-card .card-content {
+  z-index: 2;
+  position: relative;
+}
+
+.archive-card .card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.archive-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.archive-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.05);
+  transform: rotate(25deg);
+  transition: all 0.5s;
+}
+
+.archive-card:hover::before {
+  top: -20%;
+  left: -20%;
+}
+
+/* ألوان الخلفية */
+.bg-danger.bg-opacity-10 { background-color: rgba(220,53,69,0.1) !important; }
+.bg-warning.bg-opacity-10 { background-color: rgba(255,193,7,0.1) !important; }
+.bg-success.bg-opacity-10 { background-color: rgba(25,135,84,0.1) !important; }
+.bg-primary.bg-opacity-10 { background-color: rgba(13,110,253,0.1) !important; }
+.bg-info.bg-opacity-10 { background-color: rgba(13,202,240,0.1) !important; }
+.bg-secondary.bg-opacity-10 { background-color: rgba(108,117,125,0.1) !important; }
+
+/* Responsive للهواتف */
+@media (max-width: 992px) {
+  .archive-table td {
+    width: 50%; /* خانتين في الصف على الشاشات المتوسطة */
+  }
+}
+
+@media (max-width: 576px) {
+  .archive-table td {
+    width: 100%; /* خانة واحدة في الصف على الموبايل */
+  }
+}

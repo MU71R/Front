@@ -376,9 +376,10 @@
               <textarea class="form-control" rows="3" [(ngModel)]="rejectionReason"
                 placeholder="أدخل سبب الرفض..."></textarea>
               <div class="action-buttons mt-3">
-                <button class="btn btn-danger btn-confirm" (click)="confirmRejection()"
-                  [disabled]="processing || !rejectionReason.trim()">
-                  <i class="fa fa-check-circle me-2"></i> تأكيد الرفض
+                <button class="btn btn-danger btn-confirm" 
+                        (click)="confirmRejection()" 
+                        [disabled]="processing">
+                    <i class="fa fa-check-circle me-2"></i> تأكيد الرفض
                 </button>
                 <button class="btn btn-outline-secondary" (click)="cancelRejection()">
                   <i class="fa fa-x-circle me-2"></i> إلغاء

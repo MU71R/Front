@@ -1,77 +1,64 @@
 <div class="archive-container container py-5" dir="rtl">
   <div class="text-center mb-5">
     <h2 class="fw-bold title mb-2 animate-charcter">📁 الأرشيف </h2>
-    <p class="text-muted subtitle fs-5">
-      تصفّح أرشيف القرارات حسب مستوى التصنيف
-    </p>
+    <p class="text-muted subtitle fs-5">تصفّح أرشيف القرارات حسب مستوى التصنيف</p>
   </div>
 
-  <div class="row g-4 justify-content-center">
+  <table class="archive-table mx-auto">
+    <tr>
+      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
+        <div class="archive-card" (click)="getArchivedLettersByType('رئاسة الجمهورية')">
+          <div class="bg-danger bg-opacity-10 text-danger"></div>
+          <div class="card-content"><h5 class="card-title">رئاسة الجمهورية</h5></div>
+        </div>
+      </td>
 
-    <div *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'"  class="col-lg-4 col-md-6">
-      <div class="archive-card h-100" (click)="getArchivedLettersByType('رئاسة الجمهورية')">
-        <div class=" bg-danger bg-opacity-10 text-danger">
+      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
+        <div class="archive-card" (click)="getArchivedLettersByType('رئاسة الوزراء')">
+          <div class="bg-warning bg-opacity-10 text-warning"></div>
+          <div class="card-content"><h5 class="card-title">رئاسة الوزراء</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">رئاسة الجمهورية</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
+      </td>
 
-    <div *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'" class="col-lg-4 col-md-6">
-      <div class="archive-card h-100" (click)="getArchivedLettersByType('رئاسة الوزراء')">
-        <div class=" bg-warning bg-opacity-10 text-warning">
+      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
+        <div class="archive-card" (click)="getArchivedLettersByType('وزارة التعليم العالي')">
+          <div class="bg-success bg-opacity-10 text-success"></div>
+          <div class="card-content"><h5 class="card-title">وزارة التعليم العالي</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">رئاسة الوزراء</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
+      </td>
+      
+    </tr>
 
-    <div *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'" class="col-lg-4 col-md-6">
-      <div class="archive-card h-100" (click)="getArchivedLettersByType('وزارة التعليم العالي')">
-        <div class=" bg-success bg-opacity-10 text-success">
+    <tr>
+    <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
+        <div class="archive-card" (click)="getArchivedLettersByType('اخرى')">
+          <div class="bg-success bg-opacity-10 text-success"></div>
+          <div class="card-content"><h5 class="card-title">اخرى</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">وزارة التعليم العالي</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
+      </td>
+    </tr>
 
-    <div class="col-lg-4 col-md-6">
-      <div class="archive-card h-100" (click)="getArchivedLettersByType('عامة')">
-        <div class=" bg-primary bg-opacity-10 text-primary">
+    <tr>
+      <td>
+        <div class="archive-card" (click)="getArchivedLettersByType('عامة')">
+          <div class="bg-primary bg-opacity-10 text-primary"></div>
+          <div class="card-content"><h5 class="card-title">الجامعة</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">الجامعة</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
+      </td>
 
-    <div class="col-lg-4 col-md-6">
-      <div class="archive-card h-100 personal-card" (click)="openPersonalArchive()">
-        <div class=" bg-info bg-opacity-10 text-info">
+      <td>
+        <div class="archive-card personal-card" (click)="openPersonalArchive()">
+          <div class="bg-info bg-opacity-10 text-info"></div>
+          <div class="card-content"><h5 class="card-title">أرشيفي الشخصي</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">أرشيفي الشخصي</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
+      </td>
 
-    <div *ngIf="user?.role === 'supervisor'" class="col-lg-4 col-md-6">
-      <div class="archive-card h-100" (click)="getArchivedSupervisor()">
-        <div class=" bg-secondary bg-opacity-10 text-secondary">
+      <td *ngIf="user?.role === 'supervisor'">
+        <div class="archive-card" (click)="getArchivedSupervisor()">
+          <div class="bg-secondary bg-opacity-10 text-secondary"></div>
+          <div class="card-content"><h5 class="card-title">أرشيف المراجع</h5></div>
         </div>
-        <div class="card-content">
-          <h5 class="card-title">أرشيف المراجع</h5>
-        </div>
-        <div class="card-hover-effect"></div>
-      </div>
-    </div>
-  </div>
+      </td>
+    </tr>
+  </table>
 </div>

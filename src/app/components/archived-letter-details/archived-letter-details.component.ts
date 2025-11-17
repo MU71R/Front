@@ -121,7 +121,6 @@ export class LetterDetailsComponent implements OnInit {
   downloadPdf() {
     if (this.pdfFilename) {
       const downloadName = this.generateDownloadName();
-      console.log('تنزيل PDF باسم:', this.pdfFilename, 'كـ:', downloadName);
       this.letterService.downloadPDF(this.pdfFilename, downloadName);
     } else if (this.pdfUrl) {
       const link = document.createElement('a');
@@ -176,6 +175,7 @@ export class LetterDetailsComponent implements OnInit {
       'رئاسة الجمهورية': 'badge-presidential',
       'وزارة التعليم العالي': 'badge-ministerial',
       'رئاسة الوزراء': 'badge-governmental',
+      'اخرى': 'badge-another',
       عامة: 'badge-general',
       شخصي: 'badge-personal',
       مراجع: 'badge-review',
@@ -190,6 +190,7 @@ export class LetterDetailsComponent implements OnInit {
       'رئاسة الجمهورية': 'fa-flag',
       'وزارة التعليم العالي': 'fa-graduation-cap',
       'رئاسة الوزراء': 'fa-landmark',
+      'اخرى': 'fa-file',
       عامة: 'fa-file',
       شخصي: 'fa-user',
       مراجع: 'fa-eye',
