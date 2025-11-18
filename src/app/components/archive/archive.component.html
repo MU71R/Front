@@ -1,64 +1,78 @@
 <div class="archive-container container py-5" dir="rtl">
-  <div class="text-center mb-5">
+
+  <div class="text-center mb-4">
     <h2 class="fw-bold title mb-2 animate-charcter">📁 الأرشيف </h2>
     <p class="text-muted subtitle fs-5">تصفّح أرشيف القرارات حسب مستوى التصنيف</p>
   </div>
 
-  <table class="archive-table mx-auto">
-    <tr>
-      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
-        <div class="archive-card" (click)="getArchivedLettersByType('رئاسة الجمهورية')">
-          <div class="bg-danger bg-opacity-10 text-danger"></div>
-          <div class="card-content"><h5 class="card-title">رئاسة الجمهورية</h5></div>
-        </div>
-      </td>
+  <table class="modern-table mx-auto">
 
-      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
-        <div class="archive-card" (click)="getArchivedLettersByType('رئاسة الوزراء')">
-          <div class="bg-warning bg-opacity-10 text-warning"></div>
-          <div class="card-content"><h5 class="card-title">رئاسة الوزراء</h5></div>
-        </div>
-      </td>
+    <thead>
+      <tr>
+        <th>عنوان</th>
+        <th>عدد القرارات</th>
+        <th>الإجراء</th>
+      </tr>
+    </thead>
 
-      <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
-        <div class="archive-card" (click)="getArchivedLettersByType('وزارة التعليم العالي')">
-          <div class="bg-success bg-opacity-10 text-success"></div>
-          <div class="card-content"><h5 class="card-title">وزارة التعليم العالي</h5></div>
-        </div>
-      </td>
-      
-    </tr>
+    <tbody>
 
-    <tr>
-    <td *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'">
-        <div class="archive-card" (click)="getArchivedLettersByType('اخرى')">
-          <div class="bg-success bg-opacity-10 text-success"></div>
-          <div class="card-content"><h5 class="card-title">اخرى</h5></div>
-        </div>
-      </td>
-    </tr>
+      <!-- رئاسة الجمهورية -->
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'"
+          (click)="getArchivedLettersByType('رئاسة الجمهورية')" class="clickable-row">
+        <td><span class="tag tag-danger">رئاسة الجمهورية</span></td>
+        <td>{{ statsArchived?.republic }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
 
-    <tr>
-      <td>
-        <div class="archive-card" (click)="getArchivedLettersByType('عامة')">
-          <div class="bg-primary bg-opacity-10 text-primary"></div>
-          <div class="card-content"><h5 class="card-title">الجامعة</h5></div>
-        </div>
-      </td>
+      <!-- رئاسة الوزراء -->
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'"
+          (click)="getArchivedLettersByType('رئاسة الوزراء')" class="clickable-row">
+        <td><span class="tag tag-warning">رئاسة الوزراء</span></td>
+        <td>{{ statsArchived?.general }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
 
-      <td>
-        <div class="archive-card personal-card" (click)="openPersonalArchive()">
-          <div class="bg-info bg-opacity-10 text-info"></div>
-          <div class="card-content"><h5 class="card-title">أرشيفي الشخصي</h5></div>
-        </div>
-      </td>
+      <!-- وزارة التعليم العالي -->
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'"
+          (click)="getArchivedLettersByType('وزارة التعليم العالي')" class="clickable-row">
+        <td><span class="tag tag-success">وزارة التعليم العالي</span></td>
+        <td>{{ statsArchived?.government }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
 
-      <td *ngIf="user?.role === 'supervisor'">
-        <div class="archive-card" (click)="getArchivedSupervisor()">
-          <div class="bg-secondary bg-opacity-10 text-secondary"></div>
-          <div class="card-content"><h5 class="card-title">أرشيف المراجع</h5></div>
-        </div>
-      </td>
-    </tr>
+      <!-- الجامعة -->
+      <tr (click)="getArchivedLettersByType('عامة')" class="clickable-row">
+        <td><span class="tag tag-primary">الجامعة</span></td>
+        <td>{{ statsArchived?.university }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
+
+      <!-- أرشيفي الخاص -->
+      <tr (click)="openPersonalArchive()" class="clickable-row">
+        <td><span class="tag tag-info">أرشيفي الخاص</span></td>
+        <td>{{ statsArchived?.personal || "-" }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
+
+      <!-- أرشيف المراجعة للمشرف -->
+      <tr *ngIf="user?.role === 'supervisor'" 
+          (click)="getArchivedSupervisor()" class="clickable-row">
+        <td><span class="tag tag-dark">أرشيف المراجعة</span></td>
+        <td>{{ statsArchived?.supervisor || "-" }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
+
+        <!-- أخرى -->
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'"
+          (click)="getArchivedLettersByType('اخرى')" class="clickable-row">
+        <td><span class="tag tag-secondary">أخرى</span></td>
+        <td>{{ statsArchived?.other }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
+
+    </tbody>
+
   </table>
+
 </div>
