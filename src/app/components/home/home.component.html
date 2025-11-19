@@ -42,13 +42,10 @@
 
     
    <!-- Recent Activities -->
-<div class="activities-section">
+<div *ngIf="user?.role !== 'admin'" class="activities-section">
   <div class="activities-card">
     <div class="card-header">
       <h3 class="card-title">آخر القرارات</h3>
-      <button class="btn btn-sm btn-outline-primary" routerLink="/letters">
-        عرض الكل
-      </button>
     </div>
     <div class="activities-list">
   <div class="activities-list">

@@ -2,6 +2,7 @@ import { Component, OnInit, TemplateRef } from '@angular/core';
 import { DashboardService, DashboardStats } from '../../service/home.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { RecentActivit } from 'src/app/model/letter-detail';
+import { AuthService } from 'src/app/service/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -26,11 +27,15 @@ export class HomeComponent implements OnInit {
   loadingTemplate!: TemplateRef<any>;
   loading = true;
   currentDate = new Date();
-
+ 
   constructor(
     private dashboardService: DashboardService,
-    private letterService: LetterService
+    private letterService: LetterService,
+    private authService: AuthService
   ) {}
+
+  user = this.authService.currentUserValue;
+
 
   ngOnInit(): void {
     this.loadDashboardData();
@@ -80,7 +85,7 @@ getRecentLetters() {
     switch (statusArabic) {
       case 'مقبول': return 'approved';
       case 'مرفوض': return 'rejected';
-      case 'قيد المعالجة': return 'in_progress';
+      case 'قيد المراجعة': return 'in_progress';
       case 'قيد الانتظار': return 'pending';
       default: return 'pending';
     }
@@ -101,7 +106,7 @@ getRecentLetters() {
       pending: 'قيد الانتظار',
       approved: 'مقبول',
       rejected: 'مرفوض',
-      in_progress: 'قيد المعالجة',
+      in_progress: 'قيد المراجعة',
     };
     return texts[status] || status;
   }

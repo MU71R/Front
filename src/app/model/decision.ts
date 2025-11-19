@@ -4,7 +4,6 @@ export interface Decision {
   description?: string;
   sector?: any;
   supervisor?: any;
-  isPresidentDecision?: boolean;
 }
 export interface Declaration {
   type: string;

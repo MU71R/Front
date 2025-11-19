@@ -324,12 +324,12 @@ export class DeclarationComponent implements OnInit {
 
     this.letterService.addLetterType(payload).subscribe({
       next: (res) => {
-        this.showSuccess('تم حفظ القرار بنجاح ');
+        this.showSuccess('تم ارسال القرار بنجاح');
         this.resetForm();
       },
       error: (err) => {
         console.error('Error saving letter:', err);
-        this.showError('حدث خطأ أثناء حفظ القرار');
+        this.showError('حدث خطأ أثناء ارسال القرار');
         this.submitting = false;
       },
     });

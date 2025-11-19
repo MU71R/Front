@@ -39,8 +39,8 @@
       </a>
 
       <a *ngIf="user?.role === 'preparer' || user?.role === 'supervisor'" routerLink="/rejected-letters" routerLinkActive="active" class="menu-item">
-        <i class="fa-solid fa-box-archive"></i>
-        <span>القرارات المرفوضة</span>
+        <i class="fa-solid fa-file-circle-xmark"></i>
+        <span>القرارات التى تحتاج للتصحيح</span>
       </a>
 
       <a *ngIf="user?.role === 'admin'" routerLink="/add-decision" routerLinkActive="active" class="menu-item">

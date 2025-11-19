@@ -3,6 +3,8 @@ import { User, Sector } from '../../model/user';
 import { HttpErrorResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
 import { AdministrationService } from 'src/app/service/user.service';
+import { Observable, of } from 'rxjs';
+import { map, tap, catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-department',
@@ -39,7 +41,7 @@ export class DepartmentComponent implements OnInit {
   searchAddSector = '';
   addDropdownOpen = false;
 
-  selectedUser: Partial<User> & { _id?: string } = {
+  selectedUser: Partial<User> & { _id?: string; sector?: string[] } = {
     sector: [],
   };
 
@@ -57,7 +59,7 @@ export class DepartmentComponent implements OnInit {
   constructor(private adminService: AdministrationService) {}
 
   ngOnInit(): void {
-    this.loadSectors();
+    this.loadSectors().subscribe(); // لتأكد من التحميل المبكر للقطاعات
     this.loadUsers();
   }
 
@@ -112,24 +114,28 @@ export class DepartmentComponent implements OnInit {
     });
   }
 
-  loadSectors(): void {
-    this.adminService.getAllSectors().subscribe({
-      next: (res) => {
-        const sectorsData = (res as any).data || res;
-        this.sectors = (sectorsData || [])
-          .filter((s: Sector) => s.sector)
-          .map((s: Sector) => ({ _id: s._id || '', sector: s.sector }));
-
-        this.filteredAddSectors = [...this.sectors];
-        this.filteredEditSectors = [...this.sectors];
-      },
-      error: (err: HttpErrorResponse) =>
+  loadSectors(): Observable<Sector[]> {
+    return this.adminService.getAllSectors().pipe(
+      map((res: any) => res.data || res),
+      map((sectorsData: any[]) =>
+        (sectorsData || [])
+          .filter((s) => s.sector)
+          .map((s) => ({ _id: s._id || '', sector: s.sector }))
+      ),
+      tap((sectors) => {
+        this.sectors = sectors;
+        this.filteredAddSectors = [...sectors];
+        this.filteredEditSectors = [...sectors];
+      }),
+      catchError((err: HttpErrorResponse) => {
         Swal.fire({
           icon: 'error',
           title: 'خطأ في جلب القطاعات',
           text: err.message,
-        }),
-    });
+        });
+        return of([]);
+      })
+    );
   }
 
   applyFilters(): void {
@@ -246,27 +252,22 @@ export class DepartmentComponent implements OnInit {
   }
 
   openEditUser(user: User): void {
-    this.selectedUser = { ...user };
-
-    this.selectedEditSectors = this.sectors.filter((s) => {
-      const sectorId = s._id;
-      if (!sectorId) return false;
-
-      if (Array.isArray(user.sector)) {
-        return user.sector.includes(sectorId);
-      } else {
-        return user.sector === sectorId;
-      }
+    this.loadSectors().subscribe(() => {
+      this.selectedUser = {
+        ...user,
+        sector: Array.isArray(user.sector) ? user.sector : [],
+      };
+      this.selectedEditSectors = this.sectors.filter(
+        (s) => s._id && this.selectedUser.sector!.includes(s._id)
+      );
+      this.searchEditSector = '';
+      this.showEditUserModal = true;
     });
-    this.filteredEditSectors = [...this.sectors];
-    this.searchEditSector = '';
-
-    this.showEditUserModal = true;
   }
 
   closeEditUser(): void {
     this.showEditUserModal = false;
-    this.selectedUser = {};
+    this.selectedUser = { sector: [] };
     this.selectedEditSectors = [];
   }
 
@@ -360,9 +361,7 @@ export class DepartmentComponent implements OnInit {
       cancelButtonText: 'إلغاء',
     }).then((res) => {
       if (!res.isConfirmed || !user._id) return;
-      this.adminService
-        .deleteUser(user._id)
-        .subscribe({ next: () => this.loadUsers() });
+      this.adminService.deleteUser(user._id).subscribe({ next: () => this.loadUsers() });
     });
   }
 
@@ -392,7 +391,7 @@ export class DepartmentComponent implements OnInit {
       this.adminService.updateSector(this.newSector._id, payload).subscribe({
         next: () => {
           this.closeSectorForm();
-          this.loadSectors();
+          this.loadSectors().subscribe();
           this.loadUsers();
         },
       });
@@ -400,7 +399,7 @@ export class DepartmentComponent implements OnInit {
       this.adminService.addSector(payload as Sector).subscribe({
         next: () => {
           this.closeSectorForm();
-          this.loadSectors();
+          this.loadSectors().subscribe();
         },
       });
     }
@@ -419,7 +418,7 @@ export class DepartmentComponent implements OnInit {
       if (!res.isConfirmed) return;
       this.adminService.deleteSector(id).subscribe({
         next: () => {
-          this.loadSectors();
+          this.loadSectors().subscribe();
           this.loadUsers();
         },
       });
@@ -427,50 +426,45 @@ export class DepartmentComponent implements OnInit {
   }
 
   saveDepartment(): void {
-    const { fullname, username, password, role } = this.newDepartment;
-    const sector = this.selectedAddSectors
-      .map((s) => s._id)
-      .filter((id) => id !== '') as string[];
+  const { fullname, username, password, role } = this.newDepartment;
+  const sector = this.selectedAddSectors
+    .map((s) => s._id)
+    .filter((id) => id !== '') as string[];
 
-    if (
-      !fullname?.trim() ||
-      !username?.trim() ||
-      !password ||
-      !role ||
-      !sector.length
-    ) {
-      Swal.fire({ icon: 'warning', title: 'املأ جميع الحقول' });
-      return;
-    }
-
-    const userData: User = {
-      ...(this.newDepartment as User),
-      sector: sector,
-    };
-
-    this.adminService.addUser(userData).subscribe({
-      next: () => {
-        this.loadUsers();
-        this.closeAddDepartment();
-      },
-      error: (err) => {
-        Swal.fire({
-          icon: 'error',
-          title: 'خطأ في الإضافة',
-          text: err.message,
-        });
-      },
-    });
+  if (!fullname?.trim() || !username?.trim() || !password || !role || !sector.length) {
+    Swal.fire({ icon: 'warning', title: 'املأ جميع الحقول' });
+    return;
   }
+
+  const userData: User = {
+    ...(this.newDepartment as User),
+    sector: sector,
+  };
+
+  this.adminService.addUser(userData).subscribe({
+    next: () => {
+      this.loadUsers();
+      this.closeAddDepartment();
+      Swal.fire({ icon: 'success', title: 'تم إضافة المستخدم بنجاح' });
+    },
+    error: (err: any) => {
+      // استخدام err.error.message لو موجود
+      const errorMsg =
+        err.error?.message || 'حدث خطأ أثناء الإضافة';
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ في الإضافة',
+        text: errorMsg,
+      });
+    },
+  });
+}
+
 
   getSectorNames(sectorIds: string[]): string {
     if (!sectorIds || !sectorIds.length) return '—';
 
-    const sectorNames = sectorIds.map((id) => {
-      const sector = this.sectors.find((s) => s._id === id);
-      return sector?.sector || '---';
-    });
-
-    return sectorNames.join('، ');
+    const sectorNames = sectorIds.map((id) => this.sectors.find((s) => s._id === id)?.sector || '---');
+    return sectorNames.join(', ');
   }
 }

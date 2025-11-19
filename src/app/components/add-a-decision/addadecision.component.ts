@@ -18,9 +18,8 @@ export class AddadecisionComponent implements OnInit {
 
   form: any = {
     title: '',
-    sector: [], 
-    supervisor: '',
-    isPresidentDecision: false,
+    sector: [],
+    supervisor: ''
   };
 
   sectors: Sector[] = [];
@@ -139,7 +138,6 @@ export class AddadecisionComponent implements OnInit {
       return;
     }
 
-    this.form.isPresidentDecision = !!this.form.isPresidentDecision;
     this.form.supervisor = this.form.supervisor || null;
 
     if (this.editingId) {
@@ -191,8 +189,7 @@ export class AddadecisionComponent implements OnInit {
     this.form = {
       title: decision.title,
       sector: this.selectedSectors.map((s) => s._id),
-      supervisor: decision.supervisor?._id || decision.supervisor || '',
-      isPresidentDecision: decision.isPresidentDecision || false,
+      supervisor: decision.supervisor?._id || decision.supervisor || ''
     };
 
     if (this.form.sector.length > 0) {
@@ -239,7 +236,6 @@ export class AddadecisionComponent implements OnInit {
       title: '',
       sector: [],
       supervisor: '',
-      isPresidentDecision: false,
     };
     this.editingId = null;
     this.reviewers = [];

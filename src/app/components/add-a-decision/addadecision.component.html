@@ -65,12 +65,6 @@
             <option *ngFor="let u of reviewers" [value]="u._id">{{ u.fullname }}</option>
           </select>
 
-          <div class="form-check mt-2">
-            <input class="form-check-input" type="checkbox"
-                   [(ngModel)]="form.isPresidentDecision"
-                   id="presidentSignature">
-            <label class="form-check-label" for="presidentSignature">صادر من رئيس الجامعة</label>
-          </div>
         </div>
 
         <div class="modal-footer">
@@ -91,7 +85,6 @@
           <th class="decision-type">نوع القرار</th>
           <th class="sector">القطاع</th>
           <th class="supervisor">جهة المراجعة</th>
-          <th class="president-signature">صادر من رئيس الجامعة</th>
           <th class="actions">الإجراءات</th>
         </tr>
       </thead>
@@ -105,11 +98,7 @@
             <ng-template #noSector>—</ng-template>
           </td>
           <td>{{ d.supervisor?.fullname || '—' }}</td>
-          <td>
-            <i class="fas"
-              [ngClass]="d.isPresidentDecision ? 'fa-check-circle text-success' : 'fa-times-circle text-secondary'">
-            </i>
-          </td>
+
           <td>
             <div class="d-flex justify-content-center gap-2">
               <button class="btn btn-sm btn-danger" 
