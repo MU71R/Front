@@ -40,6 +40,8 @@ export class ArchiveDetailComponent implements OnInit {
     title: '',
     description: '',
     date: '',
+    startDate: '',
+    endDate: '',
     transactionNumber: '',
     letterType: 'رئاسة الجمهورية',
     file: null as File | null,
@@ -59,7 +61,6 @@ export class ArchiveDetailComponent implements OnInit {
       if (this.type) {
         localStorage.setItem('archiveType', this.type);
       }
-
       if (this.type === 'شخصي') {
         this.getPersonalArchive();
       } else if (this.type === 'مراجع') {
@@ -69,7 +70,8 @@ export class ArchiveDetailComponent implements OnInit {
       }
     });
   }
-  
+
+
 
   trackByLetterId(index: number, letter: any): string {
     return letter._id;
@@ -380,9 +382,15 @@ export class ArchiveDetailComponent implements OnInit {
     formData.append('transactionNumber', this.newArchive.transactionNumber || '');
     formData.append('date', this.newArchive.date);
     formData.append('letterType', this.newArchive.letterType);
+    formData.append('startDate', this.newArchive.startDate);
+    formData.append('endDate', this.newArchive.endDate);
     if (this.newArchive.file) {
       formData.append('file', this.newArchive.file);
     }
+    console.log("FormData:", {
+      startDate: this.newArchive.startDate,
+      endDate: this.newArchive.endDate
+    });
 
     this.archiveService.addArchive(formData).subscribe({
       next: (res: any) => {
@@ -415,7 +423,9 @@ export class ArchiveDetailComponent implements OnInit {
       title: '',
       description: '',
       date: '',
-      transactionNumber: '',
+      transactionNumber: '', 
+      startDate: '',
+      endDate: '',
       letterType: 'رئاسة الجمهورية',
       file: null,
     };

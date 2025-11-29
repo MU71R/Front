@@ -45,7 +45,7 @@
 
       <a *ngIf="user?.role === 'admin'" routerLink="/add-decision" routerLinkActive="active" class="menu-item">
         <i class="fa-solid fa-file-circle-plus"></i>
-        <span>إضافة قرار جديد</span>
+        <span>ادارة القرارات</span>
       </a>
 
       <a *ngIf="user?.role === 'supervisor' || user?.role === 'UniversityPresident'" routerLink="/pending-reviews"

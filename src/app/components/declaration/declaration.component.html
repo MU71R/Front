@@ -38,22 +38,22 @@
               <div class="dropdown-options max-h-200 overflow-auto">
                 <div *ngIf="filteredMessageTypes.length === 0 && searchTerm"
                   class="dropdown-no-results text-center p-3 text-muted">
-                  <i class="bi bi-search me-2"></i>
+                  <i class="fa fa-search me-2"></i>
                   لا توجد نتائج للبحث عن "{{ searchTerm }}"
                 </div>
 
                 <div *ngIf="filteredMessageTypes.length === 0 && !searchTerm"
                   class="dropdown-no-results text-center p-3 text-muted">
-                  <i class="bi bi-info-circle me-2"></i>
+                  <i class="fa fa-info-circle me-2"></i>
                   لا توجد أنواع قرارات متاحة
                 </div>
 
                 <div *ngFor="let type of filteredMessageTypes" class="dropdown-item cursor-pointer p-3"
                   [class.selected]="f['type'].value === type._id" (click)="selectMessageType(type._id, type.title)">
                   <div class="d-flex align-items-center">
-                    <i class="bi bi-file-text me-3 text-primary"></i>
+                    <i class="fa fa-file-text me-3 text-primary"></i>
                     <span class="flex-grow-1">{{ type.title }}</span>
-                    <i *ngIf="f['type'].value === type._id" class="bi bi-check-lg text-success"></i>
+                    <i *ngIf="f['type'].value === type._id" class="fa fa-check-lg text-success"></i>
                   </div>
                 </div>
               </div>
@@ -76,9 +76,7 @@
 
           <div *ngIf="showFieldError('title')" class="invalid-feedback">
             <div *ngIf="f['title'].errors?.['required']">عنوان القرار مطلوب</div>
-            <div *ngIf="f['title'].errors?.['startsWithSpace']">
-              لا يمكن أن يبدأ العنوان بمسافات
-            </div>
+            <div *ngIf="f['title'].errors?.['startsWithSpace']">لا يمكن أن يبدأ العنوان بمسافات</div>
           </div>
         </div>
 
@@ -107,8 +105,7 @@
           <label class="form-label">حيثيات القرار *</label>
           <textarea class="form-control" formControlName="Rationale" rows="5"
             placeholder="اكتب حيثيات أو مبررات القرار هنا..." [class.is-invalid]="showFieldError('Rationale')"
-            (blur)="markFieldAsTouched('Rationale')">
-          </textarea>
+            (blur)="markFieldAsTouched('Rationale')"></textarea>
 
           <div *ngIf="showFieldError('Rationale')" class="invalid-feedback">
             <div *ngIf="f['Rationale'].errors?.['required']">حيثيات القرار مطلوبة</div>
@@ -125,11 +122,29 @@
           </div>
         </div>
 
+        <!--  إضافة نوع التوقيع -->
+        <div class="mb-3" *ngIf="user?.role === 'UniversityPresident'">
+          <label class="form-label d-block mb-2">نوع التوقيع</label>
+
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="realScan" value="حقيقية"
+              formControlName="signatureType" />
+            <label class="form-check-label" for="حقيقية">توقيع Real Scan</label>
+          </div>
+
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" id="electronic" value="الممسوحة ضوئيا"
+              formControlName="signatureType" />
+            <label class="form-check-label" for="الممسوحة ضوئيا">توقيع إلكتروني</label>
+          </div>  
+        </div>
+        <!--  نهاية إضافة نوع التوقيع -->
+
         <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
         <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 
         <div *ngIf="showFormSummary()" class="alert alert-warning">
-          <i class="bi bi-exclamation-triangle me-2"></i>
+          <i class="fa fa-exclamation-triangle me-2"></i>
           يرجى تصحيح الأخطاء في النموذج قبل الإرسال
         </div>
 
@@ -139,16 +154,17 @@
           <button type="submit" class="btn btn-primary d-flex align-items-center"
             [disabled]="messageForm.invalid || submitting">
             <ng-container *ngIf="!submitting; else loading">
-              <i class="bi bi-send-fill me-1"></i>
+              <i class="fa fa-send me-1"></i>
               <span>إرسال القرار</span>
             </ng-container>
 
             <ng-template #loading>
               <span class="spinner-border spinner-border-sm me-2"></span>
-              <span>جاري الحفظ...</span>
+              <span>جاري الإرسال..</span>
             </ng-template>
           </button>
         </div>
+
       </form>
     </div>
   </div>

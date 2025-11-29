@@ -10,6 +10,7 @@ import {
 import { Decision } from 'src/app/model/decision';
 import { DecisionService } from 'src/app/service/decision.service';
 import { LetterService } from 'src/app/service/letter.service';
+import { LoginService } from 'src/app/service/login.service';
 import Swal from 'sweetalert2';
 
 export function noLeadingSpaces(
@@ -105,8 +106,11 @@ export class DeclarationComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private declService: DecisionService,
-    private letterService: LetterService
+    private letterService: LetterService,
+    private loginService: LoginService
   ) {}
+
+  user = this.loginService.getUserFromLocalStorage();
 
   ngOnInit(): void {
     this.initializeForm();
@@ -119,6 +123,7 @@ export class DeclarationComponent implements OnInit {
         type: ['', [Validators.required]],
         title: ['', [Validators.required, noLeadingSpaces]],
         Rationale: ['', [Validators.required]],
+        signatureType: [''],
         content: ['', [Validators.required]],
         startDate: ['', [dateValidator()]],
         endDate: ['', [dateValidator()]],
@@ -187,6 +192,7 @@ export class DeclarationComponent implements OnInit {
   selectMessageType(typeId: string, typeTitle: string): void {
     this.f['type'].setValue(typeId);
     this.selectedTypeTitle = typeTitle;
+    this.f['signatureType'].setValue(null);
     this.searchTerm = ''; 
     this.filteredMessageTypes = [];
     this.showDropdown = false;
@@ -313,6 +319,7 @@ export class DeclarationComponent implements OnInit {
       description: cleanContent,
       decision: this.f['type'].value,
       Rationale: cleanRationale,
+      signatureType: this.f['signatureType'].value,
       date: new Date().toISOString().split('T')[0],
       StartDate: this.f['startDate'].value
         ? new Date(this.f['startDate'].value).toISOString()

@@ -51,7 +51,7 @@
       <!-- أرشيفي الخاص -->
       <tr (click)="openPersonalArchive()" class="clickable-row">
         <td><span class="tag tag-info">أرشيفي الخاص</span></td>
-        <td>{{ statsArchived?.personal || "-" }}</td>
+        <td>{{ statsArchived?.prevUser}}</td>
         <td><button class="view-btn">عرض</button></td>
       </tr>
 
@@ -59,7 +59,7 @@
       <tr *ngIf="user?.role === 'supervisor'" 
           (click)="getArchivedSupervisor()" class="clickable-row">
         <td><span class="tag tag-dark">أرشيف المراجعة</span></td>
-        <td>{{ statsArchived?.supervisor || "-" }}</td>
+        <td>{{ statsArchived?.prevsupervisor}}</td>
         <td><button class="view-btn">عرض</button></td>
       </tr>
 

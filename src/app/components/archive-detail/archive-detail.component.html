@@ -113,13 +113,14 @@
     <p class="empty-text">
       {{ letters.length === 0 ? 'لم يتم العثور على أي قرارات في هذا الأرشيف.' : 'لمطابقة معايير البحث المحددة.' }}
     </p>
-    <button
-      *ngIf="isSpecialArchive() || letters.length === 0"
-      class="btn btn-primary"
-      (click)="openUploadModal()"
-    >
-      <i class="fa fa-plus me-2"></i>إضافة أول قرار
-    </button>
+  <button
+  *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || isSpecialArchive()) && letters?.length === 0"
+  class="btn btn-primary"
+  (click)="openUploadModal()"
+>
+  <i class="fa fa-plus me-2"></i>إضافة أول قرار
+</button>
+
     <button *ngIf="letters.length > 0" class="btn btn-outline-primary" (click)="resetFilters()">
       <i class="fa fa-refresh me-2"></i>عرض جميع القرارت
     </button>
@@ -252,6 +253,33 @@
             <textarea class="form-control" rows="3" [(ngModel)]="newArchive.description" name="description"
               placeholder="وصف مختصر للمستند..."></textarea>
           </div>
+          
+          <div class="row g-2 mb-3">
+          <div class="col-12 col-sm-6">
+            <div class="form-group">
+              <label class="form-label fw-semibold">تاريخ البدء</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                [(ngModel)]="newArchive.startDate" 
+                name="startDate"
+              />
+            </div>
+          </div>
+
+          <div class="col-12 col-sm-6">
+            <div class="form-group">
+              <label class="form-label fw-semibold">تاريخ الانتهاء</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                [(ngModel)]="newArchive.endDate" 
+                name="endDate"
+              />
+            </div>
+          </div>
+        </div>
+
 
           <div class="row g-2 mb-3">
             <div class="col-12 col-sm-6">

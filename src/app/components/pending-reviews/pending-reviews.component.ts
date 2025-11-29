@@ -60,19 +60,19 @@ export class PendingReviewsComponent implements OnInit {
     });
   }
 
-  filterByStatus(status: string) {
-    this.selectedStatus = status;
+  // filterByStatus(status: string) {
+  //   this.selectedStatus = status;
 
-    if (status === 'all') {
-      this.filteredList = [...this.pendingList];
-    } else {
-      this.filteredList = this.pendingList.filter(
-        (item) => item.status === status
-      );
-    }
+  //   if (status === 'all') {
+  //     this.filteredList = [...this.pendingList];
+  //   } else {
+  //     this.filteredList = this.pendingList.filter(
+  //       (item) => item.status === status
+  //     );
+  //   }
 
-    this.closeDropdown();
-  }
+  //   this.closeDropdown();
+  // }
 
   getStatusText(status: string): string {
     switch (status) {
@@ -95,9 +95,9 @@ export class PendingReviewsComponent implements OnInit {
     this.router.navigate(['letter-details', id]);
   }
 
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
+  // toggleDropdown() {
+  //   this.isDropdownOpen = !this.isDropdownOpen;
+  // }
 
   closeDropdown() {
     this.isDropdownOpen = false;
