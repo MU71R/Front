@@ -338,13 +338,13 @@
                   </div>
 
                   <!-- تاريخ القرار: غير قابل للتعديل -->
-                  <div class="timeline-item">
+                  <!-- <div class="timeline-item">
                     <div class="timeline-marker primary"></div>
                     <div class="timeline-content">
                       <div class="timeline-label">تاريخ القرار</div>
                       <div class="timeline-value">{{ original?.date | date: 'd MMMM y' }}</div>
                     </div>
-                  </div>
+                  </div> -->
 
                   <!-- تواريخ قابلة للتعديل -->
                   <ng-container *ngIf="isEditing; else viewDates">
@@ -426,7 +426,7 @@
                     <i class="fa fa-check-circle me-2"></i> موافقة وارسال للرئيس
                   </button>
                   <button class="btn btn-warning" (click)="showAmendmentForm()" [disabled]="processing">
-                    <i class="fa fa-edit me-2"></i> تعديل القرار
+                    <i class="fa fa-edit me-2"></i>
                   </button>
                   <button class="btn btn-danger" (click)="confirmFinalRejection()" [disabled]="processing">
                     <i class="fa fa-x-circle me-2"></i> رفض

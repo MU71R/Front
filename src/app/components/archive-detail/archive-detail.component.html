@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-3">
-        <button class="btn btn-light btn-add" *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'" (click)="openUploadModal()" [disabled]="loading">
+        <button class="btn btn-light btn-add" *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد'" (click)="openUploadModal()" [disabled]="loading">
           <i class="fa fa-plus-circle me-2"></i>
           <span class="d-none d-sm-inline">إضافة مستند جديد</span>
           <span class="d-inline d-sm-none">إضافة</span>
@@ -214,7 +214,7 @@
     </div>
   </div>
 
-<div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
+<div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
   <div class="modal-container" (click)="$event.stopPropagation()">
     <div class="modal-content">
       <div class="modal-header">
