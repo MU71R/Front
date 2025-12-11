@@ -68,7 +68,7 @@ export class LetterService {
   ): Observable<LetterDetail> {
     const payload: any = { status };
 
-    if (status === 'rejected' && reasonForRejection) {
+    if (status === 'amendment' && reasonForRejection) {
       payload.reasonForRejection = reasonForRejection;
     }
 
@@ -85,7 +85,6 @@ export class LetterService {
       .pipe(map((r) => r.data));
   }
 
-  // التحديث: دعم إرسال البيانات الإضافية مع الرفض
   updateStatusByUniversityPresident(
     id: string,
     status: string,
@@ -94,7 +93,7 @@ export class LetterService {
   ): Observable<LetterDetail> {
     const payload: any = { status };
 
-    if (status === 'rejected' && reasonForRejection) {
+    if (status === 'amendment' && reasonForRejection) {
       payload.reasonForRejection = reasonForRejection;
     }
 

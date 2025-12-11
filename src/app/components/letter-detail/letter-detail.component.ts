@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
@@ -24,12 +24,13 @@ export class LetterDetailComponent implements OnInit {
   currentUserRole: string = '';
   showPresidentOptions = false;
   showRejectionReason = false;
+  showAmendmentReason = false; // جديد للتعديل
   rejectionReason = '';
+  amendmentReason = ''; // جديد للتعديل
   pdfUrl: string | null = null;
   pdfFilename: string | null = null;
   pdfFile: any = null;
 
-  // إضافة الخصائص الجديدة
   pdfLoading = false;
   pdfGenerating = false;
   pdfSearching = false;
@@ -41,16 +42,26 @@ export class LetterDetailComponent implements OnInit {
     private archiveService: ArchiveService,
     private loginService: LoginService,
     private letterService: LetterService
-  ) {}
+  ) { }
+
+  get descriptionsArray(): FormArray {
+    return this.form.get('descriptions') as FormArray;
+  }
+
+  get rationalesArray(): FormArray {
+    return this.form.get('rationales') as FormArray;
+  }
 
   ngOnInit(): void {
     this.form = this.fb.group({
       title: [''],
-      description: [''],
       rationale: [''],
       startDate: [''],
       endDate: [''],
+      descriptions: this.fb.array([]),
+      rationales: this.fb.array([])
     });
+
     const user = this.loginService.getUserFromLocalStorage();
     this.currentUserRole =
       user?.role === 'UniversityPresident'
@@ -68,23 +79,88 @@ export class LetterDetailComponent implements OnInit {
     return `${d.getFullYear()}-${month}-${day}`;
   }
 
+  getArabicOrdinal(index: number): string {
+    const ordinals = [
+      'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
+      'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
+      'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
+      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون',
+      'الواحد والعشرون', 'الثاني والعشرون', 'الثالث والعشرون', 'الرابع والعشرون', 'الخامس والعشرون',
+      'السادس والعشرون', 'السابع والعشرون', 'الثامن والعشرون', 'التاسع والعشرون', 'العشرون والعشرون',
+    ];
+    return ordinals[index] || `${index + 1}`;
+  }
+
+  addDescription() {
+    this.descriptionsArray.push(this.fb.control(''));
+  }
+
+  removeDescription(index: number) {
+    if (this.descriptionsArray.length > 1) {
+      this.descriptionsArray.removeAt(index);
+    }
+  }
+
+  addRationale() {
+    this.rationalesArray.push(this.fb.control(''));
+  }
+
+  removeRationale(index: number) {
+    if (this.rationalesArray.length > 1) {
+      this.rationalesArray.removeAt(index);
+    }
+  }
+
+  private initDescriptionsArray() {
+    const descriptionsArray = this.form.get('descriptions') as FormArray;
+    descriptionsArray.clear();
+
+    if (this.original?.descriptions && this.original.descriptions.length > 0) {
+      this.original.descriptions.forEach((desc: string) => {
+        descriptionsArray.push(this.fb.control(desc));
+      });
+    } else {
+      descriptionsArray.push(this.fb.control(''));
+    }
+  }
+
+  private initRationalesArray() {
+    const rationalesArray = this.form.get('rationales') as FormArray;
+    rationalesArray.clear();
+
+    const originalRationale = this.original?.Rationale || [];
+    const rationaleList = Array.isArray(originalRationale)
+      ? originalRationale
+      : originalRationale.split('\n');
+
+    if (rationaleList.length > 0) {
+      rationaleList.forEach((rationale: string) => {
+        rationalesArray.push(this.fb.control(rationale));
+      });
+    } else {
+      rationalesArray.push(this.fb.control(''));
+    }
+  }
+
   loadLetter(id: string) {
     this.loading = true;
     this.letterService.getLetter(id).subscribe(
       (res: any) => {
         this.original = res.data || res;
+
+        this.initDescriptionsArray();
+        this.initRationalesArray();
+
         this.form.patchValue({
           title: this.original?.title || '',
-          description: this.original?.description || '',
-          rationale: this.original?.Rationale || '',
+          rationale: Array.isArray(this.original?.Rationale)
+            ? this.original.Rationale.join('\n')
+            : this.original?.Rationale || '',
           startDate: this.formatDateForInput(this.original?.StartDate),
           endDate: this.formatDateForInput(this.original?.EndDate),
         });
-        this.previewHtml = this.original?.description || '';
 
-        // البحث عن PDF باستخدام getPDFbyLetterId
         this.loadPdfByLetterId(id);
-
         this.loading = false;
       },
       (err) => {
@@ -94,7 +170,6 @@ export class LetterDetailComponent implements OnInit {
     );
   }
 
-  // استخدام getPDFbyLetterId للبحث عن PDF
   private loadPdfByLetterId(letterId: string) {
     this.pdfSearching = true;
     this.pdfSearchAttempted = true;
@@ -105,33 +180,27 @@ export class LetterDetailComponent implements OnInit {
         if (response.success && response.pdfFile) {
           this.pdfFile = response.pdfFile;
           this.pdfUrl = response.pdfFile.pdfurl;
-          this.pdfFilename = this.extractFilenameFromUrl(
-            response.pdfFile.pdfurl
-          );
+          this.pdfFilename = this.extractFilenameFromUrl(response.pdfFile.pdfurl);
         } else {
-          // إذا لم يتم العثور على PDF، البحث بطرق أخرى
           this.findAndSetPdfUrl();
         }
       },
       error: (err) => {
         this.pdfSearching = false;
         console.error('خطأ في جلب PDF:', err);
-        // في حالة الخطأ، البحث بطرق أخرى
         this.findAndSetPdfUrl();
+        this.loading = false;
       },
     });
   }
 
-  // البحث عن رابط PDF بطرق مختلفة (كبديل)
   private findAndSetPdfUrl() {
-    // الطريقة 1: البحث في حقل pdfUrl في البيانات الأصلية
     if (this.original?.pdfUrl) {
       this.pdfUrl = this.original.pdfUrl;
       this.pdfFilename = this.extractFilenameFromUrl(this.original.pdfUrl);
       return;
     }
 
-    // الطريقة 2: البحث في الـ approvals
     if (this.original?.approvals && this.original.approvals.length > 0) {
       const presidentApproval = this.original.approvals.find(
         (approval: any) =>
@@ -144,13 +213,11 @@ export class LetterDetailComponent implements OnInit {
       }
     }
 
-    // الطريقة 3: إذا كان القرار معتمداً، نبحث عن PDF في الخادم
     if (this.original?.status === 'approved') {
       this.checkForPdfInServer();
     }
   }
 
-  // توليد اسم ملف PDF من بيانات القرار
   private generatePdfFilenameFromLetterData() {
     if (!this.original) return;
 
@@ -162,20 +229,17 @@ export class LetterDetailComponent implements OnInit {
     this.pdfFilename = `letter_${letterId}_${title}.pdf`;
   }
 
-  // التحقق من وجود PDF في الخادم
   private checkForPdfInServer() {
     if (!this.original?._id) return;
     this.generatePdfFilenameFromLetterData();
   }
 
-  // استخراج اسم الملف من الرابط
   private extractFilenameFromUrl(url: string): string {
     if (!url) return '';
     const parts = url.split('/');
     return parts[parts.length - 1];
   }
 
-  // توليد اسم ملف للتنزيل
   private generateDownloadName(): string {
     const title = this.original?.title
       ? this.original.title.replace(/[^\w\u0600-\u06FF]/g, '_')
@@ -186,7 +250,6 @@ export class LetterDetailComponent implements OnInit {
     return `قرار_${title}_${date}.pdf`;
   }
 
-  // الدوال الجديدة للتعامل مع PDF
   handlePdfAction(): void {
     if (this.pdfUrl) {
       this.openPdf();
@@ -228,8 +291,6 @@ export class LetterDetailComponent implements OnInit {
           this.pdfUrl = result.pdfUrl;
           this.pdfFilename = this.extractFilenameFromUrl(result.pdfUrl);
           this.savePdfUrlToDatabase(result.pdfUrl);
-
-          // إعادة تحميل معلومات PDF
           this.loadPdfByLetterId(this.original._id);
         }
       },
@@ -241,17 +302,14 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // دالة لفتح PDF في نافذة جديدة
   openPdf(): void {
     if (!this.pdfUrl) return;
 
     this.pdfLoading = true;
     if (this.pdfUrl.startsWith('http')) {
-      // إذا كان رابط مباشر
       window.open(this.pdfUrl, '_blank');
       this.pdfLoading = false;
     } else if (this.pdfFilename) {
-      // إذا كان اسم ملف فقط
       const baseUrl = 'http://localhost:3000/generated-files';
       const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
       window.open(pdfUrl, '_blank');
@@ -262,13 +320,11 @@ export class LetterDetailComponent implements OnInit {
     }
   }
 
-  // دالة لتنزيل PDF باستخدام service
   downloadPdf() {
     if (this.pdfFilename) {
       const downloadName = this.generateDownloadName();
       this.letterService.downloadPDF(this.pdfFilename, downloadName);
     } else if (this.pdfUrl) {
-      // إذا كان رابط مباشر، استخدام الطريقة القديمة
       const link = document.createElement('a');
       link.href = this.pdfUrl;
       link.download = this.generateDownloadName();
@@ -281,7 +337,6 @@ export class LetterDetailComponent implements OnInit {
     }
   }
 
-  // دوال الموافقات
   getApprovalUserName(approval: any): string {
     if (approval.user?.fullname) return approval.user.fullname;
     if (approval.user?.name) return approval.user.name;
@@ -300,85 +355,106 @@ export class LetterDetailComponent implements OnInit {
     return roleMap[role] || role;
   }
 
- enableEdit() {
-  this.isEditing = true;
-  this.form.patchValue({
-    rationale: this.original?.Rationale || '',
-    title: this.original?.title || '',
-    description: this.original?.description || ''
-  });
-}
-
+  enableEdit() {
+    this.isEditing = true;
+    this.initDescriptionsArray();
+    this.form.patchValue({
+      rationale: this.original?.Rationale || '',
+      title: this.original?.title || '',
+    });
+  }
 
   cancelEdit() {
     this.isEditing = false;
     this.form.patchValue({
       title: this.original?.title,
-      description: this.original?.description,
       rationale: this.original?.Rationale,
     });
-    this.previewHtml = this.original?.description;
+    this.initDescriptionsArray();
   }
-
-
-
 
   stripHtml(html: string): string {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || '';
-}
- saveChanges() {
-  const payload = {
-    ...this.original,
-    StartDate: this.form.value.startDate
-      ? new Date(this.form.value.startDate).toISOString()
-      : null,
-    EndDate: this.form.value.endDate
-      ? new Date(this.form.value.endDate).toISOString()
-      : null,
-    description: this.stripHtml(this.form.value.description || '').trim(),
-    Rationale: this.stripHtml(this.form.value.rationale || '').trim()
-  };
-
-  this.processing = true;
-  this.letterService.updateLetter(this.original._id, payload).subscribe({
-    next: (res) => {
-      this.original = { ...this.original, ...payload }; // تحديث البيانات محليًا
-      this.previewHtml = payload.description;
-      this.isEditing = false;
-      this.processing = false;
-    },
-    error: (err) => {
-      console.error(err);
-      this.processing = false;
-    }
-  });
-}
-
-
- onDescriptionChange() {
-  this.previewHtml = this.stripHtml(this.form.value.description || '');
-}
-onRationaleChange() {
-  this.form.controls['rationale'].setValue(this.stripHtml(this.form.value.rationale || ''), { emitEvent: false });
-}
-  showRejectionForm() {
-    this.showRejectionReason = true;
-    this.rejectionReason = '';
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    return tempDiv.textContent || tempDiv.innerText || '';
   }
 
-  cancelRejection() {
-    this.showRejectionReason = false;
-    this.rejectionReason = '';
+  saveChanges() {
+    const cleanedDescriptions = this.descriptionsArray.value
+      .map((desc: string) => desc.trim())
+      .filter((desc: string) => desc !== '');
+    const cleanedRationales = this.rationalesArray.value
+      .map((rationale: string) => rationale.trim())
+      .filter((rationale: string) => rationale !== '');
+
+    const payload = {
+      ...this.original,
+      StartDate: this.form.value.startDate
+        ? new Date(this.form.value.startDate).toISOString()
+        : null,
+      EndDate: this.form.value.endDate
+        ? new Date(this.form.value.endDate).toISOString()
+        : null,
+      Rationale: cleanedRationales.length > 0 ? cleanedRationales.join('\n') : '',
+      descriptions: cleanedDescriptions
+    };
+
+    this.processing = true;
+    this.letterService.updateLetter(this.original._id, payload).subscribe({
+      next: (res) => {
+        this.original = {
+          ...this.original,
+          ...payload,
+          Rationale: cleanedRationales
+        };
+        this.isEditing = false;
+        this.processing = false;
+
+        Swal.fire({
+          icon: 'success',
+          title: 'تم الحفظ بنجاح',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      },
+      error: (err) => {
+        console.error(err);
+        this.processing = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'حدث خطأ أثناء الحفظ',
+          showConfirmButton: false,
+          timer: 1500
+        });
+      }
+    });
   }
 
-  // الدالة المحدثة - ترسل تحديثات الحيثيات للباك إند
-  confirmRejection() {
-    if (!this.rejectionReason.trim()) {
+  onRationaleChange() {
+    this.form.controls['rationale'].setValue(
+      this.stripHtml(this.form.value.rationale || ''),
+      { emitEvent: false }
+    );
+  }
+
+  // عرض نموذج التعديل (amendment)
+  showAmendmentForm() {
+    this.showAmendmentReason = true;
+    this.amendmentReason = '';
+  }
+
+  // إلغاء التعديل
+  cancelAmendment() {
+    this.showAmendmentReason = false;
+    this.amendmentReason = '';
+  }
+
+  // تأكيد التعديل (إرسال amendment)
+  confirmAmendment() {
+    if (!this.amendmentReason.trim()) {
       Swal.fire({
         icon: 'error',
-        title: 'يرجى إدخال سبب الرفض',
+        title: 'يرجى إدخال سبب التعديل',
         showConfirmButton: false,
         timer: 1500
       });
@@ -387,77 +463,131 @@ onRationaleChange() {
 
     this.processing = true;
 
-    // تجهيز البيانات المحدثة بما في ذلك الحيثيات إذا كان في وضع التعديل
     const updateData: any = {
-      status: 'rejected',
-      reasonForRejection: this.rejectionReason,
+      status: 'amendment',
+      reasonForRejection: this.amendmentReason,
     };
 
-    // إذا كان في وضع التعديل، أضف البيانات المحدثة
     if (this.isEditing) {
       updateData.Rationale = this.form.value.rationale;
-      updateData.description = this.form.value.description;
       updateData.title = this.form.value.title;
+      updateData.descriptions = this.descriptionsArray.value
+        .map((desc: string) => desc.trim())
+        .filter((desc: string) => desc !== '');
     }
 
-    let rejectionObservable;
+    let amendmentObservable;
 
     if (this.currentUserRole === 'supervisor') {
-      rejectionObservable = this.letterService.updateStatusBySupervisor(
+      amendmentObservable = this.letterService.updateStatusBySupervisor(
         this.original._id,
-        'rejected',
-        this.rejectionReason,
-        // إرسال البيانات الإضافية إذا كانت في وضع التعديل
-        this.isEditing
-          ? {
-              Rationale: this.form.value.rationale,
-              description: this.form.value.description,
-              title: this.form.value.title,
-            }
-          : undefined
+        'amendment',
+        this.amendmentReason,
+        this.isEditing ? updateData : undefined
       );
     } else {
-      rejectionObservable =
-        this.letterService.updateStatusByUniversityPresident(
-          this.original._id,
-          'rejected',
-          this.rejectionReason,
-          // إرسال البيانات الإضافية إذا كانت في وضع التعديل
-          this.isEditing
-            ? {
-                Rationale: this.form.value.rationale,
-                description: this.form.value.description,
-                title: this.form.value.title,
-              }
-            : undefined
-        );
+      amendmentObservable = this.letterService.updateStatusByUniversityPresident(
+        this.original._id,
+        'amendment',
+        this.amendmentReason,
+        this.isEditing ? updateData : undefined
+      );
     }
 
-    rejectionObservable.subscribe(
+    amendmentObservable.subscribe(
       (res: any) => {
-        // تحديث البيانات المحلية
-        this.original.status = 'rejected';
-        this.original.reasonForRejection = this.rejectionReason;
+        this.original.status = 'amendment';
+        this.original.reasonForRejection = this.amendmentReason;
 
-        // إذا كنا في وضع التعديل، تحديث الحيثيات والبيانات الأخرى
         if (this.isEditing) {
           this.original.Rationale = this.form.value.rationale;
-          this.original.description = this.form.value.description;
           this.original.title = this.form.value.title;
-          this.previewHtml = this.form.value.description;
-          this.isEditing = false; // الخروج من وضع التعديل
+          this.original.descriptions = updateData.descriptions;
+          this.isEditing = false;
         }
 
-        this.showRejectionReason = false;
-        this.rejectionReason = '';
+        this.showAmendmentReason = false;
+        this.amendmentReason = '';
         this.processing = false;
+
+        Swal.fire({
+          icon: 'success',
+          title: 'تم إرسال القرار للتعديل',
+          showConfirmButton: false,
+          timer: 1500
+        });
       },
       (err) => {
-        console.error('خطأ في رفض القرار:', err);
+        console.error('خطأ في إرسال التعديل:', err);
         this.processing = false;
-        alert('حدث خطأ أثناء رفض القرار');
+        Swal.fire({
+          icon: 'error',
+          title: 'حدث خطأ أثناء إرسال التعديل',
+          showConfirmButton: false,
+          timer: 1500
+        });
       }
     );
+  }
+
+  // الرفض النهائي (بدون نص)
+  confirmFinalRejection() {
+    Swal.fire({
+      title: 'هل أنت متأكد؟',
+      text: 'سيتم رفض القرار نهائياً',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'نعم، رفض',
+      cancelButtonText: 'إلغاء'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.processing = true;
+
+        let rejectionObservable;
+
+        if (this.currentUserRole === 'supervisor') {
+          rejectionObservable = this.letterService.updateStatusBySupervisor(
+            this.original._id,
+            'rejected',
+            '', // بدون سبب
+            undefined
+          );
+        } else {
+          rejectionObservable = this.letterService.updateStatusByUniversityPresident(
+            this.original._id,
+            'rejected',
+            '', // بدون سبب
+            undefined
+          );
+        }
+
+        rejectionObservable.subscribe(
+          (res: any) => {
+            this.original.status = 'rejected';
+            this.processing = false;
+
+            Swal.fire({
+              icon: 'success',
+              title: 'تم رفض القرار',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          },
+          (err) => {
+            console.error('خطأ في رفض القرار:', err);
+            this.processing = false;
+            Swal.fire({
+              icon: 'error',
+              title: 'حدث خطأ أثناء رفض القرار',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          }
+        );
+      }
+    });
   }
 
   approveLetter(option?: 'حقيقية' | 'الممسوحة ضوئيا') {
@@ -481,16 +611,11 @@ onRationaleChange() {
     } else if (this.currentUserRole === 'UniversityPresident') {
       if (!option) {
         this.letterService
-          .updateStatusByUniversityPresident(
-            this.original._id,
-            'approved',
-            'حقيقية'
-          )
+          .updateStatusByUniversityPresident(this.original._id, 'approved', 'حقيقية')
           .subscribe({
             next: () => {
               this.original.status = 'approved';
               this.processing = false;
-              // بعد الموافقة، إنشاء PDF تلقائياً
               this.generateAndSavePdf();
             },
             error: (err) => {
@@ -500,11 +625,7 @@ onRationaleChange() {
           });
       } else {
         this.letterService
-          .updateStatusByUniversityPresident(
-            this.original._id,
-            'approved',
-            option
-          )
+          .updateStatusByUniversityPresident(this.original._id, 'approved', option)
           .subscribe({
             next: () => {
               this.original.status = 'approved';
@@ -517,10 +638,7 @@ onRationaleChange() {
 
                     if (letter.pdfUrl) {
                       this.pdfUrl = letter.pdfUrl;
-                      this.pdfFilename = this.extractFilenameFromUrl(
-                        letter.pdfUrl
-                      );
-                      // حفظ PDF في قاعدة البيانات
+                      this.pdfFilename = this.extractFilenameFromUrl(letter.pdfUrl);
                       this.savePdfUrlToDatabase(letter.pdfUrl);
                     } else {
                       alert('لم يتم توليد ملف PDF بعد.');
@@ -542,16 +660,13 @@ onRationaleChange() {
     }
   }
 
-  // إنشاء وحفظ PDF تلقائياً عند الموافقة
   private generateAndSavePdf() {
     this.letterService.generateOfficialLetterPDF(this.original._id).subscribe({
       next: (result) => {
         if (result.pdfUrl) {
           this.pdfUrl = result.pdfUrl;
           this.pdfFilename = this.extractFilenameFromUrl(result.pdfUrl);
-          // حفظ PDF في قاعدة البيانات
           this.savePdfUrlToDatabase(result.pdfUrl);
-          // إعادة تحميل معلومات PDF
           this.loadPdfByLetterId(this.original._id);
         }
       },
@@ -561,12 +676,10 @@ onRationaleChange() {
     });
   }
 
-  // حفظ رابط PDF في قاعدة البيانات
   private savePdfUrlToDatabase(pdfUrl: string) {
     const updateData = { pdfUrl: pdfUrl };
     this.letterService.updateLetter(this.original._id, updateData).subscribe({
       next: () => {
-        // تحديث البيانات المحلية
         this.original.pdfUrl = pdfUrl;
       },
       error: (err) => {
@@ -575,17 +688,13 @@ onRationaleChange() {
     });
   }
 
-  // التحقق من إمكانية عرض زر PDF
   showPdfButton(): boolean {
     return this.original?.status === 'approved';
   }
 
-  // التحقق من إمكانية عرض قسم PDF
   canShowPdf(): boolean {
-    const canShow =
-      this.showPdfButton() &&
+    return this.showPdfButton() &&
       (this.pdfSearchAttempted || !!this.pdfUrl || !!this.pdfFilename);
-    return canShow;
   }
 
   canEdit(): boolean {
@@ -604,31 +713,23 @@ onRationaleChange() {
 
   getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'approved':
-        return 'badge bg-success';
-      case 'pending':
-        return 'badge bg-warning text-dark';
-      case 'rejected':
-        return 'badge bg-danger';
-      case 'in_progress':
-        return 'badge bg-info text-dark';
-      default:
-        return 'badge bg-secondary';
+      case 'approved': return 'badge bg-success';
+      case 'pending': return 'badge bg-warning text-dark';
+      case 'rejected': return 'badge bg-danger';
+      case 'amendment': return 'badge bg-warning text-dark'; // جديد
+      case 'in_progress': return 'badge bg-info text-dark';
+      default: return 'badge bg-secondary';
     }
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'approved':
-        return 'تمت الموافقة';
-      case 'pending':
-        return 'قيد المراجعة لدى الرئيس';
-      case 'rejected':
-        return 'مرفوض';
-      case 'in_progress':
-        return 'قيد المعالجة';
-      default:
-        return 'غير محدد';
+      case 'approved': return 'تمت الموافقة';
+      case 'pending': return 'قيد المراجعة لدى الرئيس';
+      case 'rejected': return 'مرفوض';
+      case 'amendment': return 'قيد التعديل'; // جديد
+      case 'in_progress': return 'قيد المعالجة';
+      default: return 'غير محدد';
     }
   }
 
@@ -655,7 +756,8 @@ onRationaleChange() {
 
   showRejectionDetails(): boolean {
     return (
-      this.original?.status === 'rejected' && this.original?.reasonForRejection
+      (this.original?.status === 'rejected' || this.original?.status === 'amendment') && 
+      this.original?.reasonForRejection
     );
   }
 }

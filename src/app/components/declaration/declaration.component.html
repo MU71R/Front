@@ -1,6 +1,5 @@
 <div class="page-layout d-flex flex-column flex-grow-1 h-100" dir="rtl">
   <div class="page-content flex-grow-1 overflow-auto p-4">
-
     <div class="d-flex justify-content-between align-items-start mb-4">
       <div>
         <h2 class="fw-bold mb-1" id="h2">إنشاء قرار جديد</h2>
@@ -10,13 +9,16 @@
 
     <div class="card shadow-sm p-4 bg-white rounded-4">
       <form [formGroup]="messageForm" (ngSubmit)="onSubmit()">
-
+        
+        <!-- نوع القرار -->
         <div class="mb-3">
           <label for="typeSearch" class="form-label">نوع القرار *</label>
-
           <div class="search-dropdown position-relative">
-            <button class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
-              type="button" (click)="toggleDropdown()" [class.is-invalid]="showFieldError('type')">
+            <button
+              class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
+              type="button"
+              (click)="toggleDropdown()"
+              [class.is-invalid]="showFieldError('type')">
               <span class="text-truncate">
                 <span *ngIf="selectedTypeTitle; else selectPlaceholder">
                   {{ selectedTypeTitle }}
@@ -30,9 +32,15 @@
 
             <div class="dropdown-results" *ngIf="showDropdown">
               <div class="p-2 border-bottom">
-                <input type="text" class="form-control form-control-sm" placeholder="ابحث عن نوع القرار..."
-                  [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}"
-                  (input)="filterMessageTypes(searchTerm)" (click)="$event.stopPropagation()" autocomplete="off">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  placeholder="ابحث عن نوع القرار..."
+                  [(ngModel)]="searchTerm"
+                  [ngModelOptions]="{standalone: true}"
+                  (input)="filterMessageTypes(searchTerm)"
+                  (click)="$event.stopPropagation()"
+                  autocomplete="off">
               </div>
 
               <div class="dropdown-options max-h-200 overflow-auto">
@@ -48,8 +56,10 @@
                   لا توجد أنواع قرارات متاحة
                 </div>
 
-                <div *ngFor="let type of filteredMessageTypes" class="dropdown-item cursor-pointer p-3"
-                  [class.selected]="f['type'].value === type._id" (click)="selectMessageType(type._id, type.title)">
+                <div *ngFor="let type of filteredMessageTypes"
+                  class="dropdown-item cursor-pointer p-3"
+                  [class.selected]="f['type'].value === type._id"
+                  (click)="selectMessageType(type._id, type.title)">
                   <div class="d-flex align-items-center">
                     <i class="fa fa-file-text me-3 text-primary"></i>
                     <span class="flex-grow-1">{{ type.title }}</span>
@@ -61,30 +71,41 @@
           </div>
 
           <input type="hidden" formControlName="type">
-
           <div *ngIf="showFieldError('type')" class="invalid-feedback d-block">
             <div *ngIf="f['type'].errors?.['required']">نوع القرار مطلوب</div>
             <div *ngIf="f['type'].errors?.['invalidType']">يجب اختيار نوع قرار صالح من القائمة</div>
           </div>
         </div>
 
+        <!-- عنوان القرار -->
         <div class="mb-3">
           <label for="title" class="form-label">عنوان القرار *</label>
-          <input id="title" type="text" formControlName="title" placeholder="ادخل عنوان القرار ..." class="form-control"
-            [class.is-invalid]="showFieldError('title')" (keydown)="preventLeadingSpace($event)"
+          <input
+            id="title"
+            type="text"
+            formControlName="title"
+            placeholder="ادخل عنوان القرار ..."
+            class="form-control"
+            [class.is-invalid]="showFieldError('title')"
+            (keydown)="preventLeadingSpace($event)"
             (blur)="markFieldAsTouched('title')" />
-
           <div *ngIf="showFieldError('title')" class="invalid-feedback">
             <div *ngIf="f['title'].errors?.['required']">عنوان القرار مطلوب</div>
             <div *ngIf="f['title'].errors?.['startsWithSpace']">لا يمكن أن يبدأ العنوان بمسافات</div>
           </div>
         </div>
 
+        <!-- تواريخ القرار -->
         <div class="row mb-3">
           <div class="col-md-6">
             <label for="startDate" class="form-label">تاريخ البداية القرار (اختياري)</label>
-            <input id="startDate" type="date" formControlName="startDate" class="form-control rtl-date"
-              [class.is-invalid]="showFieldError('startDate')" (blur)="markFieldAsTouched('startDate')" />
+            <input
+              id="startDate"
+              type="date"
+              formControlName="startDate"
+              class="form-control rtl-date"
+              [class.is-invalid]="showFieldError('startDate')"
+              (blur)="markFieldAsTouched('startDate')" />
             <div *ngIf="showFieldError('startDate')" class="invalid-feedback">
               <div *ngIf="f['startDate'].errors?.['invalidDate']">تاريخ البداية غير صالح</div>
             </div>
@@ -92,8 +113,13 @@
 
           <div class="col-md-6">
             <label for="endDate" class="form-label">تاريخ النهاية القرار (اختياري)</label>
-            <input id="endDate" type="date" formControlName="endDate" class="form-control rtl-date"
-              [class.is-invalid]="showFieldError('endDate')" (blur)="markFieldAsTouched('endDate')" />
+            <input
+              id="endDate"
+              type="date"
+              formControlName="endDate"
+              class="form-control rtl-date"
+              [class.is-invalid]="showFieldError('endDate')"
+              (blur)="markFieldAsTouched('endDate')" />
             <div *ngIf="showFieldError('endDate')" class="invalid-feedback">
               <div *ngIf="f['endDate'].errors?.['invalidDate']">تاريخ النهاية غير صالح</div>
               <div *ngIf="f['endDate'].errors?.['endDateBeforeStart']">تاريخ النهاية يجب أن يكون بعد تاريخ البداية</div>
@@ -101,45 +127,130 @@
           </div>
         </div>
 
+        <!-- حيثيات القرار المتعددة (FormArray) -->
         <div class="mb-4">
-          <label class="form-label">حيثيات القرار *</label>
-          <textarea class="form-control" formControlName="Rationale" rows="5"
-            placeholder="اكتب حيثيات أو مبررات القرار هنا..." [class.is-invalid]="showFieldError('Rationale')"
-            (blur)="markFieldAsTouched('Rationale')"></textarea>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <label class="form-label mb-0">حيثيات القرار *</label>
+            <button
+              type="button"
+              class="btn btn-sm btn-success"
+              (click)="addRationaleField()">
+              <i class="fa fa-plus me-1"></i>
+              إضافة حيثيات جديدة
+            </button>
+          </div>
 
-          <div *ngIf="showFieldError('Rationale')" class="invalid-feedback">
-            <div *ngIf="f['Rationale'].errors?.['required']">حيثيات القرار مطلوبة</div>
+          <div formArrayName="rationaleFields">
+            <div *ngFor="let rationaleField of rationaleFields.controls; let i = index" 
+                 [formGroupName]="i"
+                 class="card mb-3 p-3 border"
+                 [class.border-primary]="rationaleField.get('isDefault')?.value">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0 fw-bold">
+                  <span *ngIf="rationaleField.get('isDefault')?.value" class="badge bg-primary me-2">افتراضية</span>
+                  حيثيات رقم {{ i + 1 }}
+                </label>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-danger"
+                  (click)="removeRationaleField(i)"
+                  [disabled]="rationaleField.get('isDefault')?.value">
+                  <i class="fa fa-trash me-1"></i>
+                  حذف
+                </button>
+              </div>
+              
+              <textarea
+                class="form-control"
+                formControlName="rationale"
+                rows="3"
+                placeholder="اكتب حيثيات {{ i + 1 }} هنا..."
+                [class.is-invalid]="rationaleField.get('rationale')?.invalid && 
+                  (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"></textarea>
+              
+              <div *ngIf="rationaleField.get('rationale')?.invalid && 
+                (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"
+                class="invalid-feedback d-block">
+                <div *ngIf="rationaleField.get('rationale')?.errors?.['required']">
+                  حيثيات {{ i + 1 }} مطلوبة
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- بنود القرار المتعددة (FormArray) -->
         <div class="mb-4">
-          <label class="form-label">نص القرار *</label>
-          <textarea class="form-control" formControlName="content" rows="10" placeholder="اكتب نص القرار هنا..."
-            [class.is-invalid]="showFieldError('content')" (blur)="markFieldAsTouched('content')"></textarea>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <label class="form-label mb-0">بنود القرار *</label>
+            <button
+              type="button"
+              class="btn btn-sm btn-success"
+              (click)="addContentField()">
+              <i class="fa fa-plus me-1"></i>
+              إضافة بند قرار جديد
+            </button>
+          </div>
 
-          <div *ngIf="showFieldError('content')" class="invalid-feedback">
-            <div *ngIf="f['content'].errors?.['required']">نص القرار مطلوب</div>
+          <div formArrayName="contentFields">
+            <div *ngFor="let contentField of contentFields.controls; let i = index" 
+                 [formGroupName]="i"
+                 class="card mb-3 p-3 border">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="form-label mb-0 fw-bold">بند القرار رقم {{ i + 1 }}</label>
+                <button
+                  *ngIf="contentFields.length > 1"
+                  type="button"
+                  class="btn btn-sm btn-danger"
+                  (click)="removeContentField(i)">
+                  <i class="fa fa-trash me-1"></i>
+                  حذف
+                </button>
+              </div>
+              
+              <textarea
+                class="form-control"
+                formControlName="content"
+                rows="8"
+                placeholder="اكتب بند القرار {{ i + 1 }} هنا..."
+                [class.is-invalid]="contentField.get('content')?.invalid && 
+                  (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"></textarea>
+              
+              <div *ngIf="contentField.get('content')?.invalid && 
+                (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"
+                class="invalid-feedback d-block">
+                <div *ngIf="contentField.get('content')?.errors?.['required']">
+                  بند القرار {{ i + 1 }} مطلوب
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!--  إضافة نوع التوقيع -->
+        <!-- نوع التوقيع -->
         <div class="mb-3" *ngIf="user?.role === 'UniversityPresident'">
           <label class="form-label d-block mb-2">نوع التوقيع</label>
-
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="realScan" value="حقيقية"
+          <div class="form-check form-check-inline black-radio">
+            <input
+              class="form-check-input"
+              type="radio"
+              id="realScan"
+              value="حقيقية"
               formControlName="signatureType" />
-            <label class="form-check-label" for="حقيقية">توقيع Real Scan</label>
+            <label class="form-check-label" for="realScan">توقيع حي</label>
           </div>
-
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" id="electronic" value="الممسوحة ضوئيا"
+          <div class="form-check form-check-inline black-radio"> 
+            <input
+              class="form-check-input"
+              type="radio"
+              id="electronic"
+              value="الممسوحة ضوئيا"
               formControlName="signatureType" />
-            <label class="form-check-label" for="الممسوحة ضوئيا">توقيع إلكتروني</label>
-          </div>  
+            <label class="form-check-label" for="electronic">توقيع إلكتروني</label>
+          </div>
         </div>
-        <!--  نهاية إضافة نوع التوقيع -->
 
+        <!-- رسائل النجاح والخطأ -->
         <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
         <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 
@@ -148,23 +259,25 @@
           يرجى تصحيح الأخطاء في النموذج قبل الإرسال
         </div>
 
+        <!-- أزرار الحفظ والإلغاء -->
         <div class="d-flex justify-content-end gap-2 mt-3">
           <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">إلغاء</button>
-
-          <button type="submit" class="btn btn-primary d-flex align-items-center"
+          <button
+            type="submit"
+            class="btn btn-primary d-flex align-items-center"
             [disabled]="messageForm.invalid || submitting">
             <ng-container *ngIf="!submitting; else loading">
               <i class="fa fa-send me-1"></i>
-              <span>إرسال القرار</span>
+              <span *ngIf="user?.role === 'UniversityPresident'">اعتماد القرار</span>
+              <span *ngIf="user?.role === 'supervisor' || user?.role === 'preparer'">إرسال القرار</span>
             </ng-container>
-
             <ng-template #loading>
               <span class="spinner-border spinner-border-sm me-2"></span>
-              <span>جاري الإرسال..</span>
+              <span *ngIf="user?.role === 'UniversityPresident'">جاري اعتماد القرار..</span>
+              <span *ngIf="user?.role === 'supervisor' || user?.role === 'preparer'">جاري الإرسال..</span>
             </ng-template>
           </button>
         </div>
-
       </form>
     </div>
   </div>

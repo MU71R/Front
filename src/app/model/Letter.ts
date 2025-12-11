@@ -1,3 +1,5 @@
+// src/app/model/Letter.ts
+
 export interface User {
   id: string;
   role: 'admin' | 'user' | string;
@@ -6,8 +8,8 @@ export interface User {
 
 export interface Letter {
   title: string;
-  description: string;
-  Rationale: string;
+  descriptions: string[]; 
+  Rationale: string[];
   decision: string; 
   date: string | Date;
   status?: 'pending' | 'approved' | 'rejected' | 'in_progress';
@@ -17,8 +19,8 @@ export interface Letter {
 export interface addLetter {
   _id: string;
   title: string;
-  description: string;
-  Rationale: string;
+  descriptions: string[]; 
+  Rationale: string[];
   decision: {
     _id: string;
     title: string;
@@ -40,5 +42,3 @@ export interface addLetter {
   createdAt: string;
   updatedAt?: string;
 }
-
-

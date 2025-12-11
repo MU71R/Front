@@ -44,13 +44,20 @@
         </div>
 
         <div class="detail-content">
-            <div class="content-section" *ngIf="letter.Rationale" id="rationale">
+            <div class="content-section" *ngIf="letter.Rationale && letter.Rationale.length > 0" id="rationale">
                 <h3 class="section-title">
-                    <i class="fa fa-lightbulb me-2"></i>الحيثيات
+                    <i class="fa fa-list-ol me-2"></i>الحيثيات
                 </h3>
                 <div class="section-content">
-                    <div class="rationale-content">
-                        {{ letter.Rationale }}
+                    <div class="descriptions-list">
+                        <div class="description-item" *ngFor="let desc of letter.Rationale; let i = index">
+                            <div class="description-number">
+                                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                            </div>
+                            <div class="description-text">
+                                {{ desc }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -64,6 +71,25 @@
                     [innerHTML]="formatDescription(letter.description || letter.breeif)"></div>
             </div>
 
+            <!-- قسم نصوص القرار المتعددة -->
+            <div class="content-section" *ngIf="letter.descriptions && letter.descriptions.length > 0"
+                id="descriptions">
+                <h3 class="section-title">
+                    <i class="fa fa-list-ol me-2"></i>بنود القرار
+                </h3>
+                <div class="section-content">
+                    <div class="descriptions-list">
+                        <div class="description-item" *ngFor="let desc of letter.descriptions; let i = index">
+                            <div class="description-number">
+                                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                            </div>
+                            <div class="description-text">
+                                {{ desc }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="content-section" *ngIf="letter.decision" id="decision">
                 <h3 class="section-title">
@@ -80,13 +106,13 @@
                                 <span class="info-value">{{ letter.decision.title }}</span>
                             </div>
                         </div>
-                        <div class="info-item" *ngIf="letter.decision.sector">
+                        <div class="info-item" *ngIf="letter.user">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
                             </div>
                             <div class="info-content">
-                                <span class="info-label">الجهه:</span>
-                                <span class="info-value">{{ getSectorName(letter.decision.sector) }}</span>
+                                <span class="info-label">جهة اعداد القرار:</span>
+                                <span class="info-value">{{letter.user.fullname}}</span>
                             </div>
                         </div>
 
@@ -105,7 +131,8 @@
             </div>
 
             <!-- قسم المرفقات مع زر الرفع -->
-            <div class="content-section" *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'" id="attachments">
+            <div class="content-section"
+                *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة'" id="attachments">
                 <h3 class="section-title">
                     <i class="fa fa-paperclip me-2"></i>المرفقات
                 </h3>
@@ -137,60 +164,66 @@
                         </div>
                     </div>
                     <!-- زر رفع ملف جديد - ظاهر دائماً -->
-                    <button *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة') && !letter?.attachment"  class="btn btn-warning mt-3"
-                        (click)="openUploadModal()">
+                    <button
+                        *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة') && !letter?.attachment"
+                        class="btn btn-warning mt-3" (click)="openUploadModal()">
                         <i class="fa fa-upload me-2"></i>
                         {{ letter.attachment ? 'استبدال الملف' : 'رفع ملف جديد' }}
                     </button>
                 </div>
             </div>
 
-            <div class="content-section" *ngIf="letter.StartDate || letter.EndDate" id="timeline">
+            <div class="content-section" *ngIf="timeline?.StartDate || timeline?.EndDate" id="timeline">
+
                 <h3 class="section-title">
-                    <i class="fa fa-calendar-alt me-2"></i>الجدول الزمني
+                    <i class="fa fa-calendar-alt me-2"></i> الجدول الزمني
                 </h3>
+
                 <div class="section-content">
+
                     <div class="timeline-info">
-                        <div class="info-item" *ngIf="letter.decision.createdAt">
-                            <div class="info-icon">
-                                <i class="fa fa-calendar-plus"></i>
-                            </div>
+
+                        <!-- تاريخ إنشاء القرار -->
+                        <div class="info-item" *ngIf="timeline?.decision?.createdAt">
+                            <div class="info-icon"><i class="fa fa-calendar-plus"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ إنشاء القرار:</span>
-                                <span class="info-value">{{ letter.decision.createdAt | date: 'dd/MM/yyyy' }}</span>
+                                <span class="info-value">{{ timeline?.decision?.createdAt | date:'dd/MM/yyyy' }}</span>
                             </div>
                         </div>
-                        <div class="info-item" *ngIf="letter.StartDate">
-                            <div class="info-icon">
-                                <i class="fa fa-play-circle"></i>
-                            </div>
+
+                        <!-- تاريخ البدء -->
+                        <div class="info-item" *ngIf="timeline?.StartDate">
+                            <div class="info-icon"><i class="fa fa-play-circle"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ البدء:</span>
-                                <span class="info-value">{{ letter.StartDate | date: 'dd/MM/yyyy' }}</span>
+                                <span class="info-value">{{ timeline?.StartDate | date:'dd/MM/yyyy' }}</span>
                             </div>
                         </div>
-                        <div class="info-item" *ngIf="letter.EndDate">
-                            <div class="info-icon">
-                                <i class="fa fa-flag-checkered"></i>
-                            </div>
+
+                        <!-- تاريخ الانتهاء -->
+                        <div class="info-item" *ngIf="timeline?.EndDate">
+                            <div class="info-icon"><i class="fa fa-flag-checkered"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ الانتهاء:</span>
-                                <span class="info-value">{{ letter.EndDate | date: 'dd/MM/yyyy' }}</span>
+                                <span class="info-value">{{ timeline?.EndDate | date:'dd/MM/yyyy' }}</span>
                             </div>
                         </div>
-                        <div class="info-item" *ngIf="letter.StartDate && letter.EndDate">
-                            <div class="info-icon">
-                                <i class="fa fa-clock"></i>
-                            </div>
+
+                        <!-- مدة القرار -->
+                        <div class="info-item" *ngIf="timeline?.StartDate && timeline?.EndDate">
+                            <div class="info-icon"><i class="fa fa-clock"></i></div>
                             <div class="info-content">
-                                <span class="info-label">مده سريان القرار:</span>
-                                <span class="info-value">{{ calculateDuration(letter.StartDate, letter.EndDate)
+                                <span class="info-label">مدة سريان القرار:</span>
+                                <span class="info-value">{{ calculateDuration(timeline?.StartDate, timeline?.EndDate)
                                     }}</span>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
+
 
             <div class="content-section" *ngIf="letter.approvals && letter.approvals.length > 0" id="approvals">
                 <h3 class="section-title">
@@ -219,10 +252,6 @@
                                     <i class="fa me-1"
                                         [ngClass]="approval.approved ? 'fa-check-circle' : 'fa-times-circle'"></i>
                                     {{ approval.approved ? 'تمت الموافقة' : 'تم الرفض' }}
-                                </div>
-                                <div class="approval-user" *ngIf="approval.userId">
-                                    <i class="fa fa-user me-1"></i>
-                                    {{ getUserName(approval.userId) }}
                                 </div>
                                 <div class="approval-notes" *ngIf="approval.notes">
                                     <strong>ملاحظات:</strong> {{ approval.notes }}

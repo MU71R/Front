@@ -184,7 +184,7 @@
             <td data-label="تاريخ الإنشاء">
               <div class="created-at-cell">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span>{{ letter.createdAt | date: 'dd/MM/yyyy' }}</span>
+                <span>{{ letter.createdAt? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
             <td data-label="تاريخ بدء القرار">
@@ -282,12 +282,12 @@
 
 
           <div class="row g-2 mb-3">
-            <div class="col-12 col-sm-6">
+            <!-- <div class="col-12 col-sm-6">
               <div class="form-group">
                 <label class="form-label fw-semibold">تاريخ المستند <span class="text-danger">*</span></label>
                 <input type="date" class="form-control" [(ngModel)]="newArchive.date" name="date" required />
               </div>
-            </div>
+            </div> -->
             <div class="col-12 col-sm-6">
               <div class="form-group">
                 <label class="form-label fw-semibold">نوع الأرشيف</label>

@@ -29,7 +29,7 @@ export interface RecentActivit {
 export interface LetterDetail {
   _id: string;
   title: string;
-  description: string;
+  description: string[];
   notes: string;
   signatureType: string;
   pdfUrl: string;

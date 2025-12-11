@@ -39,10 +39,9 @@ export class ArchiveDetailComponent implements OnInit {
   newArchive = {
     title: '',
     description: '',
-    date: '',
     startDate: '',
     endDate: '',
-    transactionNumber: '',
+    transactionNumber: '' ,
     letterType: 'رئاسة الجمهورية',
     file: null as File | null,
   };
@@ -369,8 +368,22 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   uploadArchive(): void {
-    if (!this.newArchive.title || !this.newArchive.date) {
+    if (!this.newArchive.title || !this.newArchive.startDate || !this.newArchive.endDate) {
       this.showError('الرجاء إدخال العنوان والتاريخ');
+      return;
+    }
+
+    const start = new Date(this.newArchive.startDate);
+    const end = new Date(this.newArchive.endDate);
+
+    if (end <= start) {
+      this.showError('تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء');
+      return;
+    }
+
+    let transactionNumber = Number(this.newArchive.transactionNumber);
+    if(isNaN(transactionNumber)){
+      this.showError('رقم القرار يجب أن يكون رقم');
       return;
     }
 
@@ -380,7 +393,6 @@ export class ArchiveDetailComponent implements OnInit {
     formData.append('title', this.newArchive.title);
     formData.append('breeif', this.newArchive.description || '');
     formData.append('transactionNumber', this.newArchive.transactionNumber || '');
-    formData.append('date', this.newArchive.date);
     formData.append('letterType', this.newArchive.letterType);
     formData.append('startDate', this.newArchive.startDate);
     formData.append('endDate', this.newArchive.endDate);
@@ -422,7 +434,6 @@ export class ArchiveDetailComponent implements OnInit {
     this.newArchive = {
       title: '',
       description: '',
-      date: '',
       transactionNumber: '', 
       startDate: '',
       endDate: '',

@@ -1,62 +1,40 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, FormArray } from '@angular/forms';
 import { Decision } from 'src/app/model/decision';
 import { DecisionService } from 'src/app/service/decision.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { LoginService } from 'src/app/service/login.service';
 import Swal from 'sweetalert2';
 
-export function noLeadingSpaces(
-  control: AbstractControl
-): ValidationErrors | null {
+export function noLeadingSpaces(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
-
   const value = control.value.toString();
-
   if (value.startsWith(' ')) {
     return { startsWithSpace: true };
   }
-
   return null;
 }
 
 export function dateValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) return null;
-
     const date = new Date(control.value);
     if (isNaN(date.getTime())) {
       return { invalidDate: true };
     }
-
     return null;
   };
 }
 
-export function endDateAfterStartValidator(
-  startDateControlName: string,
-  endDateControlName: string
-): ValidatorFn {
+export function endDateAfterStartValidator(startDateControlName: string, endDateControlName: string): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     const startDate = formGroup.get(startDateControlName)?.value;
     const endDate = formGroup.get(endDateControlName)?.value;
-
     if (!startDate || !endDate) return null;
-
     const start = new Date(startDate);
     const end = new Date(endDate);
-
     if (start >= end) {
-      formGroup
-        .get(endDateControlName)
-        ?.setErrors({ endDateBeforeStart: true });
+      formGroup.get(endDateControlName)?.setErrors({ endDateBeforeStart: true });
       return { endDateBeforeStart: true };
     } else {
       formGroup.get(endDateControlName)?.setErrors(null);
@@ -65,23 +43,16 @@ export function endDateAfterStartValidator(
   };
 }
 
-export function validMessageTypeValidator(
-  messageTypes: { _id: string; title: string }[]
-): ValidatorFn {
+export function validMessageTypeValidator(messageTypes: { _id: string; title: string }[]): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) {
       return { required: true };
     }
-
     const selectedTypeId = control.value;
-    const isValidType = messageTypes.some(
-      (type) => type._id === selectedTypeId
-    );
-
+    const isValidType = messageTypes.some((type) => type._id === selectedTypeId);
     if (!isValidType) {
       return { invalidType: true };
     }
-
     return null;
   };
 }
@@ -102,6 +73,13 @@ export class DeclarationComponent implements OnInit {
   searchTerm = '';
   showDropdown = false;
   selectedTypeTitle = '';
+  
+  // الحيثيات الافتراضية الثابتة في الفرونت
+  defaultRationales: string[] = [
+    'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.',
+    'وعلى القانون رقم (١٤٢) لسنة ١٩٩٤م. بشأن تعديل بعض أحكام قانون تنظيم الجامعات رقم ٤٩ لسنة ١٩٧٢ م.',
+    'وعلى قرار رئيس الجمهورية بالقانون رقم (٥٢) لسنة ٢٠١٤م بشأن تعديل بعض أحكام قانون تنظيم الجامعات رقم ٤٩ لسنة ١٩٧٢ م.'
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -115,6 +93,8 @@ export class DeclarationComponent implements OnInit {
   ngOnInit(): void {
     this.initializeForm();
     this.loadMessageTypes();
+    // تحميل الحيثيات الافتراضية بعد تهيئة الفورم
+    this.populateDefaultRationales();
   }
 
   private initializeForm(): void {
@@ -122,19 +102,109 @@ export class DeclarationComponent implements OnInit {
       {
         type: ['', [Validators.required]],
         title: ['', [Validators.required, noLeadingSpaces]],
-        Rationale: ['', [Validators.required]],
+        rationaleFields: this.fb.array([]),
         signatureType: [''],
-        content: ['', [Validators.required]],
+        contentFields: this.fb.array([this.createContentField()]),
         startDate: ['', [dateValidator()]],
         endDate: ['', [dateValidator()]],
-        date: [
-          { value: new Date().toISOString().split('T')[0], disabled: true },
-        ],
+        date: [{ value: new Date().toISOString().split('T')[0], disabled: true }],
       },
-      {
-        validators: endDateAfterStartValidator('startDate', 'endDate'),
-      }
+      { validators: endDateAfterStartValidator('startDate', 'endDate') }
     );
+  }
+
+  // ملء الحيثيات الافتراضية
+  private populateDefaultRationales(): void {
+    this.rationaleFields.clear();
+    
+    if (this.defaultRationales && this.defaultRationales.length > 0) {
+      this.defaultRationales.forEach(rationale => {
+        const rationaleGroup = this.fb.group({
+          rationale: [rationale, [Validators.required]],
+          isDefault: [true]
+        });
+        this.rationaleFields.push(rationaleGroup);
+      });
+    } else {
+      this.addRationaleField();
+    }
+  }
+
+  // إنشاء حقل حيثيات جديد
+  createRationaleField(): FormGroup {
+    return this.fb.group({
+      rationale: ['', [Validators.required]],
+      isDefault: [false]
+    });
+  }
+
+  // الحصول على FormArray للحيثيات
+  get rationaleFields(): FormArray {
+    return this.messageForm.get('rationaleFields') as FormArray;
+  }
+
+  // إضافة حيثيات جديدة
+  addRationaleField(): void {
+    this.rationaleFields.push(this.createRationaleField());
+  }
+
+  // حذف حيثيات
+  removeRationaleField(index: number): void {
+    const rationaleControl = this.rationaleFields.at(index);
+    const isDefault = rationaleControl.get('isDefault')?.value;
+
+    if (isDefault) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يمكن حذف الحيثيات الافتراضية',
+        text: 'يمكنك فقط تعديلها',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+      return;
+    }
+
+    if (this.rationaleFields.length > 1) {
+      this.rationaleFields.removeAt(index);
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'يجب أن يحتوي القرار على حيثيات واحدة على الأقل',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
+  }
+
+  // إنشاء حقل نص قرار جديد
+  createContentField(): FormGroup {
+    return this.fb.group({
+      content: ['', [Validators.required]]
+    });
+  }
+
+  // الحصول على FormArray
+  get contentFields(): FormArray {
+    return this.messageForm.get('contentFields') as FormArray;
+  }
+
+  // إضافة حقل نص قرار جديد
+  addContentField(): void {
+    this.contentFields.push(this.createContentField());
+  }
+
+  // حذف حقل نص قرار
+  removeContentField(index: number): void {
+    if (this.contentFields.length > 1) {
+      this.contentFields.removeAt(index);
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'يجب أن يحتوي القرار على نص واحد على الأقل',
+        showConfirmButton: false,
+        timer: 2000,
+      });
+    }
   }
 
   toggleDropdown(): void {
@@ -156,7 +226,6 @@ export class DeclarationComponent implements OnInit {
           title: t.title || '',
         }));
         this.filteredMessageTypes = [];
-
         this.updateTypeValidator();
       },
       error: (err) => {
@@ -179,7 +248,6 @@ export class DeclarationComponent implements OnInit {
 
   filterMessageTypes(searchTerm: string): void {
     this.searchTerm = searchTerm;
-
     if (!searchTerm || searchTerm.trim() === '') {
       this.filteredMessageTypes = [...this.messageTypes];
     } else {
@@ -193,7 +261,7 @@ export class DeclarationComponent implements OnInit {
     this.f['type'].setValue(typeId);
     this.selectedTypeTitle = typeTitle;
     this.f['signatureType'].setValue(null);
-    this.searchTerm = ''; 
+    this.searchTerm = '';
     this.filteredMessageTypes = [];
     this.showDropdown = false;
     this.f['type'].setErrors(null);
@@ -225,9 +293,7 @@ export class DeclarationComponent implements OnInit {
 
   showFieldError(fieldName: string): boolean {
     const field = this.f[fieldName];
-    return (
-      field.invalid && (field.dirty || field.touched || this.formSubmitted)
-    );
+    return field.invalid && (field.dirty || field.touched || this.formSubmitted);
   }
 
   showFormSummary(): boolean {
@@ -240,7 +306,6 @@ export class DeclarationComponent implements OnInit {
 
   preventLeadingSpace(event: KeyboardEvent): void {
     const input = event.target as HTMLInputElement;
-
     if (input.selectionStart === 0 && event.key === ' ') {
       event.preventDefault();
     }
@@ -271,6 +336,12 @@ export class DeclarationComponent implements OnInit {
     this.messageForm.reset({
       date: new Date().toISOString().split('T')[0],
     });
+    
+    this.contentFields.clear();
+    this.contentFields.push(this.createContentField());
+    
+    this.populateDefaultRationales();
+    
     this.submitting = false;
     this.successMsg = '';
     this.errorMsg = '';
@@ -279,7 +350,6 @@ export class DeclarationComponent implements OnInit {
     this.selectedTypeTitle = '';
     this.filteredMessageTypes = [];
     this.showDropdown = false;
-
     Object.keys(this.f).forEach((key) => {
       this.f[key].markAsUntouched();
     });
@@ -288,12 +358,17 @@ export class DeclarationComponent implements OnInit {
   onSubmit() {
     this.formSubmitted = true;
     this.validateSearchInput();
-
+    
     if (this.messageForm.invalid) {
       Object.keys(this.f).forEach((key) => {
         this.f[key].markAsTouched();
       });
-
+      this.contentFields.controls.forEach(control => {
+        control.markAllAsTouched();
+      });
+      this.rationaleFields.controls.forEach(control => {
+        control.markAllAsTouched();
+      });
       this.showWarning('يرجى تصحيح الأخطاء في النموذج قبل الإرسال');
       return;
     }
@@ -302,23 +377,27 @@ export class DeclarationComponent implements OnInit {
     this.successMsg = '';
     this.errorMsg = '';
 
-    const cleanContent =
-      this.f['content'].value
-        ?.replace(/<[^>]*>/g, '')
-        ?.replace(/\s+/g, ' ')
-        ?.trim() || '';
+    const contentTexts = this.contentFields.controls.map(control => {
+      const content = control.get('content')?.value || '';
+      return content
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }).filter(text => text.length > 0);
 
-    const cleanRationale =
-      this.f['Rationale'].value
-        ?.replace(/<[^>]*>/g, '')
-        ?.replace(/\s+/g, ' ')
-        ?.trim() || '';
+    const rationaleTexts = this.rationaleFields.controls.map(control => {
+      const rationale = control.get('rationale')?.value || '';
+      return rationale
+        .replace(/<[^>]*>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }).filter(text => text.length > 0);
 
     const payload = {
       title: this.f['title'].value,
-      description: cleanContent,
+      descriptions: contentTexts,
       decision: this.f['type'].value,
-      Rationale: cleanRationale,
+      Rationale: rationaleTexts,
       signatureType: this.f['signatureType'].value,
       date: new Date().toISOString().split('T')[0],
       StartDate: this.f['startDate'].value
@@ -331,8 +410,13 @@ export class DeclarationComponent implements OnInit {
 
     this.letterService.addLetterType(payload).subscribe({
       next: (res) => {
-        this.showSuccess('تم ارسال القرار بنجاح');
+        if(this.user?.role === 'UniversityPresident'){
+          this.showSuccess('تم اعتماد القرار');
+        }else{
+          this.showSuccess('تم ارسال القرار بنجاح');
+        }
         this.resetForm();
+        this.submitting = false;
       },
       error: (err) => {
         console.error('Error saving letter:', err);

@@ -174,6 +174,20 @@
   transform: translateY(-2px);
 }
 
+.black-radio .form-check-input {
+  border-color: #000;
+  background-color: #000;
+}
+
+.black-radio .form-check-input:checked {
+  background-color: #000;
+  border-color: #000;
+}
+
+.black-radio .form-check-label {
+  color: #000;
+}
+
 @media (max-width: 768px) {
   .page-content {
     padding: 1rem !important;

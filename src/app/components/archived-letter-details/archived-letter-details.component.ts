@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { AuthService } from 'src/app/service/auth.service';
 import { LetterService } from 'src/app/service/letter.service';
+import { AdministrationService } from 'src/app/service/user.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -13,6 +14,7 @@ import Swal from 'sweetalert2';
 export class LetterDetailsComponent implements OnInit {
   letterId: string = '';
   letter: any = null;
+  data: any = null;
   loading = true;
   pdfLoading = false;
   pdfUrl: string | null = null;
@@ -22,17 +24,21 @@ export class LetterDetailsComponent implements OnInit {
   selectedFile: File | null = null;
   private sectorsMap: Map<string, string> = new Map();
   private usersMap: Map<string, any> = new Map();
+  sectors: any[] = [];
+
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private archiveService: ArchiveService,
     private letterService: LetterService,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private userService: AdministrationService
+  ) { }
   user = this.authService.currentUserValue;
   ngOnInit(): void {
     this.letterId = this.route.snapshot.paramMap.get('id') || '';
+    this.getAllSectors();
     if (this.letterId) {
       this.getLetterDetails();
     } else {
@@ -96,6 +102,23 @@ export class LetterDetailsComponent implements OnInit {
     return `قرار_${title}_${date}.pdf`;
   }
 
+  get timeline() {
+    return this.letter || this.data;
+  }
+
+
+  getAllSectors() {
+    this.userService.getAllSectors().subscribe({
+      next: (res: any) => {
+        this.sectors = res?.data || [];
+      },
+      error: (err) => {
+        console.error('Error fetching sectors:', err);
+      }
+    });
+  }
+
+
   openPdf(): void {
     if (!this.pdfUrl) return;
 
@@ -138,14 +161,9 @@ export class LetterDetailsComponent implements OnInit {
       });
     }
   }
-
   showPdfButton(): boolean {
-    return (
-      this.letter?.status === 'approved' &&
-      (!!this.pdfUrl || !!this.pdfFilename)
-    );
+    return this.letter?.status === 'approved' && (!!this.pdfUrl || !!this.pdfFilename);
   }
-
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
       approved: 'معتمد',
@@ -238,30 +256,17 @@ export class LetterDetailsComponent implements OnInit {
     };
     return roleMap[role] || role;
   }
-
-  getSectorName(sectorId: string): string {
-    const sectorMap: { [key: string]: string } = {
-      '68ff54614859681125c5455f': 'الإدارة العامة للشئون القانونية',
-      '68ff54844859681125c54563': 'إدارة الوحدات ذات الطابع الخاص',
-    };
-    return sectorMap[sectorId] || sectorId;
+  getSectorName(sectorId: string, sectors: { _id: string, sector: string }[]): string {
+    const found = sectors.find(s => s._id === sectorId);
+    return found ? found.sector : 'غير معروف';
   }
 
   getSupervisorName(supervisorId: string): string {
-    const supervisorMap: { [key: string]: string } = {
-      '68ff62b4936b0f8ca0412182': 'الإدارة العامة للشئون القانونية',
-      '68ffaf5984b59cbf1298c3d2': 'إدارة الوحدات ذات الطابع الخاص',
-    };
-    return supervisorMap[supervisorId] || supervisorId;
+    return supervisorId;
   }
 
   getUserName(userId: string): string {
-    const userMap: { [key: string]: string } = {
-      '690dccb25b4f51cf531fd3b9': 'د/كتور احمد',
-      '68ffaf5984b59cbf1298c3d2': 'إدارة الوحدات ذات الطابع الخاص',
-      '68ff62b4936b0f8ca0412182': 'الإدارة العامة للشئون القانونية',
-    };
-    return userMap[userId] || userId;
+    return userId;
   }
 
   getFileName(filePath: string): string {
@@ -336,6 +341,19 @@ export class LetterDetailsComponent implements OnInit {
     if (this.letter?.StartDate || this.letter?.EndDate) count++;
 
     return count > 2;
+  }
+
+  getArabicOrdinal(index: number): string {
+    const ordinals = [
+      'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
+      'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
+      'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
+      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون'
+      , 'حادي عشرون', 'ثاني عشرون', 'ثالث عشرون', 'رابع عشرون', 'خامس عشرون',
+      'سادس عشرون', 'سابع عشرون', 'ثامن عشرون', 'تاسع عشرون', 'عشرون'
+
+    ];
+    return ordinals[index] || `${index + 1}`;
   }
 
   goBack() {

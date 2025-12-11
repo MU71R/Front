@@ -553,6 +553,95 @@
   margin-top: 1rem;
 }
 
+.descriptions-list,
+.rationale-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.description-item,
+.rationale-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-right: 4px solid #0d6efd;
+  transition: all 0.3s ease;
+}
+
+.description-item:hover,
+.rationale-item:hover {
+  background: #e9ecef;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(-5px);
+}
+
+.description-number,
+.rationale-number {
+  flex-shrink: 0;
+}
+
+.number-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+  min-width: 70px;
+  text-align: center;
+}
+
+.description-text,
+.rationale-text {
+  flex: 1;
+  line-height: 2;
+  color: #2c3e50;
+  text-align: right;
+  font-size: 1.05rem;
+}
+
+
+
+.description-edit-item {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.description-edit-item .number-badge {
+  min-width: 60px;
+}
+
+.description-edit-item textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.rationale-edit-item {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.rationale-edit-item textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.rationale-edit-item .number-badge {
+  min-width: 60px;
+}
+
+
+
 /* Responsive Enhancements */
 @media (max-width: 768px) {
   .page-header {
