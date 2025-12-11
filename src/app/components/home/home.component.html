@@ -10,7 +10,7 @@
             <app-notification></app-notification>
         </div>
     </div>
-    
+
 
     <!-- Statistics Cards -->
     <div class="stats-grid">
@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    
+
    <!-- Recent Activities -->
 <div *ngIf="user?.role !== 'admin'" class="activities-section">
   <div class="activities-card">
@@ -61,13 +61,13 @@
           {{ line.trim() }}<br>
         </span>
       </p>
-      
+
       <div class="activity-meta">
         <span class="activity-time">{{ activity.time }}</span>
       </div>
     </div>
 
-    <span *ngIf="activity.status" 
+    <span *ngIf="activity.status"
           class="activity-status badge"
           [class]="'badge-' + getStatusColor(activity.status)">
       {{ getStatusText(activity.status) }}
@@ -77,7 +77,7 @@
   </div>
 </div>
 
-    
+
 <ng-template #loadingTemplate>
     <div class="loading-container">
         <div class="spinner-border text-primary" role="status">

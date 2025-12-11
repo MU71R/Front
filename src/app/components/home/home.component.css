@@ -7,6 +7,11 @@
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     direction: rtl;
+
+    /* إضافة هذه الخاصيات لتحديد حجم الـ container */
+    max-width: 1200px; /* يمكنك تغيير هذه القيمة حسب الحاجة */
+    margin: 0 auto; /* لتوسيط الـ container */
+    width: 100%; /* لجعل الـ container يأخذ العرض الكامل حتى 1200px */
 }
 
 /* Header Styles */
