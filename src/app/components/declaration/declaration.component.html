@@ -9,7 +9,7 @@
 
     <div class="card shadow-sm p-4 bg-white rounded-4">
       <form [formGroup]="messageForm" (ngSubmit)="onSubmit()">
-        
+
         <!-- نوع القرار -->
         <div class="mb-3">
           <label for="typeSearch" class="form-label">نوع القرار *</label>
@@ -141,7 +141,7 @@
           </div>
 
           <div formArrayName="rationaleFields">
-            <div *ngFor="let rationaleField of rationaleFields.controls; let i = index" 
+            <div *ngFor="let rationaleField of rationaleFields.controls; let i = index"
                  [formGroupName]="i"
                  class="card mb-3 p-3 border"
                  [class.border-primary]="rationaleField.get('isDefault')?.value">
@@ -159,16 +159,16 @@
                   حذف
                 </button>
               </div>
-              
+
               <textarea
                 class="form-control"
                 formControlName="rationale"
                 rows="3"
                 placeholder="اكتب حيثيات {{ i + 1 }} هنا..."
-                [class.is-invalid]="rationaleField.get('rationale')?.invalid && 
+                [class.is-invalid]="rationaleField.get('rationale')?.invalid &&
                   (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"></textarea>
-              
-              <div *ngIf="rationaleField.get('rationale')?.invalid && 
+
+              <div *ngIf="rationaleField.get('rationale')?.invalid &&
                 (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"
                 class="invalid-feedback d-block">
                 <div *ngIf="rationaleField.get('rationale')?.errors?.['required']">
@@ -193,7 +193,7 @@
           </div>
 
           <div formArrayName="contentFields">
-            <div *ngFor="let contentField of contentFields.controls; let i = index" 
+            <div *ngFor="let contentField of contentFields.controls; let i = index"
                  [formGroupName]="i"
                  class="card mb-3 p-3 border">
               <div class="d-flex justify-content-between align-items-center mb-2">
@@ -207,16 +207,16 @@
                   حذف
                 </button>
               </div>
-              
+
               <textarea
                 class="form-control"
                 formControlName="content"
                 rows="8"
                 placeholder="اكتب بند القرار {{ i + 1 }} هنا..."
-                [class.is-invalid]="contentField.get('content')?.invalid && 
+                [class.is-invalid]="contentField.get('content')?.invalid &&
                   (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"></textarea>
-              
-              <div *ngIf="contentField.get('content')?.invalid && 
+
+              <div *ngIf="contentField.get('content')?.invalid &&
                 (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"
                 class="invalid-feedback d-block">
                 <div *ngIf="contentField.get('content')?.errors?.['required']">
@@ -239,7 +239,7 @@
               formControlName="signatureType" />
             <label class="form-check-label" for="realScan">توقيع حي</label>
           </div>
-          <div class="form-check form-check-inline black-radio"> 
+          <div class="form-check form-check-inline black-radio">
             <input
               class="form-check-input"
               type="radio"
@@ -261,7 +261,6 @@
 
         <!-- أزرار الحفظ والإلغاء -->
         <div class="d-flex justify-content-end gap-2 mt-3">
-          <button type="button" class="btn btn-outline-secondary" (click)="onCancel()">إلغاء</button>
           <button
             type="submit"
             class="btn btn-primary d-flex align-items-center"

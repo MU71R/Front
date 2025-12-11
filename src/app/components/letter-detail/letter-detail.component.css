@@ -5,7 +5,9 @@
 }
 
 .container-fluid {
-  max-width: 1400px;
+  max-width: 1200px;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 /* Header Styles */
@@ -58,6 +60,8 @@
 .card-section {
   padding: 2.5rem;
   border-bottom: 1px solid #e9ecef;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .card-section:last-child {
@@ -255,9 +259,7 @@
   border-radius: 1rem;
   overflow: hidden;
   height: fit-content;
-  /* تغيير من height: 100% */
   min-height: auto;
-  /* إزالة الارتفاع الأدنى الثابت */
 }
 
 .block-header {
@@ -280,7 +282,8 @@
   display: flex;
   flex-direction: column;
   height: auto;
-  /* السماح للارتفاع بالتعديل حسب المحتوى */
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 /* Content & Rationale */
@@ -289,11 +292,10 @@
   font-size: 1.05rem;
   color: #2d3748;
   min-height: auto;
-  /* إزالة الارتفاع الأدنى الثابت */
   height: auto;
-  /* السماح للمحتوى بتحديد الارتفاع */
   flex: 1;
-  /* السماح بالتوسع حسب المحتوى */
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .content-textarea,
@@ -307,19 +309,21 @@
   background: white;
   transition: all 0.3s ease;
   min-height: auto;
-  /* إزالة الارتفاع الأدنى الثابت */
   height: auto;
-  /* السماح للمحتوى بتحديد الارتفاع */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .content-textarea {
   min-height: 200px;
-  /* ارتفاع أدنى معقول بدلاً من 350px */
 }
 
 .rationale-textarea {
   min-height: 120px;
-  /* ارتفاع أدنى معقول بدلاً من 150px */
 }
 
 .content-textarea:focus,
@@ -336,11 +340,9 @@
   border-radius: 0.5rem;
   border: 1px solid #e9ecef;
   min-height: auto;
-  /* إزالة الارتفاع الأدنى الثابت */
   height: auto;
-  /* السماح للمحتوى بتحديد الارتفاع */
   flex: 1;
-  /* السماح بالتوسع حسب المحتوى */
+  word-break: break-word;
 }
 
 /* Timeline Compact */
@@ -358,6 +360,7 @@
   background: white;
   border-radius: 0.75rem;
   border: 1px solid #e9ecef;
+  max-width: 100%;
 }
 
 .timeline-marker {
@@ -385,6 +388,8 @@
 
 .timeline-content {
   flex: 1;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .timeline-label {
@@ -397,6 +402,7 @@
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
+  word-break: break-word;
 }
 
 /* Actions */
@@ -419,6 +425,13 @@
   padding: 1.5rem;
   border-radius: 0.75rem;
   border: 2px solid #fed7d7;
+  max-width: 100%;
+}
+
+.rejection-section textarea {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Approvals List Compact */
@@ -426,6 +439,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-width: 100%;
 }
 
 .approval-item-compact {
@@ -436,6 +450,7 @@
   background: white;
   border-radius: 0.75rem;
   border: 1px solid #e9ecef;
+  max-width: 100%;
 }
 
 .approval-avatar {
@@ -459,17 +474,20 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: calc(100% - 3.5rem);
 }
 
 .approval-meta {
   display: flex;
   flex-direction: column;
+  max-width: 70%;
 }
 
 .approval-role {
   font-weight: 600;
   color: #2d3748;
   font-size: 0.9rem;
+  word-break: break-word;
 }
 
 .approval-date {
@@ -484,6 +502,7 @@
   font-size: 0.8rem;
   min-width: 70px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .approval-status.approved {
@@ -512,12 +531,15 @@
   display: flex;
   align-items: flex-start;
   gap: 1rem;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .rejection-content i {
   color: #dc3545;
   font-size: 1.1rem;
   margin-top: 0.2rem;
+  flex-shrink: 0;
 }
 
 /* Buttons */
@@ -527,6 +549,7 @@
   padding: 0.75rem 1.5rem;
   transition: all 0.3s ease;
   border: 2px solid transparent;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -553,12 +576,16 @@
   margin-top: 1rem;
 }
 
+/* إصلاح مشكلة خروج النص في الحيثيات والبنود */
 .descriptions-list,
 .rationale-list {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   margin-top: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
 }
 
 .description-item,
@@ -570,6 +597,11 @@
   border-radius: 10px;
   border-right: 4px solid #0d6efd;
   transition: all 0.3s ease;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  box-sizing: border-box;
 }
 
 .description-item:hover,
@@ -582,6 +614,7 @@
 .description-number,
 .rationale-number {
   flex-shrink: 0;
+  margin-left: 1rem;
 }
 
 .number-badge {
@@ -595,52 +628,115 @@
   box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
   min-width: 70px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .description-text,
 .rationale-text {
   flex: 1;
-  line-height: 2;
+  line-height: 1.8;
   color: #2c3e50;
   text-align: right;
   font-size: 1.05rem;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-align: justify;
+  text-justify: inter-word;
+  width: 100%;
+  max-width: 100%;
 }
 
-
-
-.description-edit-item {
-  border: 1px solid #dee2e6;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #f8f9fa;
-}
-
-.description-edit-item .number-badge {
-  min-width: 60px;
-}
-
-.description-edit-item textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
+.description-edit-item,
 .rationale-edit-item {
   border: 1px solid #dee2e6;
   padding: 1rem;
   border-radius: 8px;
   background: #f8f9fa;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-.rationale-edit-item textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
+.description-edit-item .number-badge,
 .rationale-edit-item .number-badge {
   min-width: 60px;
 }
 
+.description-edit-item textarea,
+.rationale-edit-item textarea {
+  resize: vertical;
+  min-height: 80px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  font-family: inherit;
+  line-height: 1.6;
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 0.375rem;
+}
 
+/* Wrappers الجديدة */
+.rationale-content-wrapper,
+.description-content-wrapper,
+.rationale-text-wrapper,
+.description-text-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  flex: 1;
+}
+
+.rationale-text-wrapper textarea,
+.description-text-wrapper textarea {
+  max-width: calc(100% - 10px);
+}
+
+/* تحسين الأزرار الصغيرة */
+.btn-danger.btn-sm {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+/* تحسين Flexbox أثناء التعديل */
+.rationale-edit-item .d-flex,
+.description-edit-item .d-flex {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+/* تحسين خاص للنص العربي */
+:host([dir="rtl"]) .description-text,
+:host([dir="rtl"]) .rationale-text,
+:host([dir="rtl"]) .description-textarea,
+:host([dir="rtl"]) .rationale-textarea {
+  text-align-last: right;
+  font-family: 'Cairo', 'Noto Kufi Arabic', 'Segoe UI', sans-serif;
+  direction: rtl;
+}
+
+/* حل إضافي للنصوص الطويلة جداً */
+.rationale-text,
+.description-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 20;
+  -webkit-box-orient: vertical;
+}
+
+.rationale-item:hover .rationale-text,
+.description-item:hover .description-text {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
 
 /* Responsive Enhancements */
 @media (max-width: 768px) {
@@ -684,6 +780,36 @@
 
   .rationale-textarea {
     min-height: 100px;
+  }
+
+  .description-item,
+  .rationale-item {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .number-badge {
+    align-self: flex-start;
+  }
+
+  .description-text,
+  .rationale-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    text-align: right;
+    word-break: break-word;
+  }
+
+  .description-edit-item,
+  .rationale-edit-item {
+    padding: 0.75rem;
+  }
+
+  .description-textarea,
+  .rationale-textarea {
+    font-size: 1rem;
+    min-height: 70px;
   }
 }
 
@@ -730,4 +856,29 @@
     flex-direction: row;
     gap: 0.5rem;
   }
+
+  .description-item,
+  .rationale-item {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .number-badge {
+    min-width: 50px;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .description-text,
+  .rationale-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-align: justify;
+  }
+}
+
+/* تجنب التمرير الأفقي على مستوى الصفحة */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
 }
