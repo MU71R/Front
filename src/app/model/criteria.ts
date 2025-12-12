@@ -16,13 +16,11 @@ export interface SubCriteria {
   mainCriteria: string;
   userId: User;
 }
-export type Level = 'ALL' | 'SECTOR' | 'DEPARTMENT';
 
-export interface MainCriterion {
+export interface MainCriteria {
   _id?: string;
   name: string;
-  level: Level;
-  sector?: string;
+  sector?: string[];
   departmentUser?: string;
   sectorName?: string;
   departmentName?: string;
@@ -30,8 +28,7 @@ export interface MainCriterion {
 
 export interface AddMainCriteriaPayload {
   name: string;
-  level: 'ALL' | 'SECTOR' | 'DEPARTMENT';
-  sector?: string; 
+  sector?: string[]; 
   departmentUser?: string; 
 }
 
@@ -43,7 +40,6 @@ export interface AddSubCriteriaPayload {
 export interface UpdateMainCriteriaRequest {
   id: string;
   name: string;
-  level?: string;
-  sector?: string;
+  sector?: string[];
   departmentUser?: string;
 }

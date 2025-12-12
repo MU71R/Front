@@ -74,6 +74,17 @@ export class DeclarationComponent implements OnInit {
   showDropdown = false;
   selectedTypeTitle = '';
   
+  // ⭐ إعدادات Quill Editor
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline'],        // تنسيق النص
+      [{ 'align': [] }],                      // محاذاة
+      [{ 'direction': 'rtl' }],               // اتجاه RTL للعربي
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }], // قوائم
+      ['clean']                               // إزالة التنسيق
+    ]
+  };
+
   // الحيثيات الافتراضية الثابتة في الفرونت
   defaultRationales: string[] = [
     'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.',
@@ -93,7 +104,6 @@ export class DeclarationComponent implements OnInit {
   ngOnInit(): void {
     this.initializeForm();
     this.loadMessageTypes();
-    // تحميل الحيثيات الافتراضية بعد تهيئة الفورم
     this.populateDefaultRationales();
   }
 
@@ -113,7 +123,6 @@ export class DeclarationComponent implements OnInit {
     );
   }
 
-  // ملء الحيثيات الافتراضية
   private populateDefaultRationales(): void {
     this.rationaleFields.clear();
     
@@ -130,7 +139,6 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
-  // إنشاء حقل حيثيات جديد
   createRationaleField(): FormGroup {
     return this.fb.group({
       rationale: ['', [Validators.required]],
@@ -138,17 +146,14 @@ export class DeclarationComponent implements OnInit {
     });
   }
 
-  // الحصول على FormArray للحيثيات
   get rationaleFields(): FormArray {
     return this.messageForm.get('rationaleFields') as FormArray;
   }
 
-  // إضافة حيثيات جديدة
   addRationaleField(): void {
     this.rationaleFields.push(this.createRationaleField());
   }
 
-  // حذف حيثيات
   removeRationaleField(index: number): void {
     const rationaleControl = this.rationaleFields.at(index);
     const isDefault = rationaleControl.get('isDefault')?.value;
@@ -176,24 +181,20 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
-  // إنشاء حقل نص قرار جديد
   createContentField(): FormGroup {
     return this.fb.group({
       content: ['', [Validators.required]]
     });
   }
 
-  // الحصول على FormArray
   get contentFields(): FormArray {
     return this.messageForm.get('contentFields') as FormArray;
   }
 
-  // إضافة حقل نص قرار جديد
   addContentField(): void {
     this.contentFields.push(this.createContentField());
   }
 
-  // حذف حقل نص قرار
   removeContentField(index: number): void {
     if (this.contentFields.length > 1) {
       this.contentFields.removeAt(index);
@@ -377,27 +378,23 @@ export class DeclarationComponent implements OnInit {
     this.successMsg = '';
     this.errorMsg = '';
 
+    // ⭐ إرسال HTML كامل للـ Backend (بدون حذف التاجات)
     const contentTexts = this.contentFields.controls.map(control => {
-      const content = control.get('content')?.value || '';
-      return content
-        .replace(/<[^>]*>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const htmlContent = control.get('content')?.value || '';
+      // فقط تنظيف المسافات الزائدة وترك HTML كما هو
+      return htmlContent.trim();
     }).filter(text => text.length > 0);
 
     const rationaleTexts = this.rationaleFields.controls.map(control => {
-      const rationale = control.get('rationale')?.value || '';
-      return rationale
-        .replace(/<[^>]*>/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const htmlContent = control.get('rationale')?.value || '';
+      return htmlContent.trim();
     }).filter(text => text.length > 0);
 
     const payload = {
       title: this.f['title'].value,
-      descriptions: contentTexts,
+      descriptions: contentTexts, // ⭐ HTML كامل
       decision: this.f['type'].value,
-      Rationale: rationaleTexts,
+      Rationale: rationaleTexts, // ⭐ HTML كامل
       signatureType: this.f['signatureType'].value,
       date: new Date().toISOString().split('T')[0],
       StartDate: this.f['startDate'].value

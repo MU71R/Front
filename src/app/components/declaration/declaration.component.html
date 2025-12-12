@@ -127,7 +127,7 @@
           </div>
         </div>
 
-        <!-- حيثيات القرار المتعددة (FormArray) -->
+        <!-- ⭐ حيثيات القرار مع Quill Editor -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <label class="form-label mb-0">حيثيات القرار *</label>
@@ -160,13 +160,15 @@
                 </button>
               </div>
 
-              <textarea
-                class="form-control"
+              <!-- ⭐ استخدام Quill بدل textarea -->
+              <quill-editor
                 formControlName="rationale"
-                rows="3"
+                [modules]="quillModules"
                 placeholder="اكتب حيثيات {{ i + 1 }} هنا..."
+                [styles]="{height: '150px', direction: 'rtl'}"
                 [class.is-invalid]="rationaleField.get('rationale')?.invalid &&
-                  (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"></textarea>
+                  (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)">
+              </quill-editor>
 
               <div *ngIf="rationaleField.get('rationale')?.invalid &&
                 (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)"
@@ -179,7 +181,7 @@
           </div>
         </div>
 
-        <!-- بنود القرار المتعددة (FormArray) -->
+        <!-- ⭐ بنود القرار مع Quill Editor -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <label class="form-label mb-0">بنود القرار *</label>
@@ -208,13 +210,15 @@
                 </button>
               </div>
 
-              <textarea
-                class="form-control"
+              <!-- ⭐ استخدام Quill بدل textarea -->
+              <quill-editor
                 formControlName="content"
-                rows="8"
+                [modules]="quillModules"
                 placeholder="اكتب بند القرار {{ i + 1 }} هنا..."
+                [styles]="{height: '200px', direction: 'rtl'}"
                 [class.is-invalid]="contentField.get('content')?.invalid &&
-                  (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"></textarea>
+                  (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)">
+              </quill-editor>
 
               <div *ngIf="contentField.get('content')?.invalid &&
                 (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)"

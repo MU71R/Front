@@ -29,8 +29,10 @@ import { NotificationComponent } from './components/notification/notification.co
 import { PdfListComponent } from './components/pdf-list/pdf-list.component';
 import { RejectedLettersListComponent } from './components/rejected-letters-list/rejected-letters-list.component';
 import { RejectedLetterDetailsComponent } from './components/rejected-letter-details/rejected-letter-details.component';
-
-
+import { NgxEditorModule } from 'ngx-editor';
+import { QuillModule } from 'ngx-quill';
+import { DepartmentCriteriaManagementComponent } from './components/department-criteria-management/department-criteria-management.component';
+import { NgSelectModule } from '@ng-select/ng-select';
 
 
 @NgModule({
@@ -52,6 +54,7 @@ import { RejectedLetterDetailsComponent } from './components/rejected-letter-det
     PdfListComponent,
     RejectedLettersListComponent,
     RejectedLetterDetailsComponent,
+    DepartmentCriteriaManagementComponent,
   ],
   imports: [
     BrowserModule,
@@ -61,6 +64,9 @@ import { RejectedLetterDetailsComponent } from './components/rejected-letter-det
     HttpClientModule,
     BrowserAnimationsModule,
     EditorModule,
+    NgxEditorModule,
+    NgSelectModule,
+    QuillModule.forRoot(),
     ToastrModule.forRoot({
       positionClass: 'toast-top-right',
       timeOut: 3000,
@@ -75,4 +81,4 @@ import { RejectedLetterDetailsComponent } from './components/rejected-letter-det
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

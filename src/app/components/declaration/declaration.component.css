@@ -1,3 +1,5 @@
+@import '~quill/dist/quill.snow.css';
+
 .page-wrapper {
   max-width: 1000px;
   margin: 0 auto;
@@ -187,6 +189,22 @@
 .black-radio .form-check-label {
   color: #000;
 }
+
+/* Quill Editor */
+.ql-editor {
+  direction: rtl;
+  text-align: right;
+  min-height: 150px;
+}
+
+.ql-toolbar {
+  direction: rtl;
+}
+
+
+
+
+/*  */
 
 @media (max-width: 768px) {
   .page-content {
