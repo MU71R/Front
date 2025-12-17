@@ -1,8 +1,11 @@
+// department-criteria-management.component.ts
 import { Component, OnInit } from '@angular/core';
-import { CriteriaService, SubCriteria, Sector } from '../../service/criteria.service';
 import { LoginService } from '../../service/login.service';
 import Swal from 'sweetalert2';
 import { MainCriteria } from 'src/app/model/criteria';
+import { CriteriaService } from '../../service/criteria.service';
+import { SubCriteria } from 'src/app/model/criteria';
+import { Sector } from 'src/app/model/criteria';
 
 @Component({
   selector: 'app-department-criteria-management',
@@ -28,130 +31,211 @@ export class DepartmentCriteriaManagementComponent implements OnInit {
   subMainId = '';
   selectedSubSectors: string[] = [];
 
-  constructor(private criteriaService: CriteriaService, private loginService: LoginService) { }
+  constructor(
+    private criteriaService: CriteriaService, 
+    private loginService: LoginService
+  ) { }
 
   ngOnInit(): void {
     if (!this.loginService.getTokenFromLocalStorage()) {
-      Swal.fire({ title: 'تنبيه', text: 'يجب تسجيل الدخول أولاً', icon: 'warning', confirmButtonText: 'حسناً' });
+      Swal.fire({ 
+        title: 'تنبيه', 
+        text: 'يجب تسجيل الدخول أولاً', 
+        icon: 'warning', 
+        confirmButtonText: 'حسناً' 
+      });
       return;
     }
     this.loadAllData();
   }
 
   loadAllData(): void {
-  this.isLoading = true;
+    this.isLoading = true;
 
-  // تحميل القطاعات أولًا
-  this.criteriaService.getAllSectors().subscribe({
-    next: (res: any) => {
-      this.sectorsList = res.data.map((s: any) => ({ _id: s._id, name: s.sector }));
-    },
-    error: (err) => console.error(err)
-  });
+    // تحميل القطاعات أولًا
+    this.criteriaService.getAllSectors().subscribe({
+      next: (res: any) => {
+        this.sectorsList = res.data.map((s: any) => ({ 
+          _id: s._id, 
+          name: s.sector 
+        }));
+      },
+      error: (err) => console.error('Error loading sectors:', err)
+    });
 
-  // تحميل المعايير الرئيسية
-  this.criteriaService.getAllMainCriteria().subscribe({
-    next: (data) => { this.mainCriteriaList = data; this.isLoading = false; },
-    error: (err) => { console.error(err); this.isLoading = false; }
-  });
+    // تحميل المعايير الرئيسية
+    this.criteriaService.getAllMainCriteria().subscribe({
+  next: (data) => { 
+    console.log('Main Criteria Data:', data); // 👈 أضف هذا السطر
+    this.mainCriteriaList = data; 
+    this.isLoading = false; 
+  },
+  error: (err) => { 
+    console.error('Error loading main criteria:', err); 
+    this.isLoading = false; 
+  }
+});
 
-  // تحميل المعايير الفرعية
-  this.criteriaService.getAllSubCriteria().subscribe({
-    next: (data) => { this.subCriteriaList = data; },
-    error: (err) => { console.error(err); }
-  });
-}
-
-  toggleExpanded(id?: string) {
-    if (!id) return;
-    if (this.expandedCriteria.has(id)) this.expandedCriteria.delete(id);
-    else this.expandedCriteria.add(id);
+    // تحميل المعايير الفرعية
+    this.criteriaService.getAllSubCriteria().subscribe({
+      next: (data) => { 
+        this.subCriteriaList = data; 
+      },
+      error: (err) => { 
+        console.error('Error loading sub criteria:', err); 
+      }
+    });
   }
 
-  getSubForMain(mainId?: string) {
+  toggleExpanded(id?: string): void {
+    if (!id) return;
+    if (this.expandedCriteria.has(id)) {
+      this.expandedCriteria.delete(id);
+    } else {
+      this.expandedCriteria.add(id);
+    }
+  }
+
+  getSubForMain(mainId?: string): SubCriteria[] {
     if (!mainId) return [];
-    return this.subCriteriaList.filter(sub => sub.mainCriteria === mainId);
+    return this.subCriteriaList.filter(sub => {
+      const mainIdInSub = typeof sub.mainCriteria === 'string'
+        ? sub.mainCriteria
+        : sub.mainCriteria?._id;
+
+      return mainIdInSub === mainId;
+    });
   }
 
   getMainById(id: string): MainCriteria | undefined {
     return this.mainCriteriaList.find(main => main._id === id);
   }
 
-  openMainModal(edit?: MainCriteria) {
-  if (edit) {
-    this.editingMain = { ...edit };
-    this.mainName = edit.name;
+  openMainModal(edit?: MainCriteria): void {
+    if (edit) {
+      this.editingMain = { ...edit };
+      this.mainName = edit.name;
 
-    // لو edit.sector عبارة عن Array of Objects أو Array of IDs
-    this.selectedMainSectors = (edit.sector || []).map((s: any) => s._id || s);
-
-  } else {
-    this.editingMain = null;
-    this.mainName = '';
-    this.selectedMainSectors = [];
+      // استخراج IDs القطاعات
+      this.selectedMainSectors = (edit.sector || []).map((s: any) => 
+        typeof s === 'string' ? s : s._id
+      );
+    } else {
+      this.editingMain = null;
+      this.mainName = '';
+      this.selectedMainSectors = [];
+    }
+    this.isMainModalOpen = true;
   }
-  this.isMainModalOpen = true;
-}
 
-  closeMainModal() {
+  closeMainModal(): void {
     this.isMainModalOpen = false;
     this.editingMain = null;
     this.mainName = '';
     this.selectedMainSectors = [];
   }
 
-  submitMain() {
+  submitMain(): void {
     const name = this.mainName.trim();
+    
     if (!name || this.selectedMainSectors.length === 0) {
-      Swal.fire({ title: 'تنبيه', text: 'الاسم والقطاعات مطلوبة', icon: 'warning', confirmButtonText: 'حسناً' });
+      Swal.fire({ 
+        title: 'تنبيه', 
+        text: 'الاسم والقطاعات مطلوبة', 
+        icon: 'warning', 
+        confirmButtonText: 'حسناً' 
+      });
       return;
     }
+
     this.isSubmitting = true;
-    const data: any = { name, sector: this.selectedMainSectors };
+    const data: any = { 
+      name, 
+      sector: this.selectedMainSectors 
+    };
 
     if (this.editingMain) {
       data.id = this.editingMain._id;
       this.criteriaService.updateMainCriteriaPartial(data).subscribe({
         next: (updated) => {
           const idx = this.mainCriteriaList.findIndex((m) => m._id === updated._id);
-          this.mainCriteriaList[idx] = updated;
-          Swal.fire({ title: 'نجاح', text: 'تم تحديث المعيار الرئيسي بنجاح', icon: 'success', confirmButtonText: 'حسناً' });
-          this.closeMainModal(); this.isSubmitting = false;
+          if (idx !== -1) {
+            this.mainCriteriaList[idx] = updated;
+          }
+          Swal.fire({ 
+            title: 'نجاح', 
+            text: 'تم تحديث المعيار الرئيسي بنجاح', 
+            icon: 'success', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.closeMainModal(); 
+          this.isSubmitting = false;
         },
-        error: (err) => { console.error(err); this.isSubmitting = false; }
+        error: (err) => { 
+          console.error('Error updating main criteria:', err);
+          Swal.fire({ 
+            title: 'خطأ', 
+            text: err.error?.error || 'حدث خطأ أثناء التحديث', 
+            icon: 'error', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.isSubmitting = false; 
+        }
       });
     } else {
       this.criteriaService.addMainCriteria(data).subscribe({
         next: (created) => {
           this.mainCriteriaList.push(created);
-          Swal.fire({ title: 'نجاح', text: 'تم إضافة المعيار الرئيسي بنجاح', icon: 'success', confirmButtonText: 'حسناً' });
-          this.closeMainModal(); this.isSubmitting = false;
+          Swal.fire({ 
+            title: 'نجاح', 
+            text: 'تم إضافة المعيار الرئيسي بنجاح', 
+            icon: 'success', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.closeMainModal(); 
+          this.isSubmitting = false;
         },
-        error: (err) => { console.error(err); this.isSubmitting = false; }
+        error: (err) => { 
+          console.error('Error adding main criteria:', err);
+          Swal.fire({ 
+            title: 'خطأ', 
+            text: err.error?.error || 'حدث خطأ أثناء الإضافة', 
+            icon: 'error', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.isSubmitting = false; 
+        }
       });
     }
   }
 
-  openSubModal(mainId: string, edit?: SubCriteria) {
-  if (edit) {
-    this.editingSub = { ...edit };
-    this.subName = edit.name;
-    this.subMainId = typeof edit.mainCriteria === 'string' ? edit.mainCriteria : edit.mainCriteria._id || '';
+  openSubModal(mainId: string, edit?: SubCriteria): void {
+    if (edit) {
+      this.editingSub = { ...edit };
+      this.subName = edit.name;
+      this.subMainId = typeof edit.mainCriteria === 'string' 
+        ? edit.mainCriteria 
+        : edit.mainCriteria._id || '';
 
-    // القطاعات المرتبطة بالمعيار الفرعي تأتي من المعيار الرئيسي
-    const main = this.getMainById(this.subMainId);
-    this.selectedSubSectors = main?.sector?.map((s: any) => s._id || s) || [];
-
-  } else {
-    this.editingSub = null;
-    this.subName = '';
-    this.subMainId = mainId;
-    this.selectedSubSectors = [];
+      // استخراج القطاعات المرتبطة بالمعيار الفرعي
+      this.selectedSubSectors = (edit.sector || []).map((s: any) => 
+        typeof s === 'string' ? s : s._id
+      );
+    } else {
+      this.editingSub = null;
+      this.subName = '';
+      this.subMainId = mainId;
+      
+      // الحصول على قطاعات المعيار الرئيسي كقيم افتراضية
+      const main = this.getMainById(mainId);
+      this.selectedSubSectors = (main?.sector || []).map((s: any) => 
+        typeof s === 'string' ? s : s._id
+      );
+    }
+    this.isSubModalOpen = true;
   }
-  this.isSubModalOpen = true;
-}
 
-  closeSubModal() {
+  closeSubModal(): void {
     this.isSubModalOpen = false;
     this.editingSub = null;
     this.subName = '';
@@ -164,40 +248,99 @@ export class DepartmentCriteriaManagementComponent implements OnInit {
     return main?.name || 'غير معروف';
   }
 
-  submitSub() {
+  submitSub(): void {
     const name = this.subName.trim();
-    if (!name) { Swal.fire({ title: 'تنبيه', text: 'يرجى إدخال اسم المعيار الفرعي', icon: 'warning', confirmButtonText: 'حسناً' }); return; }
+    
+    if (!name) { 
+      Swal.fire({ 
+        title: 'تنبيه', 
+        text: 'يرجى إدخال اسم المعيار الفرعي', 
+        icon: 'warning', 
+        confirmButtonText: 'حسناً' 
+      }); 
+      return; 
+    }
+
     this.isSubmitting = true;
-    const data: any = { name, mainCriteria: this.subMainId, sector: this.selectedSubSectors };
+    const data: any = { 
+      name, 
+      mainCriteria: this.subMainId, 
+      sector: this.selectedSubSectors 
+    };
 
     if (this.editingSub) {
       this.criteriaService.updateSubCriteria(this.editingSub._id, data).subscribe({
         next: (updated) => {
           const idx = this.subCriteriaList.findIndex((s) => s._id === updated._id);
-          this.subCriteriaList[idx] = updated;
-          Swal.fire({ title: 'نجاح', text: 'تم تحديث المعيار الفرعي بنجاح', icon: 'success', confirmButtonText: 'حسناً' });
-          this.closeSubModal(); this.isSubmitting = false;
+          if (idx !== -1) {
+            this.subCriteriaList[idx] = updated;
+          }
+          Swal.fire({ 
+            title: 'نجاح', 
+            text: 'تم تحديث المعيار الفرعي بنجاح', 
+            icon: 'success', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.closeSubModal(); 
+          this.isSubmitting = false;
         },
-        error: (err) => { console.error(err); this.isSubmitting = false; }
+        error: (err) => { 
+          console.error('Error updating sub criteria:', err);
+          Swal.fire({ 
+            title: 'خطأ', 
+            text: err.error?.error || 'حدث خطأ أثناء التحديث', 
+            icon: 'error', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.isSubmitting = false; 
+        }
       });
     } else {
       this.criteriaService.addSubCriteria(data).subscribe({
         next: (created) => {
           this.subCriteriaList.push(created);
-          Swal.fire({ title: 'نجاح', text: 'تم إضافة المعيار الفرعي بنجاح', icon: 'success', confirmButtonText: 'حسناً' });
-          this.closeSubModal(); this.isSubmitting = false;
+          Swal.fire({ 
+            title: 'نجاح', 
+            text: 'تم إضافة المعيار الفرعي بنجاح', 
+            icon: 'success', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.closeSubModal(); 
+          this.isSubmitting = false;
         },
-        error: (err) => { console.error(err); this.isSubmitting = false; }
+        error: (err) => { 
+          console.error('Error adding sub criteria:', err);
+          Swal.fire({ 
+            title: 'خطأ', 
+            text: err.error?.error || 'حدث خطأ أثناء الإضافة', 
+            icon: 'error', 
+            confirmButtonText: 'حسناً' 
+          });
+          this.isSubmitting = false; 
+        }
       });
     }
   }
 
-  requestDeleteMain(id: string) {
-    const used = this.subCriteriaList.some(s => s.mainCriteria === id);
+  requestDeleteMain(id: string): void {
+    // التحقق من وجود معايير فرعية مرتبطة
+    const used = this.subCriteriaList.some(sub => {
+      const mainId = typeof sub.mainCriteria === 'string' 
+        ? sub.mainCriteria 
+        : sub.mainCriteria?._id;
+      return mainId === id;
+    });
+
     if (used) {
-      Swal.fire({ title: 'تنبيه', text: 'لا يمكن حذف المعيار الرئيسي لأنه مرتبط بمعايير فرعية', icon: 'warning', confirmButtonText: 'حسناً' });
+      Swal.fire({ 
+        title: 'تنبيه', 
+        text: 'لا يمكن حذف المعيار الرئيسي لأنه مرتبط بمعايير فرعية', 
+        icon: 'warning', 
+        confirmButtonText: 'حسناً' 
+      });
       return;
     }
+
     Swal.fire({
       title: 'تأكيد الحذف',
       text: 'هل تريد حذف المعيار الرئيسي؟',
@@ -212,13 +355,21 @@ export class DepartmentCriteriaManagementComponent implements OnInit {
             this.mainCriteriaList = this.mainCriteriaList.filter((m) => m._id !== id);
             Swal.fire('تم الحذف', '', 'success');
           },
-          error: (err) => console.error(err)
+          error: (err) => {
+            console.error('Error deleting main criteria:', err);
+            Swal.fire({ 
+              title: 'خطأ', 
+              text: 'حدث خطأ أثناء الحذف', 
+              icon: 'error', 
+              confirmButtonText: 'حسناً' 
+            });
+          }
         });
       }
     });
   }
 
-  requestDeleteSub(id: string) {
+  requestDeleteSub(id: string): void {
     Swal.fire({
       title: 'تأكيد الحذف',
       text: 'هل تريد حذف المعيار الفرعي؟',
@@ -233,7 +384,15 @@ export class DepartmentCriteriaManagementComponent implements OnInit {
             this.subCriteriaList = this.subCriteriaList.filter((s) => s._id !== id);
             Swal.fire('تم الحذف', '', 'success');
           },
-          error: (err) => console.error(err)
+          error: (err) => {
+            console.error('Error deleting sub criteria:', err);
+            Swal.fire({ 
+              title: 'خطأ', 
+              text: 'حدث خطأ أثناء الحذف', 
+              icon: 'error', 
+              confirmButtonText: 'حسناً' 
+            });
+          }
         });
       }
     });

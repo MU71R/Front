@@ -1,4 +1,10 @@
 <div class="container py-4 rtl">
+    <!-- Back Button -->
+    <button class="btn btn-back mb-3" (click)="goBack()">
+        <i class="fa fa-arrow-right me-2"></i>
+        العودة إلى القائمة
+    </button>
+
     <div *ngIf="loading" class="loading-state">
         <div class="spinner-container">
             <div class="spinner-wrapper">
@@ -7,7 +13,7 @@
                 </div>
             </div>
             <div class="loading-text">
-                <h5>جارٍ تحميل تفاصيل القرار...</h5>
+                <h5>جارٍ تحميل تفاصيل القرار الملغى...</h5>
                 <p class="text-muted">قد تستغرق العملية بضع ثوانٍ</p>
             </div>
         </div>
@@ -18,12 +24,49 @@
             <i class="fa fa-file-search"></i>
         </div>
         <h4 class="empty-title">القرار غير موجود</h4>
-        <p class="empty-text text-muted">تعذر العثور على القرار المطلوب في الأرشيف</p>
+        <p class="empty-text text-muted">تعذر العثور على القرار المطلوب</p>
     </div>
 
     <div *ngIf="!loading && letter" class="letter-detail">
+        <!-- Canceled Alert -->
+        <div class="canceled-alert">
+            <div class="alert-icon">
+                <i class="fa fa-ban"></i>
+            </div>
+            <div class="alert-content">
+                <h4 class="alert-title">هذا القرار ملغي</h4>
+                <p class="alert-text">تم إيقاف العمل بهذا القرار بتاريخ {{ letter.canceledAt | date:'dd/MM/yyyy - hh:mm a' }}</p>
+                <div class="canceled-by" *ngIf="letter.canceledBy">
+                    <i class="fa fa-user-shield me-2"></i>
+                    <span>ألغى بواسطة: {{ getCanceledByName(letter.canceledBy) }}</span>
+                </div>
+            </div>
+            <!-- <button 
+                class="btn btn-restore" 
+                *ngIf="canRestoreDecision()"
+                (click)="restoreDecision()">
+                <i class="fa fa-undo me-2"></i>
+                استرجاع القرار
+            </button> -->
+        </div>
+
+        <!-- Cancel Reason -->
+        <div class="cancel-reason-section" *ngIf="letter.cancelReason">
+            <h3 class="section-title">
+                <i class="fa fa-info-circle me-2"></i>
+                سبب الإلغاء
+            </h3>
+            <div class="reason-content">
+                {{ letter.cancelReason }}
+            </div>
+        </div>
+
         <div class="detail-header">
             <div class="header-badges">
+                <div class="letter-status status-canceled">
+                    <i class="fa fa-ban me-1"></i>
+                    ملغي
+                </div>
                 <div class="letter-priority" *ngIf="letter.priority" [ngClass]="getPriorityClass(letter.priority)">
                     <i class="fa" [ngClass]="getPriorityIcon(letter.priority)"></i>
                     {{ getPriorityText(letter.priority) }}
@@ -32,17 +75,9 @@
                     <i class="fa fa-hashtag me-1"></i>
                     رقم المعاملة: {{ letter.transactionNumber }}
                 </div>
-                <div class="letter-status" [ngClass]="getStatusClass(letter.status)">
-                    <i class="fa fa-info-circle me-1"></i>
-                    {{ getStatusText(letter.status) }}
-                </div>
                 <button *ngIf="showPdfButton()" class="btn btn-pdf" (click)="openPdf()" [disabled]="pdfLoading">
                     <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
                     {{ pdfLoading ? 'جاري التحميل...' : 'عرض PDF' }}
-                </button>
-                <button *ngIf="canCancelDecision()" class="btn btn-danger" (click)="cancelDecision()">
-                    <i class="fa fa-ban me-2"></i>
-                    إلغاء القرار
                 </button>
             </div>
 
@@ -97,15 +132,24 @@
                 </div>
             </div>
 
-            <!-- قسم معلومات القرار الجديدة -->
+            <!-- قسم معلومات القرار -->
             <div class="content-section" id="decision-info">
                 <h3 class="section-title">
                     <i class="fa fa-file-contract me-2"></i>معلومات القرار
                 </h3>
                 <div class="section-content">
                     <div class="info-grid">
-                        <!-- جهة إعداد القرار من user -->
-                        <div class="info-item" *ngIf="letter.user">
+                        <div class="info-item" *ngIf="letter.letterType">
+                            <div class="info-icon">
+                                <i class="fa fa-heading"></i>
+                            </div>
+                            <div class="info-content">
+                                <span class="info-label">نوع القرار:</span>
+                                <span class="info-value">{{ letter.letterType }}</span>
+                            </div>
+                        </div>
+
+                        <!-- <div class="info-item" *ngIf="letter.user">
                             <div class="info-icon">
                                 <i class="fa fa-user"></i>
                             </div>
@@ -113,9 +157,8 @@
                                 <span class="info-label">معد القرار:</span>
                                 <span class="info-value">{{ letter.user.fullname }}</span>
                             </div>
-                        </div>
+                        </div> -->
 
-                        <!-- دور معد القرار -->
                         <div class="info-item" *ngIf="letter.user && letter.user.role">
                             <div class="info-icon">
                                 <i class="fa fa-id-badge"></i>
@@ -126,7 +169,6 @@
                             </div>
                         </div>
 
-                        <!-- قطاع معد القرار -->
                         <div class="info-item" *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
@@ -137,7 +179,6 @@
                             </div>
                         </div>
 
-                        <!-- المعيار الرئيسي -->
                         <div class="info-item" *ngIf="letter.mainCriteria">
                             <div class="info-icon">
                                 <i class="fa fa-tasks"></i>
@@ -148,7 +189,6 @@
                             </div>
                         </div>
 
-                        <!-- المعيار الفرعي -->
                         <div class="info-item" *ngIf="letter.subCriteria">
                             <div class="info-icon">
                                 <i class="fa fa-list"></i>
@@ -159,7 +199,6 @@
                             </div>
                         </div>
 
-                        <!-- الاسم الكامل -->
                         <div class="info-item" *ngIf="letter.fullName">
                             <div class="info-icon">
                                 <i class="fa fa-user-circle"></i>
@@ -170,7 +209,6 @@
                             </div>
                         </div>
 
-                        <!-- اسم الجهة -->
                         <div class="info-item" *ngIf="letter.entityName">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
@@ -181,8 +219,7 @@
                             </div>
                         </div>
 
-                        <!-- الرقم الوطني -->
-                        <div class="info-item" *ngIf="letter.nationalId">
+                        <div class="info-item" *ngIf="letter.nationalId && canViewNationalId()">
                             <div class="info-icon">
                                 <i class="fa fa-id-card"></i>
                             </div>
@@ -192,7 +229,6 @@
                             </div>
                         </div>
 
-                        <!-- رقم الهاتف -->
                         <div class="info-item" *ngIf="letter.phoneNumber">
                             <div class="info-icon">
                                 <i class="fa fa-phone"></i>
@@ -203,18 +239,6 @@
                             </div>
                         </div>
 
-                        <!-- نوع التوقيع -->
-                        <div class="info-item" *ngIf="letter.signatureType">
-                            <div class="info-icon">
-                                <i class="fa fa-signature"></i>
-                            </div>
-                            <div class="info-content">
-                                <span class="info-label">نوع التوقيع:</span>
-                                <span class="info-value">{{ letter.signatureType }}</span>
-                            </div>
-                        </div>
-
-                        <!-- الجهات المراجعة -->
                         <div class="info-item" *ngIf="letter.supervisors && letter.supervisors.length > 0">
                             <div class="info-icon">
                                 <i class="fa fa-user-shield"></i>
@@ -233,13 +257,12 @@
             </div>
 
             <!-- قسم المرفقات -->
-            <div class="content-section" *ngIf="canUpload()" id="attachments">
+            <div class="content-section" *ngIf="letter.attachment" id="attachments">
                 <h3 class="section-title">
                     <i class="fa fa-paperclip me-2"></i>المرفقات
                 </h3>
                 <div class="section-content">
-                    <!-- إذا كان هناك مرفق -->
-                    <div *ngIf="letter.attachment" class="attachment-card">
+                    <div class="attachment-card">
                         <div class="attachment-info">
                             <div class="attachment-icon">
                                 <i class="fa" [ngClass]="getFileIcon(letter.attachment)"></i>
@@ -249,8 +272,6 @@
                                 <div class="attachment-meta">
                                     <span><i class="fa fa-calendar me-1"></i>تم الرفع في {{ letter.createdAt | date:
                                         'dd/MM/yyyy' }}</span>
-                                    <span *ngIf="getFileSize(letter.attachment)"><i class="fa fa-hdd me-1"></i>{{
-                                        getFileSize(letter.attachment) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -264,12 +285,6 @@
                             </a>
                         </div>
                     </div>
-
-                    <!-- زر رفع/استبدال الملف -->
-                    <button class="btn btn-warning mt-3" (click)="openUploadModal()">
-                        <i class="fa fa-upload me-2"></i>
-                        {{ letter.attachment ? 'استبدال الملف' : 'رفع ملف جديد' }}
-                    </button>
                 </div>
             </div>
 
@@ -280,7 +295,6 @@
                 </h3>
                 <div class="section-content">
                     <div class="timeline-info">
-                        <!-- تاريخ إنشاء القرار -->
                         <div class="info-item" *ngIf="letter.createdAt">
                             <div class="info-icon"><i class="fa fa-calendar-plus"></i></div>
                             <div class="info-content">
@@ -289,7 +303,6 @@
                             </div>
                         </div>
 
-                        <!-- تاريخ البدء -->
                         <div class="info-item" *ngIf="letter.StartDate">
                             <div class="info-icon"><i class="fa fa-play-circle"></i></div>
                             <div class="info-content">
@@ -298,7 +311,6 @@
                             </div>
                         </div>
 
-                        <!-- تاريخ الانتهاء -->
                         <div class="info-item" *ngIf="letter.EndDate">
                             <div class="info-icon"><i class="fa fa-flag-checkered"></i></div>
                             <div class="info-content">
@@ -307,7 +319,14 @@
                             </div>
                         </div>
 
-                        <!-- مدة القرار -->
+                        <div class="info-item" *ngIf="letter.canceledAt">
+                            <div class="info-icon"><i class="fa fa-ban"></i></div>
+                            <div class="info-content">
+                                <span class="info-label">تاريخ الإلغاء:</span>
+                                <span class="info-value">{{ letter.canceledAt | date:'dd/MM/yyyy - hh:mm a' }}</span>
+                            </div>
+                        </div>
+
                         <div class="info-item" *ngIf="letter.durationDays">
                             <div class="info-icon"><i class="fa fa-clock"></i></div>
                             <div class="info-content">
@@ -356,20 +375,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Upload Modal -->
-<div class="custom-modal" [class.show]="showUploadModal" id="uploadModal">
-    <div class="modal-content">
-        <h4 class="mb-3">رفع ملف جديد</h4>
-
-        <input type="file" (change)="selectNewFile($event)" class="form-control" />
-
-        <div class="text-end mt-3">
-            <button class="btn btn-secondary me-2" (click)="closeUploadModal()">إلغاء</button>
-            <button class="btn btn-primary" (click)="uploadNewFile()">رفع</button>
         </div>
     </div>
 </div>

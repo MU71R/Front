@@ -1,45 +1,23 @@
-
-export interface User {
-  _id: string;
-  fullname: string;
-  username: string;
-}
-
 export interface Sector {
   _id: string;
-  name: string;
-}
-
-export interface SubCriteria {
-  _id: string;
-  name: string;
-  mainCriteria: string;
-  userId: User;
+  sector: string;
+  name?: string; // للتوافق مع ng-select
 }
 
 export interface MainCriteria {
   _id?: string;
   name: string;
-  sector?: string[];
-  departmentUser?: string;
-  sectorName?: string;
-  departmentName?: string;
+  sector?: (Sector | string)[]; // يمكن أن يكون array من objects أو IDs
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
-export interface AddMainCriteriaPayload {
+export interface SubCriteria {
+  _id: string;
   name: string;
-  sector?: string[]; 
-  departmentUser?: string; 
-}
-
-export interface AddSubCriteriaPayload {
-  name: string;
-  mainCriteria: string; 
-}
-
-export interface UpdateMainCriteriaRequest {
-  id: string;
-  name: string;
-  sector?: string[];
-  departmentUser?: string;
+  mainCriteria: MainCriteria | string; // يمكن أن يكون object أو ID
+  sector?: (Sector | string)[]; // استخدم sector بدلاً من sectors
+  userId?: any;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }

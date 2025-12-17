@@ -29,15 +29,45 @@ export interface RecentActivit {
 export interface LetterDetail {
   _id: string;
   title: string;
-  description: string[];
-  notes: string;
-  signatureType: string;
-  pdfUrl: string;
-  decision: Decision; 
-  reasonForRejection: string;
+
+  descriptions: string[];
+  Rationale: string[];
+
+  StartDate: string;
+  EndDate: string;
+
+  fullName: string;
+  entityName: string | null;
+  nationalId: string;
+  phoneNumber: string;
+
+  status: 'pending' | 'approved' | 'rejected' | 'in_progress' | 'canceled';
+
   date: string;
-  status: 'pending' | 'approved' | 'rejected' | 'in_progress';
-  user: User;
   createdAt?: string;
   updatedAt?: string;
+
+  user: User;
+
+  mainCriteria?: {
+    _id: string;
+    name: string;
+  };
+
+  subCriteria?: {
+    _id: string;
+    name: string;
+  };
+
+  letterType?: string;
+  signatureType?: string | null;
+
+  // Properties needed for rejected letters
+  decision?: {
+    _id?: string;
+    title?: string;
+  };
+  reasonForRejection?: string;
+  pdfUrl?: string;
 }
+

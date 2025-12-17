@@ -33,6 +33,8 @@ import { NgxEditorModule } from 'ngx-editor';
 import { QuillModule } from 'ngx-quill';
 import { DepartmentCriteriaManagementComponent } from './components/department-criteria-management/department-criteria-management.component';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { CanceledLettersListComponent } from './components/canceled-letters-list/canceled-letters-list.component';
+import { CanceledLetterDetailsComponent } from './components/canceled-letter-details/canceled-letter-details.component';
 
 
 @NgModule({
@@ -55,6 +57,8 @@ import { NgSelectModule } from '@ng-select/ng-select';
     RejectedLettersListComponent,
     RejectedLetterDetailsComponent,
     DepartmentCriteriaManagementComponent,
+    CanceledLettersListComponent,
+    CanceledLetterDetailsComponent,
   ],
   imports: [
     BrowserModule,

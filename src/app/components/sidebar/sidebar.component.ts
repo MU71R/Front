@@ -7,8 +7,9 @@ import {
   EventEmitter,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoginService } from 'src/app/service/login.service';
+import { Subscription } from 'rxjs';
 import { User } from 'src/app/model/user';
+import { AuthService } from 'src/app/service/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -19,14 +20,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
   isSidebarOpen = false;
   user: User | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private userSubscription?: Subscription;
 
   @Output() sidebarToggled = new EventEmitter<boolean>();
 
-  constructor(private router: Router, private loginService: LoginService) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   ngOnInit(): void {
     this.checkScreenSize();
-    this.loadUserData();
+    this.subscribeToUser();
     this.setupResizeObserver();
   }
 
@@ -34,22 +36,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
+    }
   }
 
   private setupResizeObserver(): void {
     if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver((entries) => {
-        for (let entry of entries) {
-          this.checkScreenSize();
-        }
+      this.resizeObserver = new ResizeObserver(() => {
+        this.checkScreenSize();
       });
-
       this.resizeObserver.observe(document.body);
     }
   }
 
   @HostListener('window:resize', ['$event'])
-  onResize(event: any): void {
+  onResize(): void {
     this.checkScreenSize();
   }
 
@@ -59,22 +61,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private checkScreenSize(): void {
-    if (window.innerWidth >= 992) {
-      this.isSidebarOpen = true;
-    } else {
-      this.isSidebarOpen = false;
-    }
+    this.isSidebarOpen = window.innerWidth >= 992;
     this.sidebarToggled.emit(this.isSidebarOpen);
+
+    if (this.isSidebarOpen) {
+      document.body.classList.add('sidebar-open-mobile');
+    } else {
+      document.body.classList.remove('sidebar-open-mobile');
+    }
   }
 
-  private loadUserData(): void {
-    this.user = this.loginService.getUserFromLocalStorage();
-
-    this.loginService.user$.subscribe((user) => {
+  private subscribeToUser(): void {
+    // اشترك في currentUser$ من AuthService
+    this.userSubscription = this.authService.currentUser$.subscribe((user) => {
       this.user = user;
     });
   }
-
 
   getUserRoleDisplayName(): string {
     if (!this.user?.role) return 'مستخدم';
@@ -107,7 +109,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.loginService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout(); // ينظف الجلسة ويرجع login
   }
 }

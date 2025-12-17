@@ -138,17 +138,24 @@ export class DepartmentComponent implements OnInit {
     );
   }
 
-  applyFilters(): void {
-    this.filteredList = this.users.filter((user) => {
-      const matchSector = this.selectedFilterSector
-        ? user.sector.includes(this.selectedFilterSector)
-        : true;
-      const matchName = this.searchTerm
-        ? user.fullname?.toLowerCase().includes(this.searchTerm.toLowerCase())
-        : true;
-      return matchSector && matchName;
-    });
-  }
+ applyFilters(): void {
+  this.filteredList = this.users.filter((user) => {
+    const matchSector = this.selectedFilterSector
+      ? user.sector
+        ? Array.isArray(user.sector)
+          ? user.sector.includes(this.selectedFilterSector)
+          : user.sector === this.selectedFilterSector
+        : false
+      : true;
+
+    const matchName = this.searchTerm
+      ? user.fullname?.toLowerCase().includes(this.searchTerm.toLowerCase())
+      : true;
+
+    return matchSector && matchName;
+  });
+}
+
 
   resetFilters(): void {
     this.searchTerm = '';

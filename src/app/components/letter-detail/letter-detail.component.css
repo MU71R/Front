@@ -10,7 +10,7 @@
   overflow-x: hidden;
 }
 
-/* Header Styles */
+/* ==================== Header Styles ==================== */
 .page-header {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
   padding: 2rem;
@@ -48,7 +48,7 @@
   border: 1px solid #e9ecef;
 }
 
-/* Main Card */
+/* ==================== Main Card ==================== */
 .main-card {
   background: white;
   border-radius: 1.5rem;
@@ -81,7 +81,7 @@
   align-items: center;
 }
 
-/* Status Section */
+/* ==================== Status Section ==================== */
 .status-section {
   background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
 }
@@ -135,7 +135,7 @@
   color: #0d6efd;
 }
 
-/* Progress Track Vertical */
+/* ==================== Progress Track Vertical ==================== */
 .progress-track-vertical {
   display: flex;
   flex-direction: column;
@@ -248,7 +248,117 @@
   border-radius: 3px;
 }
 
-/* Content Blocks */
+/* ==================== Personal Information Section ==================== */
+.personal-info-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.personal-info-display .row {
+  margin: 0;
+}
+
+.info-card {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.info-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.info-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.info-label i {
+  margin-left: 0.5rem;
+  color: #0d6efd;
+}
+
+.info-value {
+  font-size: 1.05rem;
+  color: #2d3748;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.personal-info-section .form-label {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+}
+
+.personal-info-section .form-label i {
+  margin-left: 0.5rem;
+  color: #0d6efd;
+}
+
+.personal-info-section .form-control {
+  border: 2px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+  direction: rtl;
+  text-align: right;
+}
+
+.personal-info-section .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+/* ==================== Quill Editor Styling ==================== */
+::ng-deep .rationale-editor .ql-container,
+::ng-deep .description-editor .ql-container {
+  min-height: 120px;
+  font-size: 1rem;
+  line-height: 1.6;
+  direction: rtl;
+  text-align: right;
+  font-family: 'Cairo', 'Noto Kufi Arabic', 'Segoe UI', sans-serif;
+}
+
+::ng-deep .rationale-editor .ql-editor,
+::ng-deep .description-editor .ql-editor {
+  min-height: 120px;
+  padding: 1rem;
+  direction: rtl;
+  text-align: right;
+}
+
+::ng-deep .ql-toolbar {
+  direction: ltr;
+  background: #f8f9fa;
+  border-radius: 0.5rem 0.5rem 0 0;
+  border: 1px solid #dee2e6;
+}
+
+::ng-deep .ql-container {
+  border-radius: 0 0 0.5rem 0.5rem;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  background: white;
+}
+
+::ng-deep .ql-editor p {
+  margin-bottom: 0.5em;
+  line-height: 1.6;
+}
+
+/* ==================== Content Blocks ==================== */
 .content-block,
 .rationale-block,
 .timeline-block,
@@ -286,66 +396,7 @@
   overflow-x: hidden;
 }
 
-/* Content & Rationale */
-.letter-content {
-  line-height: 1.8;
-  font-size: 1.05rem;
-  color: #2d3748;
-  min-height: auto;
-  height: auto;
-  flex: 1;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.content-textarea,
-.rationale-textarea {
-  border: 2px solid #e9ecef;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  font-size: 1rem;
-  line-height: 1.6;
-  resize: vertical;
-  background: white;
-  transition: all 0.3s ease;
-  min-height: auto;
-  height: auto;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
-}
-
-.content-textarea {
-  min-height: 200px;
-}
-
-.rationale-textarea {
-  min-height: 120px;
-}
-
-.content-textarea:focus,
-.rationale-textarea:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
-}
-
-.rationale-content {
-  line-height: 1.7;
-  color: #2d3748;
-  background: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid #e9ecef;
-  min-height: auto;
-  height: auto;
-  flex: 1;
-  word-break: break-word;
-}
-
-/* Timeline Compact */
+/* ==================== Timeline Compact ==================== */
 .timeline-compact {
   display: flex;
   flex-direction: column;
@@ -405,7 +456,134 @@
   word-break: break-word;
 }
 
-/* Actions */
+.timeline-item .form-control {
+  margin-top: 0.5rem;
+  direction: rtl;
+  text-align: right;
+}
+
+/* ==================== Rationale & Descriptions Lists ==================== */
+.descriptions-list,
+.rationale-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+}
+
+.description-item,
+.rationale-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 10px;
+  border-right: 4px solid #0d6efd;
+  transition: all 0.3s ease;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  box-sizing: border-box;
+}
+
+.description-item:hover,
+.rationale-item:hover {
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(-5px);
+}
+
+.description-number,
+.rationale-number {
+  flex-shrink: 0;
+  margin-left: 1rem;
+}
+
+.number-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 25px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
+  min-width: 70px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.description-text,
+.rationale-text {
+  flex: 1;
+  line-height: 1.8;
+  color: #2c3e50;
+  text-align: right;
+  font-size: 1.05rem;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  text-align: justify;
+  text-justify: inter-word;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* HTML content inside rationale and description */
+.description-text ::ng-deep p,
+.rationale-text ::ng-deep p {
+  margin-bottom: 0.5em;
+  line-height: 1.8;
+}
+
+.description-text ::ng-deep ul,
+.rationale-text ::ng-deep ul,
+.description-text ::ng-deep ol,
+.rationale-text ::ng-deep ol {
+  margin: 0.5em 0;
+  padding-right: 1.5em;
+}
+
+.description-text ::ng-deep li,
+.rationale-text ::ng-deep li {
+  margin-bottom: 0.25em;
+}
+
+.description-edit-item,
+.rationale-edit-item {
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 8px;
+  background: white;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.description-edit-item .number-badge,
+.rationale-edit-item .number-badge {
+  min-width: 60px;
+}
+
+.btn-danger.btn-sm {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.25rem;
+}
+
+.rationale-edit-item .d-flex,
+.description-edit-item .d-flex {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  max-width: 100%;
+}
+
+/* ==================== Actions Section ==================== */
 .actions-section {
   background: linear-gradient(135deg, #fff9f9 0%, #fff5f5 100%);
 }
@@ -434,7 +612,7 @@
   box-sizing: border-box;
 }
 
-/* Approvals List Compact */
+/* ==================== Approvals List Compact ==================== */
 .approvals-list-compact {
   display: flex;
   flex-direction: column;
@@ -515,7 +693,7 @@
   color: #721c24;
 }
 
-/* Rejection Block */
+/* ==================== Rejection Block ==================== */
 .rejection-block {
   background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
   border: 2px solid #fed7d7;
@@ -542,7 +720,7 @@
   flex-shrink: 0;
 }
 
-/* Buttons */
+/* ==================== Buttons ==================== */
 .btn {
   font-weight: 600;
   border-radius: 0.75rem;
@@ -557,7 +735,11 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Loading */
+.btn i {
+  margin-left: 0.5rem;
+}
+
+/* ==================== Loading ==================== */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -576,169 +758,7 @@
   margin-top: 1rem;
 }
 
-/* إصلاح مشكلة خروج النص في الحيثيات والبنود */
-.descriptions-list,
-.rationale-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  max-width: 100%;
-  overflow-x: hidden;
-  word-break: break-word;
-}
-
-.description-item,
-.rationale-item {
-  display: flex;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border-right: 4px solid #0d6efd;
-  transition: all 0.3s ease;
-  max-width: 100%;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  box-sizing: border-box;
-}
-
-.description-item:hover,
-.rationale-item:hover {
-  background: #e9ecef;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateX(-5px);
-}
-
-.description-number,
-.rationale-number {
-  flex-shrink: 0;
-  margin-left: 1rem;
-}
-
-.number-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-  color: white;
-  padding: 0.4rem 1rem;
-  border-radius: 25px;
-  font-weight: bold;
-  font-size: 0.95rem;
-  box-shadow: 0 2px 6px rgba(13, 110, 253, 0.3);
-  min-width: 70px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.description-text,
-.rationale-text {
-  flex: 1;
-  line-height: 1.8;
-  color: #2c3e50;
-  text-align: right;
-  font-size: 1.05rem;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-  hyphens: auto;
-  text-align: justify;
-  text-justify: inter-word;
-  width: 100%;
-  max-width: 100%;
-}
-
-.description-edit-item,
-.rationale-edit-item {
-  border: 1px solid #dee2e6;
-  padding: 1rem;
-  border-radius: 8px;
-  background: #f8f9fa;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-.description-edit-item .number-badge,
-.rationale-edit-item .number-badge {
-  min-width: 60px;
-}
-
-.description-edit-item textarea,
-.rationale-edit-item textarea {
-  resize: vertical;
-  min-height: 80px;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
-  font-family: inherit;
-  line-height: 1.6;
-  padding: 0.75rem;
-  border: 1px solid #ced4da;
-  border-radius: 0.375rem;
-}
-
-/* Wrappers الجديدة */
-.rationale-content-wrapper,
-.description-content-wrapper,
-.rationale-text-wrapper,
-.description-text-wrapper {
-  width: 100%;
-  max-width: 100%;
-  overflow: hidden;
-  flex: 1;
-}
-
-.rationale-text-wrapper textarea,
-.description-text-wrapper textarea {
-  max-width: calc(100% - 10px);
-}
-
-/* تحسين الأزرار الصغيرة */
-.btn-danger.btn-sm {
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 0.25rem;
-}
-
-/* تحسين Flexbox أثناء التعديل */
-.rationale-edit-item .d-flex,
-.description-edit-item .d-flex {
-  flex-wrap: nowrap;
-  align-items: flex-start;
-  max-width: 100%;
-}
-
-/* تحسين خاص للنص العربي */
-:host([dir="rtl"]) .description-text,
-:host([dir="rtl"]) .rationale-text,
-:host([dir="rtl"]) .description-textarea,
-:host([dir="rtl"]) .rationale-textarea {
-  text-align-last: right;
-  font-family: 'Cairo', 'Noto Kufi Arabic', 'Segoe UI', sans-serif;
-  direction: rtl;
-}
-
-/* حل إضافي للنصوص الطويلة جداً */
-.rationale-text,
-.description-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 20;
-  -webkit-box-orient: vertical;
-}
-
-.rationale-item:hover .rationale-text,
-.description-item:hover .description-text {
-  -webkit-line-clamp: unset;
-  overflow: visible;
-}
-
-/* Responsive Enhancements */
+/* ==================== Responsive Design ==================== */
 @media (max-width: 768px) {
   .page-header {
     padding: 1.5rem;
@@ -774,14 +794,6 @@
     width: 100%;
   }
 
-  .content-textarea {
-    min-height: 150px;
-  }
-
-  .rationale-textarea {
-    min-height: 100px;
-  }
-
   .description-item,
   .rationale-item {
     flex-direction: column;
@@ -806,10 +818,9 @@
     padding: 0.75rem;
   }
 
-  .description-textarea,
-  .rationale-textarea {
-    font-size: 1rem;
-    min-height: 70px;
+  ::ng-deep .rationale-editor .ql-container,
+  ::ng-deep .description-editor .ql-container {
+    min-height: 100px;
   }
 }
 
@@ -837,14 +848,6 @@
   .btn {
     font-size: 0.9rem;
     padding: 0.5rem 1rem;
-  }
-
-  .content-textarea {
-    min-height: 120px;
-  }
-
-  .rationale-textarea {
-    min-height: 80px;
   }
 
   .progress-step {
@@ -875,10 +878,29 @@
     line-height: 1.5;
     text-align: justify;
   }
+
+  ::ng-deep .rationale-editor .ql-container,
+  ::ng-deep .description-editor .ql-container {
+    min-height: 80px;
+  }
 }
 
-/* تجنب التمرير الأفقي على مستوى الصفحة */
+/* ==================== Utility Classes ==================== */
 html, body {
   overflow-x: hidden;
   max-width: 100%;
+}
+
+/* Animation for spin */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
 }

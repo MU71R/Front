@@ -16,29 +16,23 @@
   <div class="page-header mb-4">
     <div class="row align-items-center">
       <div class="col-md-8">
-    <h1 class="page-title text-truncate" [title]="form.value.title">
-        {{ form.value.title || 'تفاصيل القرار' }}
-    </h1>
-    <div class="page-meta d-flex flex-column flex-md-row flex-wrap gap-2 mt-2">
-        <span class="meta-item">
+        <h1 class="page-title text-truncate" [title]="original?.title || form.value.title">
+          {{ original?.title || form.value.title || 'تفاصيل القرار' }}
+        </h1>
+        <div class="page-meta d-flex flex-column flex-md-row flex-wrap gap-2 mt-2">
+          <span class="meta-item">
             <i class="fa fa-calendar me-1"></i>
             {{ original?.createdAt | date: 'd MMMM y' }}
-        </span>
-        <span class="meta-item">
+          </span>
+          <span class="meta-item">
             <i class="fa fa-user me-1"></i>
-            {{ 'جهة اعداد القرار: ' + original?.user?.fullname || '---' }}
-        </span>
-    </div>
-  </div>
+            {{ 'جهة اعداد القرار: ' + (original?.user?.fullname || '---') }}
+          </span>
+        </div>
+      </div>
 
       <div class="col-md-4 text-left">
-        <div class="action-buttons d-flex gap-2 justify-content-md-end">
-
-          <button *ngIf="showPdfButton()" class="btn btn-danger" (click)="handlePdfAction()"
-            [disabled]="pdfLoading || pdfGenerating || pdfSearching">
-            <i class="bi" [class]="getPdfButtonIcon()"></i>
-            {{ getPdfButtonText() }}
-          </button>
+        <div class="action-buttons d-flex gap-2 justify-content-md-end flex-wrap">
 
           <button *ngIf="canEdit() && !isEditing" class="btn btn-primary btn-edit" (click)="enableEdit()">
             <i class="fa fa-pencil-square me-2"></i> تعديل القرار
@@ -60,18 +54,19 @@
     </div>
   </div>
 
-  <!-- PDF Section -->
-  <div class="card-section pdf-section mb-4" *ngIf="canShowPdf()">
+  <!-- PDF Section - Always Visible -->
+  <div *ngIf="user?.role === 'UniversityPresident'" class="card-section pdf-section mb-4">
     <div class="section-header">
       <h3 class="section-title">
         <i class="fa fa-file-pdf me-2"></i>
-        نسخة القرار النهائية
+        إدارة ملف PDF
       </h3>
     </div>
     <div class="section-body">
       <div class="pdf-status-container">
 
-        <div *ngIf="pdfSearching" class="alert alert-info d-flex align-items-center">
+        <div *ngIf="pdfSearching"
+          class="alert alert-info d-flex align-items-center">
           <i class="fa fa-search me-2"></i>
           <span>جاري البحث عن ملف PDF...</span>
         </div>
@@ -90,27 +85,32 @@
         <div class="pdf-actions mt-3">
           <div class="action-buttons d-flex gap-2 flex-wrap">
 
-            <button class="btn btn-primary" (click)="openPdf()" [disabled]="!pdfUrl || pdfLoading || pdfGenerating">
+            <!-- زر إنشاء PDF جديد -->
+            <button class="btn btn-primary" (click)="generateTestingPdf()" [disabled]="pdfGenerating">
+              <i class="fa" [class.fa-file-pdf]="!pdfGenerating" [class.fa-spinner]="pdfGenerating"
+                [class.fa-spin]="pdfGenerating" me-2></i>
+              {{ pdfGenerating ? 'جاري الإنشاء...' : 'إنشاء PDF جديد' }}
+            </button>
+
+            <!-- زر عرض PDF -->
+            <button class="btn btn-success" (click)="openPdf()" [disabled]="!pdfUrl || pdfLoading || pdfGenerating">
               <i class="bi" [class]="getViewButtonIcon()"></i>
               {{ getViewButtonText() }}
             </button>
 
+            <!-- زر تنزيل PDF -->
             <button class="btn btn-outline-primary" (click)="downloadPdf()" [disabled]="!pdfUrl || pdfLoading">
               <i class="fa fa-download me-2"></i>
               تنزيل PDF
             </button>
 
-            <button *ngIf="!pdfUrl" class="btn btn-warning" (click)="generatePdf()" [disabled]="pdfGenerating">
-              <i class="fa fa-file-pdf me-2"></i>
-              {{ pdfGenerating ? 'جاري الإنشاء...' : 'إنشاء PDF جديد' }}
-            </button>
           </div>
 
           <div *ngIf="pdfFile" class="pdf-file-info mt-3">
             <small class="text-muted">
               <i class="fa fa-info-circle me-1"></i>
-              تم إنشاء الملف بواسطة:
-              {{ pdfFile.userId.fullname || pdfFile.userId.name || 'غير معروف' }}
+              آخر ملف تم إنشاؤه بواسطة:
+              {{ pdfFile.userId?.fullname || pdfFile.userId?.name || 'غير معروف' }}
               في {{ pdfFile.createdAt | date: 'd/M/yyyy h:mm a' }}
             </small>
           </div>
@@ -141,7 +141,11 @@
             <div class="status-details">
               <div class="detail-row">
                 <span class="detail-label">نوع القرار:</span>
-                <span class="detail-value highlight">{{ original?.decision?.title || '---' }}</span>
+                <span class="detail-value highlight">{{ original?.mainCriteria?.name || '---' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">قرار:</span>
+                <span class="detail-value">{{ original?.subCriteria?.name || '---' }}</span>
               </div>
               <div class="detail-row">
                 <span class="detail-label">صلاحية القرار:</span>
@@ -164,7 +168,9 @@
                 <div class="step-header">
                   <i class="fa fa-building step-icon"></i>
                   <div class="step-info">
-                    <div class="step-title">{{ original?.decision?.supervisor?.fullname || '---' }}</div>
+                    <div class="step-title">
+                      {{ original?.supervisors?.[0]?.fullname || '---' }}
+                    </div>
                     <div class="step-desc">مرحلة المراجعة الأولية</div>
                   </div>
                 </div>
@@ -221,7 +227,97 @@
     </div>
   </div>
 
-  <!-- Rationale Section (الحيثيات - الجزء العلوي) -->
+  <!-- Personal Information Section -->
+  <div class="card-section personal-info-section mb-4">
+    <div class="section-header">
+      <h3 class="section-title">
+        <i class="fa fa-user me-2"></i>
+        البيانات الشخصية
+      </h3>
+    </div>
+    <div class="section-body">
+      <div *ngIf="!isEditing" class="personal-info-display">
+        <div class="row g-3">
+          <div class="col-md-6" *ngIf="original?.fullName">
+            <div class="info-card">
+              <div class="info-label">
+                <i class="fa fa-user-circle"></i>
+                الاسم الرباعي
+              </div>
+              <div class="info-value">{{ original.fullName }}</div>
+            </div>
+          </div>
+          <div class="col-md-6" *ngIf="original?.entityName">
+            <div class="info-card">
+              <div class="info-label">
+                <i class="fa fa-building"></i>
+                اسم الجهة
+              </div>
+              <div class="info-value">{{ original.entityName }}</div>
+            </div>
+          </div>
+          <div class="col-md-6" *ngIf="original?.nationalId">
+            <div class="info-card">
+              <div class="info-label">
+                <i class="fa fa-id-card"></i>
+                الرقم القومي
+              </div>
+              <div class="info-value">{{ original.nationalId }}</div>
+            </div>
+          </div>
+          <div class="col-md-6" *ngIf="original?.phoneNumber">
+            <div class="info-card">
+              <div class="info-label">
+                <i class="fa fa-phone"></i>
+                رقم الموبايل
+              </div>
+              <div class="info-value">{{ original.phoneNumber }}</div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="!original?.fullName && !original?.entityName && !original?.nationalId && !original?.phoneNumber"
+          class="text-muted text-center py-4">
+          <i class="fa fa-info-circle me-2"></i>
+          لا توجد بيانات شخصية مضافة
+        </div>
+      </div>
+
+      <form *ngIf="isEditing" [formGroup]="form">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">
+              <i class="fa fa-user-circle me-1"></i>
+              الاسم الرباعي (اختياري)
+            </label>
+            <input type="text" class="form-control" formControlName="fullName" placeholder="أدخل الاسم الرباعي">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">
+              <i class="fa fa-building me-1"></i>
+              اسم الجهة (اختياري)
+            </label>
+            <input type="text" class="form-control" formControlName="entityName" placeholder="أدخل اسم الجهة">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">
+              <i class="fa fa-id-card me-1"></i>
+              الرقم القومي (اختياري)
+            </label>
+            <input type="text" class="form-control" formControlName="nationalId" placeholder="أدخل الرقم القومي">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">
+              <i class="fa fa-phone me-1"></i>
+              رقم الموبايل (اختياري)
+            </label>
+            <input type="text" class="form-control" formControlName="phoneNumber" placeholder="أدخل رقم الموبايل">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rationale Section -->
   <div class="card-section rationale-section mb-4">
     <div class="section-header">
       <h3 class="section-title">
@@ -235,9 +331,7 @@
           <div class="rationale-number">
             <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
           </div>
-          <div class="rationale-text">
-            {{ rationale }}
-          </div>
+          <div class="rationale-text" [innerHTML]="rationale"></div>
         </div>
         <div *ngIf="!original?.Rationale || original?.Rationale.length === 0" class="text-muted text-center py-4">
           <i class="fa fa-info-circle me-2"></i>
@@ -245,35 +339,42 @@
         </div>
       </div>
 
-      <form *ngIf="isEditing" [formGroup]="form">
-        <div formArrayName="rationales">
-          <div *ngFor="let rationaleControl of rationalesArray.controls; let i = index"
-            class="rationale-edit-item mb-3">
-            <div class="d-flex gap-2 align-items-start">
-              <div class="rationale-number">
-                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+      <div *ngIf="isEditing">
+        <form [formGroup]="form">
+          <div formArrayName="rationales">
+            <div *ngFor="let rationaleControl of rationalesArray.controls; let i = index"
+              class="rationale-edit-item mb-3">
+              <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                    <span class="fw-bold">حيثية رقم {{ i + 1 }}</span>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="removeRationale(i)"
+                    [disabled]="rationalesArray.length === 1" *ngIf="rationalesArray.length > 1">
+                    <i class="fa fa-trash me-1"></i> حذف
+                  </button>
+                </div>
+                <div class="card-body p-0">
+                  <quill-editor [formControl]="getRationaleControl(i)" [modules]="quillModules"
+                    [styles]="{'min-height': '200px', 'border': 'none'}"
+                    [placeholder]="'أدخل نص الحيثية ' + getArabicOrdinal(i) + '...'" class="rationale-editor">
+                  </quill-editor>
+                </div>
               </div>
-              <div class="flex-grow-1">
-                <textarea [formControlName]="i" class="form-control rationale-textarea" rows="4"
-                  placeholder="أدخل حيثية القرار..."></textarea>
-              </div>
-              <button type="button" class="btn btn-danger btn-sm" (click)="removeRationale(i)"
-                *ngIf="rationalesArray.length > 1">
-                <i class="fa fa-trash"></i>
-              </button>
             </div>
           </div>
-        </div>
 
-        <button type="button" class="btn btn-outline-primary mt-2" (click)="addRationale()">
-          <i class="fa fa-plus me-2"></i>
-          إضافة حيثية جديدة
-        </button>
-      </form>
+          <button type="button" class="btn btn-outline-primary mt-2" (click)="addRationale()">
+            <i class="fa fa-plus me-2"></i>
+            إضافة حيثية جديدة
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
-  <!-- Descriptions Section (البنود - أسفل الحيثيات) -->
+  <!-- Descriptions Section -->
   <div class="card-section descriptions-section mb-4">
     <div class="section-header">
       <h3 class="section-title">
@@ -282,15 +383,12 @@
       </h3>
     </div>
     <div class="section-body">
-      <!-- عرض البنود -->
       <div *ngIf="!isEditing" class="descriptions-list">
-        <div class="description-item" *ngFor="let desc of original.descriptions; let i = index">
+        <div class="description-item" *ngFor="let desc of original?.descriptions; let i = index">
           <div class="description-number">
             <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
           </div>
-          <div class="description-text">
-            {{ desc }}
-          </div>
+          <div class="description-text" [innerHTML]="desc"></div>
         </div>
         <div *ngIf="!original?.descriptions || original?.descriptions.length === 0" class="text-muted text-center py-4">
           <i class="fa fa-info-circle me-2"></i>
@@ -298,237 +396,194 @@
         </div>
       </div>
 
-      <!-- نموذج التعديل للبنود -->
-      <form *ngIf="isEditing" [formGroup]="form">
-        <div formArrayName="descriptions">
-          <div *ngFor="let descControl of descriptionsArray.controls; let i = index"
-            class="description-edit-item mb-3">
-            <div class="d-flex gap-2 align-items-start">
-              <div class="description-number">
-                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+      <div *ngIf="isEditing">
+        <form [formGroup]="form">
+          <div formArrayName="descriptions">
+            <div *ngFor="let descControl of descriptionsArray.controls; let i = index"
+              class="description-edit-item mb-3">
+              <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                    <span class="fw-bold">بند رقم {{ i + 1 }}</span>
+                  </div>
+                  <button type="button" class="btn btn-danger btn-sm" (click)="removeDescription(i)"
+                    [disabled]="descriptionsArray.length === 1" *ngIf="descriptionsArray.length > 1">
+                    <i class="fa fa-trash me-1"></i> حذف
+                  </button>
+                </div>
+                <div class="card-body p-0">
+                  <quill-editor [formControl]="getDescriptionControl(i)" [modules]="quillModules"
+                    [styles]="{'min-height': '200px', 'border': 'none'}"
+                    [placeholder]="'أدخل نص البند ' + getArabicOrdinal(i) + '...'" class="description-editor">
+                  </quill-editor>
+                </div>
               </div>
-              <div class="flex-grow-1">
-                <textarea [formControlName]="i" class="form-control description-textarea" rows="4"
-                  placeholder="أدخل نص البند..."></textarea>
-              </div>
-              <button type="button" class="btn btn-danger btn-sm" (click)="removeDescription(i)"
-                *ngIf="descriptionsArray.length > 1">
-                <i class="fa fa-trash"></i>
-              </button>
             </div>
           </div>
+
+          <button type="button" class="btn btn-outline-primary mt-2" (click)="addDescription()">
+            <i class="fa fa-plus me-2"></i>
+            إضافة بند جديد
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline & Actions Section -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="rationale-block">
+        <div class="block-header">
+          <h4 class="block-title">
+            <i class="fa fa-clock me-2"></i>
+            الجدول الزمني
+          </h4>
         </div>
 
-              <button type="button" class="btn btn-outline-primary btn-sm mt-2" (click)="addDescription()">
-                <i class="fa fa-plus me-2"></i>
-                إضافة بند جديد
-              </button>
-            </form>
+        <div class="block-body">
+          <div class="timeline-compact">
+            <div class="timeline-item">
+              <div class="timeline-marker success"></div>
+              <div class="timeline-content">
+                <div class="timeline-label">تاريخ الإنشاء</div>
+                <div class="timeline-value">{{ original?.createdAt | date: 'd MMMM y, h:mm a' }}</div>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-marker primary"></div>
+              <div class="timeline-content">
+                <div class="timeline-label">تاريخ القرار</div>
+                <div class="timeline-value">{{ original?.date | date: 'd MMMM y' }}</div>
+              </div>
+            </div>
+
+            <ng-container *ngIf="isEditing; else viewDates">
+              <form [formGroup]="form">
+                <div class="timeline-item">
+                  <div class="timeline-marker success"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-label">تاريخ البدء</div>
+                    <input type="date" class="form-control" formControlName="startDate" />
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <div class="timeline-marker warning"></div>
+                  <div class="timeline-content">
+                    <div class="timeline-label">تاريخ الانتهاء</div>
+                    <input type="date" class="form-control" formControlName="endDate" />
+                  </div>
+                </div>
+              </form>
+            </ng-container>
+
+            <ng-template #viewDates>
+              <div class="timeline-item">
+                <div class="timeline-marker success"></div>
+                <div class="timeline-content">
+                  <div class="timeline-label">تاريخ البدء</div>
+                  <div class="timeline-value">{{ original?.StartDate | date: 'd MMMM y' }}</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-marker warning"></div>
+                <div class="timeline-content">
+                  <div class="timeline-label">تاريخ الانتهاء</div>
+                  <div class="timeline-value">{{ original?.EndDate | date: 'd MMMM y' }}</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <div class="timeline-marker warning"></div>
+                <div class="timeline-content">
+                  <div class="timeline-label">مدة سريان القرار</div>
+                  <div class="timeline-value">{{ original?.durationDays || 0 }} يوم</div>
+                </div>
+              </div>
+            </ng-template>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="col-lg-4">
-        <div class="rationale-block">
-          <div class="block-header">
-            <h4 class="block-title">
-              <i class="fa fa-journal-text me-2"></i>
-              حيثيات القرار
-            </h4>
-          </div>
-          <div class="block-body">
-            <div *ngIf="!isEditing" class="rationale-list">
-              <div *ngFor="let rationale of original?.Rationale; let i = index" class="rationale-item">
-                <div class="rationale-number">
-                  <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
-                </div>
-                <div class="rationale-text">
-                  {{ rationale }}
-                </div>
-              </div>
-              <div *ngIf="!original?.Rationale || original?.Rationale.length === 0" class="text-muted">
-                لا توجد حيثيات مضافة
-              </div>
-            </div>
-
-            <form *ngIf="isEditing" [formGroup]="form">
-              <div formArrayName="rationales">
-                <div *ngFor="let rationaleControl of rationalesArray.controls; let i = index"
-                  class="rationale-edit-item mb-3">
-                  <div class="d-flex gap-2 align-items-start">
-                    <div class="rationale-number">
-                      <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
-                    </div>
-                    <div class="flex-grow-1">
-                      <textarea [formControlName]="i" class="form-control" rows="3"
-                        placeholder="أدخل حيثية القرار..."></textarea>
-                    </div>
-                    <button type="button" class="btn btn-danger btn-sm" (click)="removeRationale(i)"
-                      *ngIf="rationalesArray.length > 1">
-                      <i class="fa fa-trash"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <button type="button" class="btn btn-outline-primary btn-sm mt-2" (click)="addRationale()">
-                <i class="fa fa-plus me-2"></i>
-                إضافة حيثية جديدة
-              </button>
-            </form>
-
-            <!-- Timeline & Dates -->
-            <div class="timeline-block mt-4">
-              <div class="block-header">
-                <h4 class="block-title">
-                  <i class="fa fa-clock me-2"></i>
-                  الجدول الزمني
-                </h4>
-              </div>
-
-              <div class="block-body">
-                <div class="timeline-compact">
-                  <!-- تاريخ الإنشاء: غير قابل للتعديل -->
-                  <div class="timeline-item">
-                    <div class="timeline-marker success"></div>
-                    <div class="timeline-content">
-                      <div class="timeline-label">تاريخ الإنشاء</div>
-                      <div class="timeline-value">{{ original?.createdAt | date: 'd MMMM y, h:mm a' }}</div>
-                    </div>
-                  </div>
-
-                  <!-- تاريخ القرار: غير قابل للتعديل -->
-                  <div class="timeline-item">
-                    <div class="timeline-marker primary"></div>
-                    <div class="timeline-content">
-                      <div class="timeline-label">تاريخ القرار</div>
-                      <div class="timeline-value">{{ original?.date | date: 'd MMMM y' }}</div>
-                    </div>
-                  </div>
-
-                <!-- تواريخ قابلة للتعديل -->
-                <ng-container *ngIf="isEditing; else viewDates">
-                  <form [formGroup]="form">
-                    <div class="timeline-item">
-                      <div class="timeline-marker success"></div>
-                      <div class="timeline-content">
-                        <div class="timeline-label">تاريخ البدء</div>
-                        <input type="date" class="form-control" formControlName="startDate" />
-                      </div>
-                    </div>
-                    <div class="timeline-item">
-                      <div class="timeline-marker warning"></div>
-                      <div class="timeline-content">
-                        <div class="timeline-label">تاريخ الانتهاء</div>
-                        <input type="date" class="form-control" formControlName="endDate" />
-                      </div>
-                    </div>
-                  </form>
-                </ng-container>
-
-                <ng-template #viewDates>
-                  <div class="timeline-item">
-                    <div class="timeline-marker success"></div>
-                    <div class="timeline-content">
-                      <div class="timeline-label">تاريخ البدء</div>
-                      <div class="timeline-value">{{ original?.StartDate | date: 'd MMMM y' }}</div>
-                    </div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-marker warning"></div>
-                    <div class="timeline-content">
-                      <div class="timeline-label">تاريخ الانتهاء</div>
-                      <div class="timeline-value">{{ original?.EndDate | date: 'd MMMM y' }}</div>
-                    </div>
-                  </div>
-                  <div class="timeline-item">
-                    <div class="timeline-marker warning"></div>
-                    <div class="timeline-content">
-                      <div class="timeline-label">مدة سريان القرار </div>
-                      <div class="timeline-value">{{ original?.durationDays || 0 }} يوم</div>
-                    </div>
-                  </div>
-                </ng-template>
-              </div>
-
-            </div>
-          </div>
+    <!-- إجراءات المراجعة -->
+    <div class="col-lg-6" *ngIf="showReviewActions()">
+      <div class="actions-block">
+        <div class="block-header">
+          <h4 class="block-title">
+            <i class="fa fa-gear me-2"></i>
+            إجراءات المراجعة
+          </h4>
         </div>
+        <div class="block-body">
 
-        <!-- إجراءات المراجعة -->
-        <div class="col-lg-6" *ngIf="showReviewActions()">
-          <div class="actions-block">
-            <div class="block-header">
-              <h4 class="block-title">
-                <i class="fa fa-gear me-2"></i>
-                إجراءات المراجعة
-              </h4>
+          <!-- نموذج التعديل -->
+          <div *ngIf="showAmendmentReason" class="rejection-section">
+            <label class="form-label fw-semibold">سبب التعديل <span class="text-danger">*</span></label>
+            <textarea class="form-control" rows="3" [(ngModel)]="amendmentReason"
+              placeholder="أدخل سبب التعديل..."></textarea>
+            <div class="action-buttons mt-3">
+              <button class="btn btn-warning btn-confirm" (click)="confirmAmendment()" [disabled]="processing">
+                <i class="fa fa-check-circle me-2"></i> تأكيد التعديل
+              </button>
+              <button class="btn btn-outline-secondary" (click)="cancelAmendment()">
+                <i class="fa fa-x-circle me-2"></i> إلغاء
+              </button>
             </div>
-            <div class="block-body">
+          </div>
 
-              <!-- نموذج التعديل (amendment) -->
-              <div *ngIf="showAmendmentReason" class="rejection-section">
-                <label class="form-label fw-semibold">سبب التعديل <span class="text-danger">*</span></label>
-                <textarea class="form-control" rows="3" [(ngModel)]="amendmentReason"
-                  placeholder="أدخل سبب التعديل..."></textarea>
-                <div class="action-buttons mt-3">
-                  <button class="btn btn-warning btn-confirm" (click)="confirmAmendment()" [disabled]="processing">
-                    <i class="fa fa-check-circle me-2"></i> تأكيد التعديل
-                  </button>
-                  <button class="btn btn-outline-secondary" (click)="cancelAmendment()">
-                    <i class="fa fa-x-circle me-2"></i> إلغاء
-                  </button>
-                </div>
+          <!-- أزرار المشرف -->
+          <div *ngIf="currentUserRole === 'supervisor' && original?.status === 'in_progress' && !showAmendmentReason"
+            class="action-buttons-grid">
+            <button class="btn btn-success" (click)="approveLetter()" [disabled]="processing">
+              <i class="fa fa-check-circle me-2"></i> موافقة وإرسال للرئيس
+            </button>
+            <button class="btn btn-warning" (click)="showAmendmentForm()" [disabled]="processing">
+              <i class="fa fa-edit me-2"></i> طلب تعديل
+            </button>
+            <button class="btn btn-danger" (click)="confirmFinalRejection()" [disabled]="processing">
+              <i class="fa fa-x-circle me-2"></i> رفض القرار
+            </button>
+          </div>
+
+          <!-- أزرار رئيس الجامعة -->
+          <div
+            *ngIf="currentUserRole === 'UniversityPresident' && original?.status === 'pending' && !showAmendmentReason">
+            <div *ngIf="!showPresidentOptions" class="action-buttons-grid">
+              <button class="btn btn-success" (click)="showPresidentOptions = true" [disabled]="processing">
+                <i class="fa fa-check-circle me-2"></i> الموافقة على القرار
+              </button>
+              <button class="btn btn-warning" (click)="showAmendmentForm()" [disabled]="processing">
+                <i class="fa fa-edit me-2"></i> طلب تعديل
+              </button>
+              <button class="btn btn-danger" (click)="confirmFinalRejection()" [disabled]="processing">
+                <i class="fa fa-x-circle me-2"></i> رفض القرار
+              </button>
+            </div>
+
+            <!-- خيارات الموافقة (بدون PDF) -->
+            <div *ngIf="showPresidentOptions" class="approval-options">
+              <div class="alert alert-info mb-3">
+                <i class="fa fa-info-circle me-2"></i>
+                اختر نوع التوقيع للموافقة على القرار
               </div>
-
-                <!-- أزرار الإجراءات الرئيسية -->
-                <div
-                  *ngIf="currentUserRole === 'supervisor' && original?.status === 'in_progress' && !showAmendmentReason"
-                  class="action-buttons-grid">
-                  <button class="btn btn-success" (click)="approveLetter()" [disabled]="processing">
-                    <i class="fa fa-check-circle me-2"></i> موافقة وارسال للرئيس
-                  </button>
-                  <button class="btn btn-warning" (click)="showAmendmentForm()" [disabled]="processing">
-                    <i class="fa fa-edit me-2"></i> تعديل القرار
-                  </button>
-                  <button class="btn btn-danger" (click)="confirmFinalRejection()" [disabled]="processing">
-                    <i class="fa fa-x-circle me-2"></i> رفض
-                  </button>
-                </div>
-
-              <!-- أزرار رئيس الجامعة -->
-              <div
-                *ngIf="currentUserRole === 'UniversityPresident' && original?.status === 'pending' && !showAmendmentReason">
-                <div *ngIf="!showPresidentOptions" class="action-buttons-grid">
-                  <button class="btn btn-success" (click)="showPresidentOptions = true" [disabled]="processing">
-                    <i class="fa fa-check-circle me-2"></i> موافقة على القرار
-                  </button>
-                  <button class="btn btn-warning" (click)="showAmendmentForm()" [disabled]="processing">
-                    <i class="fa fa-edit me-2"></i> تعديل القرار
-                  </button>
-                  <button class="btn btn-danger" (click)="confirmFinalRejection()" [disabled]="processing">
-                    <i class="fa fa-x-circle me-2"></i> رفض
-                  </button>
-                </div>
-
-                <div *ngIf="showPresidentOptions" class="approval-options">
-                  <button class="btn btn-success" (click)="approveLetter('حقيقية')" [disabled]="processing">
-                    <i class="fa fa-qr-code-scan me-2"></i> توقيع الحي
-                  </button>
-                  <button class="btn btn-outline-primary" (click)="approveLetter('الممسوحة ضوئيا')"
-                    [disabled]="processing">
-                    <i class="fa fa-pen-fill me-2"></i> توقيع إلكتروني
-                  </button>
-                  <button class="btn btn-outline-secondary" (click)="showPresidentOptions = false">
-                    <i class="fa fa-arrow-right me-2"></i> رجوع
-                  </button>
-                </div>
-              </div>
+              <button class="btn btn-success w-100 mb-2" (click)="approveLetter('حقيقية')" [disabled]="processing">
+                <i class="fa fa-qr-code-scan me-2"></i> توقيع حي (حقيقي)
+              </button>
+              <button class="btn btn-outline-primary w-100 mb-2" (click)="approveLetter('الممسوحة ضوئيا')"
+                [disabled]="processing">
+                <i class="fa fa-pen-fill me-2"></i> توقيع إلكتروني (ممسوح ضوئياً)
+              </button>
+              <button class="btn btn-outline-secondary w-100" (click)="showPresidentOptions = false">
+                <i class="fa fa-arrow-right me-2"></i> رجوع
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
   <!-- Approvals & History Section -->
   <div class="card-section approvals-history-section">
@@ -568,9 +623,8 @@
       <div class="col-lg-6" *ngIf="showRejectionDetails()">
         <div class="rejection-block">
           <div class="block-header">
-            <h4 class="block-title"
-                [class.text-danger]="original?.status === 'rejected'"
-                [class.text-warning]="original?.status === 'amendment'">
+            <h4 class="block-title" [class.text-danger]="original?.status === 'rejected'"
+              [class.text-warning]="original?.status === 'amendment'">
               <i class="fa fa-exclamation-triangle me-2"></i>
               {{ original?.status === 'rejected' ? 'سبب الرفض' : 'سبب التعديل' }}
             </h4>
@@ -585,3 +639,4 @@
       </div>
     </div>
   </div>
+</div>

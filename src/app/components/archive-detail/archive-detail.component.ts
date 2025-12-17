@@ -21,6 +21,8 @@ export class ArchiveDetailComponent implements OnInit {
     fromDate: '',
     toDate: '',
     sender: '',
+    mainCriteria: '',
+    subCriteria: '',
   };
 
   dateRange = {
@@ -35,6 +37,9 @@ export class ArchiveDetailComponent implements OnInit {
   sortDirection = 'desc';
 
   uniqueSenders: string[] = [];
+  uniqueMainCriteria: string[] = [];
+  uniqueSubCriteria: any[] = [];
+  filteredSubCriteria: string[] = [];
 
   newArchive = {
     title: '',
@@ -126,6 +131,8 @@ export class ArchiveDetailComponent implements OnInit {
 
   initializeFilters(): void {
     this.extractUniqueSenders();
+    this.extractUniqueMainCriteria();
+    this.extractUniqueSubCriteria();
     this.applyFilters();
   }
 
@@ -137,66 +144,124 @@ export class ArchiveDetailComponent implements OnInit {
     this.uniqueSenders = [...new Set(senders)].sort();
   }
 
-    applyFilters(): void {
-      let filtered = [...this.letters];
+  extractUniqueMainCriteria(): void {
+    const mainCriteria = this.letters
+      .map((letter) => letter.mainCriteria?.name)
+      .filter((name) => name && name.trim() !== '');
 
-      // فلتر البحث بالكلمة المفتاحية
-      if (this.searchTerm) {
-        const term = this.searchTerm.toLowerCase();
-        filtered = filtered.filter(
-          (letter) =>
-            letter.title?.toLowerCase().includes(term) ||
-            letter.user?.fullname?.toLowerCase().includes(term) ||
-            letter.breeif?.toLowerCase().includes(term)
-        );
+    this.uniqueMainCriteria = [...new Set(mainCriteria)].sort();
+  }
+
+  extractUniqueSubCriteria(): void {
+    this.uniqueSubCriteria = this.letters
+      .map((letter) => ({
+        name: letter.subCriteria?.name,
+        mainCriteriaId: letter.subCriteria?.mainCriteria
+      }))
+      .filter((item) => item.name && item.name.trim() !== '');
+  }
+
+  onMainCriteriaChange(): void {
+    // إعادة تعيين المعيار الفرعي عند تغيير المعيار الرئيسي
+    this.filters.subCriteria = '';
+    
+    if (this.filters.mainCriteria) {
+      // البحث عن الـ mainCriteria ID من القرارات
+      const selectedMainCriteria = this.letters.find(
+        letter => letter.mainCriteria?.name === this.filters.mainCriteria
+      );
+      
+      if (selectedMainCriteria) {
+        const mainCriteriaId = selectedMainCriteria.mainCriteria._id;
+        
+        // فلترة المعايير الفرعية بناءً على المعيار الرئيسي المختار
+        const subCriteriaNames = this.uniqueSubCriteria
+          .filter(item => item.mainCriteriaId === mainCriteriaId)
+          .map(item => item.name);
+        
+        this.filteredSubCriteria = [...new Set(subCriteriaNames)].sort();
       }
+    } else {
+      this.filteredSubCriteria = [];
+    }
+    
+    this.applyFilters();
+  }
 
-      // فلتر "من تاريخ" و "إلى تاريخ" على createdAt
-      if (this.filters.fromDate) {
-        filtered = filtered.filter(
-          (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
-        );
-      }
+  applyFilters(): void {
+    let filtered = [...this.letters];
 
-      if (this.filters.toDate) {
-        filtered = filtered.filter(
-          (letter) => new Date(letter.createdAt) <= new Date(this.filters.toDate)
-        );
-      }
-
-      // فلتر "تاريخ بدء القرار" و "تاريخ انتهاء القرار"
-      if (this.dateRange.startDate) {
-        filtered = filtered.filter(
-          (letter) =>
-            letter.StartDate &&
-            new Date(letter.StartDate) >= new Date(this.dateRange.startDate)
-        );
-      }
-
-      if (this.dateRange.endDate) {
-        filtered = filtered.filter(
-          (letter) =>
-            letter.EndDate &&
-            new Date(letter.EndDate) <= new Date(this.dateRange.endDate)
-        );
-      }
-
-      // فلتر الجهة
-      if (this.filters.sender) {
-        filtered = filtered.filter(
-          (letter) => letter.user?.fullname === this.filters.sender
-        );
-      }
-
-      // الترتيب
-      filtered = this.sortLetters(filtered);
-
-      this.filteredLetters = filtered;
-      this.currentPage = 1;
-      this.calculateTotalPages();
+    // فلتر البحث بالكلمة المفتاحية
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (letter) =>
+          letter.title?.toLowerCase().includes(term) ||
+          letter.user?.fullname?.toLowerCase().includes(term) ||
+          letter.breeif?.toLowerCase().includes(term) ||
+          letter.mainCriteria?.name?.toLowerCase().includes(term) ||
+          letter.subCriteria?.name?.toLowerCase().includes(term)
+      );
     }
 
+    // فلتر "من تاريخ" و "إلى تاريخ" على createdAt
+    if (this.filters.fromDate) {
+      filtered = filtered.filter(
+        (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
+      );
+    }
 
+    if (this.filters.toDate) {
+      filtered = filtered.filter(
+        (letter) => new Date(letter.createdAt) <= new Date(this.filters.toDate)
+      );
+    }
+
+    // فلتر "تاريخ بدء القرار" و "تاريخ انتهاء القرار"
+    if (this.dateRange.startDate) {
+      filtered = filtered.filter(
+        (letter) =>
+          letter.StartDate &&
+          new Date(letter.StartDate) >= new Date(this.dateRange.startDate)
+      );
+    }
+
+    if (this.dateRange.endDate) {
+      filtered = filtered.filter(
+        (letter) =>
+          letter.EndDate &&
+          new Date(letter.EndDate) <= new Date(this.dateRange.endDate)
+      );
+    }
+
+    // فلتر الجهة
+    if (this.filters.sender) {
+      filtered = filtered.filter(
+        (letter) => letter.user?.fullname === this.filters.sender
+      );
+    }
+
+    // فلتر المعيار الرئيسي
+    if (this.filters.mainCriteria) {
+      filtered = filtered.filter(
+        (letter) => letter.mainCriteria?.name === this.filters.mainCriteria
+      );
+    }
+
+    // فلتر المعيار الفرعي
+    if (this.filters.subCriteria) {
+      filtered = filtered.filter(
+        (letter) => letter.subCriteria?.name === this.filters.subCriteria
+      );
+    }
+
+    // الترتيب
+    filtered = this.sortLetters(filtered);
+
+    this.filteredLetters = filtered;
+    this.currentPage = 1;
+    this.calculateTotalPages();
+  }
 
   sortLetters(letters: any[]): any[] {
     return letters.sort((a, b) => {
@@ -246,11 +311,14 @@ export class ArchiveDetailComponent implements OnInit {
       fromDate: '',
       toDate: '',
       sender: '',
+      mainCriteria: '',
+      subCriteria: '',
     };
     this.dateRange = {
       startDate: '',
       endDate: '',
     };
+    this.filteredSubCriteria = [];
     this.sortField = 'createdAt';
     this.sortDirection = 'desc';
     this.currentPage = 1;

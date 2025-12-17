@@ -25,6 +25,48 @@
   vertical-align: middle;
 }
 
+.hover-row {
+  transition: background-color 0.2s ease;
+}
+
+.hover-row:hover {
+  background-color: #f8f9fa;
+}
+
+.title-text {
+  max-width: 200px;
+}
+
+@media (min-width: 768px) {
+  .title-text {
+    max-width: 300px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .title-text {
+    max-width: 400px;
+  }
+}
+
+/* Badge Animations */
+.badge {
+  transition: transform 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+}
+
+/* Button Hover */
+.btn-outline-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+
+
+
 .badge {
   font-size: 0.75rem;
   font-weight: 500;

@@ -7,13 +7,13 @@
     <div class="page-header">
       <div class="header-content">
         <div class="header-text">
-          <h4 class="mb-1">إدارة المعايير</h4>
-          <p class="mb-0 text-muted">إدارة المعايير الرئيسية والفرعية بشكل هرمي ومنظم</p>
+          <h4 class="mb-1">إدارة القرارات</h4>
+          <p class="mb-0 text-muted">إدارة القرارات الرئيسية والفرعية بشكل هرمي ومنظم</p>
         </div>
         <div class="header-actions">
           <button class="btn btn-primary shadow" (click)="openMainModal()" [disabled]="isSubmitting">
-            <i class="bi bi-plus-lg me-2"></i>
-            <span class="btn-text">إضافة معيار رئيسي</span>
+            <i class="fas fa-plus me-2"></i>
+            <span class="btn-text">إضافة نوع قرار الرئيسي</span>
           </button>
         </div>
       </div>
@@ -28,11 +28,11 @@
 
     <div *ngIf="!isLoading && mainCriteriaList.length === 0; else listBlock" class="text-center">
       <div class="empty-state-card">
-        <div class="empty-state-icon"><i class="bi bi-plus-circle"></i></div>
-        <h5 class="mb-1">لا توجد معايير رئيسية</h5>
-        <p class="text-muted mb-3">ابدأ بإضافة معيار رئيسي جديد</p>
+        <div class="empty-state-icon"><i class="fas fa-plus-circle"></i></div>
+        <h5 class="mb-1">لا توجد قرارات رئيسية</h5>
+        <p class="text-muted mb-3">ابدأ بإضافة نوع قرار رئيسي جديد</p>
         <button class="btn btn-primary" (click)="openMainModal()">
-          <i class="bi bi-plus-lg me-2"></i> إضافة معيار رئيسي
+          <i class="fas fa-plus-lg me-2"></i> إضافة نوع قرار رئيسي
         </button>
       </div>
     </div>
@@ -45,27 +45,24 @@
               <button class="btn btn-sm toggle-btn" (click)="toggleExpanded(main._id || '')"
                 [attr.aria-expanded]="expandedCriteria.has(main._id || '')"
                 [attr.aria-label]="expandedCriteria.has(main._id || '') ? 'طي القسم' : 'توسيع القسم'">
-                <i class="bi"
-                  [ngClass]="expandedCriteria.has(main._id || '') ? 'bi-chevron-down' : 'bi-chevron-left'"></i>
+                <i class="fas"
+                  [ngClass]="expandedCriteria.has(main._id || '') ? 'fa-chevron-down' : 'fa-chevron-left'"></i>
               </button>
 
               <div class="criteria-details ms-2">
                 <div class="criteria-title">
                   <h6 class="mb-0">{{ main.name }}</h6>
                 </div>
-                <small class="sub-count">{{ getSubForMain(main._id || '').length }} معيار فرعي</small>
+                <small class="sub-count">{{ getSubForMain(main._id || '').length }} قرار فرعي</small>
               </div>
             </div>
 
             <div class="criteria-actions">
-              <button class="btn btn-sm btn-outline-primary me-1" (click)="openSubModal(main._id || '')">
-                <i class="bi bi-plus"></i> إضافة فرعي
-              </button>
               <button class="btn btn-sm btn-outline-secondary me-1" (click)="openMainModal(main)">
-                <i class="bi bi-pencil"></i> تعديل
+                <i class="fas fa-pencil"></i> تعديل
               </button>
               <button class="btn btn-sm btn-outline-danger" (click)="requestDeleteMain(main._id || '')">
-                <i class="bi bi-trash"></i> حذف
+                <i class="fas fa-trash"></i> حذف
               </button>
             </div>
           </div>
@@ -73,9 +70,9 @@
           <div class="sub-criteria-section" *ngIf="expandedCriteria.has(main._id || '')">
             <div *ngIf="getSubForMain(main._id || '').length === 0; else subsList">
               <div class="empty-subs-state">
-                <p class="mb-2 text-muted">لا توجد معايير فرعية</p>
+                <p class="mb-2 text-muted">لا توجد قرارات فرعية</p>
                 <button class="btn btn-outline-primary btn-sm" (click)="openSubModal(main._id || '')">
-                  <i class="bi bi-plus me-1"></i> إضافة معيار فرعي
+                  <i class="fas fa-plus me-1"></i> إضافة قرار فرعي
                 </button>
               </div>
             </div>
@@ -91,17 +88,17 @@
 
                   <div class="sub-actions">
                     <button class="btn btn-sm btn-outline-secondary me-1" (click)="openSubModal(main._id || '', sub)">
-                      <i class="bi bi-pencil"></i> تعديل
+                      <i class="fas fa-pencil"></i> تعديل
                     </button>
                     <button class="btn btn-sm btn-outline-danger" (click)="requestDeleteSub(sub._id)">
-                      <i class="bi bi-trash"></i> حذف
+                      <i class="fas fa-trash"></i> حذف
                     </button>
                   </div>
                 </div>
 
                 <div class="add-sub-btn-container mt-2">
                   <button class="btn btn-outline-primary w-100" (click)="openSubModal(main._id || '')">
-                    <i class="bi bi-plus me-1"></i> إضافة معيار فرعي
+                    <i class="fas fa-plus me-1"></i> إضافة قرار فرعي
                   </button>
                 </div>
               </div>
@@ -118,32 +115,92 @@
 <div class="modal d-block" tabindex="-1" *ngIf="isMainModalOpen" dir="rtl">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+      <!-- Header -->
       <div class="modal-header">
-        <h5 class="modal-title">{{ editingMain ? 'تعديل المعيار الرئيسي' : 'إضافة معيار رئيسي' }}</h5>
-        <button type="button" class="btn-close" (click)="closeMainModal()" [disabled]="isSubmitting"></button>
+        <h5 class="modal-title">
+          {{ editingMain ? 'تعديل نوع القرار الرئيسي' : 'إضافة نوع قرار رئيسي' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeMainModal()" [disabled]="isSubmitting">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
+
+      <!-- Body -->
       <div class="modal-body">
-        <div class="mb-3">
-          <label>اسم المعيار الرئيسي *</label>
-          <input type="text" class="form-control text-end" [(ngModel)]="mainName" [disabled]="isSubmitting"
-            placeholder="أدخل اسم المعيار الرئيسي">
+        <!-- حقل اسم القرار -->
+        <div class="form-group required">
+          <label for="mainName">نوع القرار الرئيسي</label>
+          <input 
+            type="text" 
+            id="mainName"
+            class="form-control" 
+            [(ngModel)]="mainName" 
+            [disabled]="isSubmitting"
+            placeholder="مثال: قرارات التعيينات"
+            [class.is-invalid]="mainName.trim() === '' && isSubmitting"
+          >
+          <small class="form-hint">
+            <i class="fas fa-info-circle me-1"></i>
+            أدخل اسمًا واضحًا ومميزًا للقرار الرئيسي
+          </small>
+          <div class="invalid-feedback" *ngIf="mainName.trim() === '' && isSubmitting">
+            يرجى إدخال نوع القرار الرئيسي
+          </div>
         </div>
-        <div class="mb-3">
-          <label>القطاعات *</label>
+
+        <!-- حقل القطاعات المحسّن -->
+        <div class="form-group required">
+          <label for="mainSectors">القطاعات المرتبطة</label>
           <ng-select
+            id="mainSectors"
             [items]="sectorsList"
             bindLabel="name"
             bindValue="_id"
             [(ngModel)]="selectedMainSectors"
-          [multiple]="true"
-          placeholder="اختر قطاع أو أكثر"
-          [disabled]="isSubmitting">
-        </ng-select>
+            [multiple]="true"
+            [disabled]="isSubmitting"
+            [clearable]="true"
+            [searchable]="true"
+            notFoundText="لا توجد نتائج"
+            [closeOnSelect]="false"
+            [class.ng-invalid]="selectedMainSectors.length === 0 && isSubmitting"
+            [class.ng-touched]="isSubmitting"
+          >
+            <!-- قالب مخصص للخيارات (اختياري) -->
+            <ng-template ng-option-tmp let-item="item" let-index="index">
+              <div class="custom-option">
+                <i class="fas fa-building me-2"></i>
+                <span>{{ item.name }}</span>
+              </div>
+            </ng-template>
+          </ng-select>
+          <small class="form-hint">
+            <i class="fas fa-layer-group me-1"></i>
+            يمكنك اختيار أكثر من قطاع
+          </small>
+          <div class="invalid-feedback" *ngIf="selectedMainSectors.length === 0 && isSubmitting">
+            يجب اختيار قطاع واحد على الأقل
+          </div>
+        </div>
       </div>
-      </div>
+
+      <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" (click)="closeMainModal()" [disabled]="isSubmitting">إلغاء</button>
-        <button class="btn btn-primary" (click)="submitMain()" [disabled]="isSubmitting">
+        <button 
+          class="btn btn-outline-secondary" 
+          (click)="closeMainModal()" 
+          [disabled]="isSubmitting"
+        >
+          <i class="fas fa-times me-2"></i>
+          إلغاء
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="submitMain()" 
+          [disabled]="isSubmitting"
+          [class.loading]="isSubmitting"
+        >
+          <i class="fas fa-check me-2" *ngIf="!isSubmitting"></i>
           {{ editingMain ? 'تحديث' : 'إنشاء' }}
         </button>
       </div>
@@ -151,40 +208,91 @@
   </div>
 </div>
 
-<!-- مودال المعيار الفرعي -->
+
+<!-- مودال المعيار الفرعي المحسّن -->
 <div class="modal-backdrop" *ngIf="isSubModalOpen"></div>
 <div class="modal d-block" tabindex="-1" *ngIf="isSubModalOpen" dir="rtl">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+      <!-- Header -->
       <div class="modal-header">
-        <h5 class="modal-title">{{ editingSub ? 'تعديل المعيار الفرعي' : 'إضافة معيار فرعي' }}</h5>
-        <button type="button" class="btn-close" (click)="closeSubModal()" [disabled]="isSubmitting"></button>
+        <h5 class="modal-title">
+          {{ editingSub ? 'تعديل قرار فرعي' : 'إضافة قرار فرعي' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeSubModal()" [disabled]="isSubmitting">
+          <i class="fas fa-times"></i>
+        </button>
       </div>
+
+      <!-- Body -->
       <div class="modal-body">
-        <div class="mb-3">
-          <label>اسم المعيار الفرعي *</label>
-          <input type="text" class="form-control text-end" [(ngModel)]="subName" [disabled]="isSubmitting"
-            placeholder="أدخل اسم المعيار الفرعي">
+        <!-- حقل اسم القرار الفرعي -->
+        <div class="form-group required">
+          <label for="subName">اسم القرار الفرعي</label>
+          <input 
+            type="text" 
+            id="subName"
+            class="form-control" 
+            [(ngModel)]="subName" 
+            [disabled]="isSubmitting"
+            placeholder="مثال: تعيين أعضاء هيئة تدريس"
+            [class.is-invalid]="subName.trim() === '' && isSubmitting"
+          >
+          <small class="form-hint">
+            <i class="fas fa-info-circle me-1"></i>
+            أدخل اسمًا واضحًا للقرار الفرعي
+          </small>
         </div>
-        <div class="mb-3">
-        <label>القطاعات المرتبطة بالمعيار الفرعي</label>
-        <ng-select
-          [items]="sectorsList"
-          bindLabel="name"
-          bindValue="_id"
-          [multiple]="true"
-          [(ngModel)]="selectedSubSectors"
-          placeholder="اختر القطاعات">
-        </ng-select>
-      </div>
-        <div class="mb-3">
-          <label>المعيار الرئيسي</label>
-          <div class="form-control-static text-end">{{ getCurrentMainCriteriaName() }}</div>
+
+        <!-- القطاعات المرتبطة -->
+        <div class="form-group">
+          <label for="subSectors">القطاعات المرتبطة بالقرار الفرعي</label>
+          <ng-select
+            id="subSectors"
+            [items]="sectorsList"
+            bindLabel="name"
+            bindValue="_id"
+            [multiple]="true"
+            [(ngModel)]="selectedSubSectors"
+            [disabled]="isSubmitting"
+            [clearable]="true"
+            [searchable]="true"
+            notFoundText="لا توجد نتائج"
+          >
+          </ng-select>
+          <small class="form-hint">
+            <i class="fas fa-link me-1"></i>
+            القطاعات الموروثة من القرار الرئيسي: {{ getCurrentMainCriteriaName() }}
+          </small>
+        </div>
+
+        <!-- المعيار الرئيسي (للقراءة فقط) -->
+        <div class="form-group">
+          <label>نوع القرار الرئيسي</label>
+          <div class="form-control-static">
+            <i class="fas fa-folder-open me-2"></i>
+            {{ getCurrentMainCriteriaName() }}
+          </div>
         </div>
       </div>
+
+      <!-- Footer -->
       <div class="modal-footer">
-        <button class="btn btn-outline-secondary" (click)="closeSubModal()" [disabled]="isSubmitting">إلغاء</button>
-        <button class="btn btn-primary" (click)="submitSub()" [disabled]="isSubmitting">
+        <button 
+          class="btn btn-outline-secondary" 
+          (click)="closeSubModal()" 
+          [disabled]="isSubmitting"
+        >
+          <i class="fas fa-times me-2"></i>
+          إلغاء
+        </button>
+        <button 
+          class="btn btn-primary" 
+          (click)="submitSub()" 
+          [disabled]="isSubmitting"
+          [class.loading]="isSubmitting"
+        >
+          <i class="fas fa-check me-2" *ngIf="!isSubmitting"></i>
           {{ editingSub ? 'تحديث' : 'إنشاء' }}
         </button>
       </div>

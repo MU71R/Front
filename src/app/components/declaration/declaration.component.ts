@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, FormArray } from '@angular/forms';
-import { Decision } from 'src/app/model/decision';
-import { DecisionService } from 'src/app/service/decision.service';
+import { MainCriteria, SubCriteria } from 'src/app/model/criteria';
+import { CriteriaService } from 'src/app/service/criteria.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { LoginService } from 'src/app/service/login.service';
 import Swal from 'sweetalert2';
@@ -43,20 +43,6 @@ export function endDateAfterStartValidator(startDateControlName: string, endDate
   };
 }
 
-export function validMessageTypeValidator(messageTypes: { _id: string; title: string }[]): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    if (!control.value) {
-      return { required: true };
-    }
-    const selectedTypeId = control.value;
-    const isValidType = messageTypes.some((type) => type._id === selectedTypeId);
-    if (!isValidType) {
-      return { invalidType: true };
-    }
-    return null;
-  };
-}
-
 @Component({
   selector: 'app-declaration',
   templateUrl: './declaration.component.html',
@@ -64,28 +50,33 @@ export function validMessageTypeValidator(messageTypes: { _id: string; title: st
 })
 export class DeclarationComponent implements OnInit {
   messageForm!: FormGroup;
-  messageTypes: { _id: string; title: string }[] = [];
-  filteredMessageTypes: { _id: string; title: string }[] = [];
+  mainCriteriaList: MainCriteria[] = [];
+  subCriteriaList: SubCriteria[] = [];
+  filteredMainCriteria: MainCriteria[] = [];
+  filteredSubCriteria: SubCriteria[] = [];
   submitting = false;
+  loadingSubCriteria = false;
   successMsg = '';
   errorMsg = '';
   formSubmitted = false;
-  searchTerm = '';
-  showDropdown = false;
-  selectedTypeTitle = '';
-  
-  // ⭐ إعدادات Quill Editor
+  mainSearchTerm = '';
+  subSearchTerm = '';
+  showMainDropdown = false;
+  showSubDropdown = false;
+  selectedMainCriteriaTitle = '';
+  selectedSubCriteriaTitle = '';
+  // 🔥 تم إزالة showAssignmentFields
+
   quillModules = {
     toolbar: [
-      ['bold', 'italic', 'underline'],        // تنسيق النص
-      [{ 'align': [] }],                      // محاذاة
-      [{ 'direction': 'rtl' }],               // اتجاه RTL للعربي
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }], // قوائم
-      ['clean']                               // إزالة التنسيق
+      ['bold', 'italic', 'underline'],
+      [{ 'align': [] }],
+      [{ 'direction': 'rtl' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      ['clean']
     ]
   };
 
-  // الحيثيات الافتراضية الثابتة في الفرونت
   defaultRationales: string[] = [
     'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.',
     'وعلى القانون رقم (١٤٢) لسنة ١٩٩٤م. بشأن تعديل بعض أحكام قانون تنظيم الجامعات رقم ٤٩ لسنة ١٩٧٢ م.',
@@ -94,38 +85,58 @@ export class DeclarationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private declService: DecisionService,
+    private criteriaService: CriteriaService,
     private letterService: LetterService,
     private loginService: LoginService
-  ) {}
+  ) { }
 
   user = this.loginService.getUserFromLocalStorage();
 
   ngOnInit(): void {
     this.initializeForm();
-    this.loadMessageTypes();
+    this.loadMainCriteria();
     this.populateDefaultRationales();
   }
 
   private initializeForm(): void {
     this.messageForm = this.fb.group(
       {
-        type: ['', [Validators.required]],
+        mainCriteria: ['', [Validators.required]],
+        subCriteria: ['', [Validators.required]],
         title: ['', [Validators.required, noLeadingSpaces]],
         rationaleFields: this.fb.array([]),
         signatureType: [''],
         contentFields: this.fb.array([this.createContentField()]),
+        // 🔥 حقول التعيين بدون validators مطلوبة (كلها اختيارية)
+        fullName: [''],
+        entityName: [''],
+        nationalId: [''],
+        phoneNumber: [''],
         startDate: ['', [dateValidator()]],
         endDate: ['', [dateValidator()]],
         date: [{ value: new Date().toISOString().split('T')[0], disabled: true }],
       },
       { validators: endDateAfterStartValidator('startDate', 'endDate') }
     );
+
+    this.messageForm.get('mainCriteria')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.loadSubCriteria(value);
+        // 🔥 تم إزالة checkIfAssignmentCriteria
+      } else {
+        this.subCriteriaList = [];
+        this.filteredSubCriteria = [];
+        this.messageForm.get('subCriteria')?.setValue('');
+        this.selectedSubCriteriaTitle = '';
+      }
+    });
   }
+
+  // 🔥 تم إزالة checkIfAssignmentCriteria method
 
   private populateDefaultRationales(): void {
     this.rationaleFields.clear();
-    
+
     if (this.defaultRationales && this.defaultRationales.length > 0) {
       this.defaultRationales.forEach(rationale => {
         const rationaleGroup = this.fb.group({
@@ -208,83 +219,179 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
-  toggleDropdown(): void {
-    this.showDropdown = !this.showDropdown;
-    if (this.showDropdown) {
-      if (this.searchTerm) {
-        this.filterMessageTypes(this.searchTerm);
-      } else {
-        this.filteredMessageTypes = [...this.messageTypes];
-      }
+  toggleMainDropdown(): void {
+    this.showMainDropdown = !this.showMainDropdown;
+    if (this.showMainDropdown) {
+      this.mainSearchTerm = '';
+      this.filteredMainCriteria = [...this.mainCriteriaList];
+
+      setTimeout(() => {
+        const searchInput = document.querySelector('input[placeholder="ابحث عن المعيار الرئيسي..."]') as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      }, 100);
     }
   }
 
-  private loadMessageTypes(): void {
-    this.declService.getDecisionTypes().subscribe({
-      next: (types: Decision[]) => {
-        this.messageTypes = types.map((t) => ({
-          _id: t._id || '',
-          title: t.title || '',
-        }));
-        this.filteredMessageTypes = [];
-        this.updateTypeValidator();
+  private loadMainCriteria(): void {
+    this.criteriaService.getAllMainCriteria().subscribe({
+      next: (criteria: MainCriteria[]) => {
+        this.mainCriteriaList = criteria;
+        this.filteredMainCriteria = [];
+        console.log('✅ Loaded main criteria:', criteria.length, 'items');
       },
       error: (err) => {
-        console.error('Error loading message types:', err);
-        this.showError('حدث خطأ في تحميل أنواع القرارت');
+        console.error('❌ Error loading main criteria:', err);
+        this.showError('حدث خطأ في تحميل المعايير الرئيسية');
       },
     });
   }
 
-  private updateTypeValidator(): void {
-    const typeControl = this.messageForm.get('type');
-    if (typeControl) {
-      typeControl.setValidators([
-        Validators.required,
-        validMessageTypeValidator(this.messageTypes),
-      ]);
-      typeControl.updateValueAndValidity();
+  private loadSubCriteria(mainCriteriaId: string): void {
+    if (!mainCriteriaId || typeof mainCriteriaId !== 'string') {
+      console.warn('⚠️ Invalid mainCriteriaId:', mainCriteriaId);
+      return;
     }
+
+    this.loadingSubCriteria = true;
+    this.subCriteriaList = [];
+    this.filteredSubCriteria = [];
+    this.messageForm.get('subCriteria')?.setValue('');
+    this.selectedSubCriteriaTitle = '';
+    this.subSearchTerm = '';
+
+    console.log('🔄 Loading sub criteria for main criteria:', mainCriteriaId);
+
+    this.criteriaService.getSubCriteriaById(mainCriteriaId).subscribe({
+      next: (criteria: SubCriteria[]) => {
+        if (Array.isArray(criteria)) {
+          this.subCriteriaList = criteria;
+          this.filteredSubCriteria = [...criteria];
+          console.log('✅ Loaded sub criteria:', criteria.length, 'items');
+          console.log('📋 Sub criteria data:', criteria);
+        } else {
+          console.warn('⚠️ Received non-array response:', criteria);
+          this.subCriteriaList = [];
+          this.filteredSubCriteria = [];
+        }
+        this.loadingSubCriteria = false;
+      },
+      error: (err) => {
+        console.error('❌ Error loading sub criteria:', err);
+        this.subCriteriaList = [];
+        this.filteredSubCriteria = [];
+        this.loadingSubCriteria = false;
+        this.showError('حدث خطأ في تحميل المعايير الفرعية');
+      },
+    });
   }
 
-  filterMessageTypes(searchTerm: string): void {
-    this.searchTerm = searchTerm;
+  filterMainCriteria(searchTerm: string): void {
+    this.mainSearchTerm = searchTerm;
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredMessageTypes = [...this.messageTypes];
+      this.filteredMainCriteria = [...this.mainCriteriaList];
     } else {
-      this.filteredMessageTypes = this.messageTypes.filter((type) =>
-        type.title.toLowerCase().includes(searchTerm.toLowerCase())
+      const lowerSearchTerm = searchTerm.toLowerCase().trim();
+      this.filteredMainCriteria = this.mainCriteriaList.filter((criteria) =>
+        criteria.name.toLowerCase().includes(lowerSearchTerm)
       );
     }
   }
 
-  selectMessageType(typeId: string, typeTitle: string): void {
-    this.f['type'].setValue(typeId);
-    this.selectedTypeTitle = typeTitle;
-    this.f['signatureType'].setValue(null);
-    this.searchTerm = '';
-    this.filteredMessageTypes = [];
-    this.showDropdown = false;
-    this.f['type'].setErrors(null);
-    this.f['type'].markAsTouched();
+  selectMainCriteria(criteriaId: string, criteriaName: string): void {
+    if (!criteriaId || !criteriaName) {
+      console.warn('⚠️ Invalid criteria selection');
+      return;
+    }
+
+    this.f['mainCriteria'].setValue(criteriaId);
+    this.selectedMainCriteriaTitle = criteriaName;
+    this.mainSearchTerm = '';
+    this.filteredMainCriteria = [];
+    this.showMainDropdown = false;
+    this.f['mainCriteria'].setErrors(null);
+    this.f['mainCriteria'].markAsTouched();
+
+    this.f['subCriteria'].setValue('');
+    this.selectedSubCriteriaTitle = '';
+
+    console.log('✅ Main criteria selected:', criteriaName);
   }
 
-  validateSearchInput(): void {
-    if (this.searchTerm && !this.f['type'].value) {
-      this.f['type'].setErrors({ invalidType: true });
+  openSubDropdown(): void {
+    if (!this.f['mainCriteria'].value) {
+      this.showWarning('يرجى اختيار المعيار الرئيسي أولاً');
+      return;
+    }
+    this.showSubDropdown = true;
+    this.filteredSubCriteria = [...this.subCriteriaList];
+    console.log('🔍 Opening sub dropdown with', this.filteredSubCriteria.length, 'items');
+  }
+
+  toggleSubDropdown(): void {
+    if (!this.f['mainCriteria'].value) {
+      this.showWarning('يرجى اختيار المعيار الرئيسي أولاً');
+      return;
+    }
+
+    this.showSubDropdown = !this.showSubDropdown;
+
+    if (this.showSubDropdown) {
+      this.filteredSubCriteria = [...this.subCriteriaList];
+      console.log('🔍 Opening sub dropdown with', this.filteredSubCriteria.length, 'items');
     }
   }
 
-  onSearchBlur(): void {
-    setTimeout(() => {
-      this.showDropdown = false;
-      this.validateSearchInput();
-    }, 200);
+  clearSubCriteria(event: Event): void {
+    event.stopPropagation();
+    this.f['subCriteria'].setValue('');
+    this.selectedSubCriteriaTitle = '';
+    this.subSearchTerm = '';
+    this.filteredSubCriteria = [...this.subCriteriaList];
+    console.log('🗑️ Sub criteria cleared');
   }
 
-  onSearchFocus(): void {
-    if (this.searchTerm && this.filteredMessageTypes.length > 0) {
-      this.showDropdown = true;
+  filterSubCriteria(searchTerm: string): void {
+    this.subSearchTerm = searchTerm;
+
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredSubCriteria = [...this.subCriteriaList];
+    } else {
+      const lowerSearchTerm = searchTerm.toLowerCase().trim();
+      this.filteredSubCriteria = this.subCriteriaList.filter((criteria) =>
+        criteria.name.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+
+    console.log('🔍 Filtered sub criteria:', this.filteredSubCriteria.length, 'items');
+  }
+
+  selectSubCriteria(criteriaId: string, criteriaName: string): void {
+    if (!criteriaId || !criteriaName) {
+      console.warn('⚠️ Invalid criteria selection');
+      return;
+    }
+
+    this.f['subCriteria'].setValue(criteriaId);
+    this.selectedSubCriteriaTitle = criteriaName;
+    this.subSearchTerm = '';
+    this.filteredSubCriteria = [...this.subCriteriaList];
+    this.showSubDropdown = false;
+    this.f['subCriteria'].setErrors(null);
+    this.f['subCriteria'].markAsTouched();
+
+    console.log('✅ Sub criteria selected:', criteriaName);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInside = target.closest('.search-dropdown');
+
+    if (!clickedInside) {
+      this.showMainDropdown = false;
+      this.showSubDropdown = false;
     }
   }
 
@@ -333,33 +440,59 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
-  private resetForm(): void {
-    this.messageForm.reset({
-      date: new Date().toISOString().split('T')[0],
-    });
-    
-    this.contentFields.clear();
-    this.contentFields.push(this.createContentField());
-    
-    this.populateDefaultRationales();
-    
-    this.submitting = false;
-    this.successMsg = '';
-    this.errorMsg = '';
-    this.formSubmitted = false;
-    this.searchTerm = '';
-    this.selectedTypeTitle = '';
-    this.filteredMessageTypes = [];
-    this.showDropdown = false;
-    Object.keys(this.f).forEach((key) => {
-      this.f[key].markAsUntouched();
-    });
-  }
+ private resetForm(): void {
+
+  // 1️⃣ امسح الـ FormArray قبل reset
+  this.contentFields.clear();
+  this.rationaleFields.clear();
+
+  // 2️⃣ اعمل reset بقيم STRING مش null
+  this.messageForm.reset({
+    mainCriteria: '',
+    subCriteria: '',
+    title: '',
+    signatureType: '',
+    fullName: '',
+    entityName: '',
+    nationalId: '',
+    phoneNumber: '',
+    startDate: '',
+    endDate: '',
+    date: new Date().toISOString().split('T')[0],
+  });
+
+  // 3️⃣ أضف Quill بقيم فاضية
+  this.contentFields.push(
+    this.fb.group({
+      content: ['']
+    })
+  );
+
+  this.populateDefaultRationales();
+
+  // 4️⃣ reset UI state
+  this.submitting = false;
+  this.loadingSubCriteria = false;
+  this.successMsg = '';
+  this.errorMsg = '';
+  this.formSubmitted = false;
+  this.mainSearchTerm = '';
+  this.subSearchTerm = '';
+  this.selectedMainCriteriaTitle = '';
+  this.selectedSubCriteriaTitle = '';
+  this.filteredMainCriteria = [];
+  this.filteredSubCriteria = [];
+  this.showMainDropdown = false;
+  this.showSubDropdown = false;
+
+  Object.keys(this.f).forEach((key) => {
+    this.f[key].markAsUntouched();
+  });
+}
 
   onSubmit() {
     this.formSubmitted = true;
-    this.validateSearchInput();
-    
+
     if (this.messageForm.invalid) {
       Object.keys(this.f).forEach((key) => {
         this.f[key].markAsTouched();
@@ -378,10 +511,8 @@ export class DeclarationComponent implements OnInit {
     this.successMsg = '';
     this.errorMsg = '';
 
-    // ⭐ إرسال HTML كامل للـ Backend (بدون حذف التاجات)
     const contentTexts = this.contentFields.controls.map(control => {
       const htmlContent = control.get('content')?.value || '';
-      // فقط تنظيف المسافات الزائدة وترك HTML كما هو
       return htmlContent.trim();
     }).filter(text => text.length > 0);
 
@@ -390,11 +521,12 @@ export class DeclarationComponent implements OnInit {
       return htmlContent.trim();
     }).filter(text => text.length > 0);
 
-    const payload = {
+    const payload: any = {
       title: this.f['title'].value,
-      descriptions: contentTexts, // ⭐ HTML كامل
-      decision: this.f['type'].value,
-      Rationale: rationaleTexts, // ⭐ HTML كامل
+      descriptions: contentTexts,
+      mainCriteria: this.f['mainCriteria'].value,
+      subCriteria: this.f['subCriteria'].value,
+      Rationale: rationaleTexts,
       signatureType: this.f['signatureType'].value,
       date: new Date().toISOString().split('T')[0],
       StartDate: this.f['startDate'].value
@@ -403,21 +535,26 @@ export class DeclarationComponent implements OnInit {
       EndDate: this.f['endDate'].value
         ? new Date(this.f['endDate'].value).toISOString()
         : null,
+      // 🔥 إرسال حقول التعيين دائماً (حتى لو فارغة)
+      fullName: this.f['fullName'].value || null,
+      entityName: this.f['entityName'].value || null,
+      nationalId: this.f['nationalId'].value || null,
+      phoneNumber: this.f['phoneNumber'].value || null,
     };
 
     this.letterService.addLetterType(payload).subscribe({
       next: (res) => {
-        if(this.user?.role === 'UniversityPresident'){
+        if (this.user?.role === 'UniversityPresident') {
           this.showSuccess('تم اعتماد القرار');
-        }else{
-          this.showSuccess('تم ارسال القرار بنجاح');
+        } else {
+          this.showSuccess('تم إرسال القرار بنجاح');
         }
         this.resetForm();
         this.submitting = false;
       },
       error: (err) => {
-        console.error('Error saving letter:', err);
-        this.showError('حدث خطأ أثناء ارسال القرار');
+        console.error('❌ Error saving letter:', err);
+        this.showError('حدث خطأ أثناء إرسال القرار');
         this.submitting = false;
       },
     });

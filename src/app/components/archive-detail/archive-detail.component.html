@@ -52,6 +52,22 @@
           </div>
 
           <div class="col-12 col-sm-6 col-md-2">
+            <label class="form-label fw-semibold">المعيار الرئيسي</label>
+            <select class="form-select" [(ngModel)]="filters.mainCriteria" (change)="onMainCriteriaChange()">
+              <option value="">جميع المعايير</option>
+              <option *ngFor="let criteria of uniqueMainCriteria" [value]="criteria">{{ criteria }}</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-2">
+            <label class="form-label fw-semibold">المعيار الفرعي</label>
+            <select class="form-select" [(ngModel)]="filters.subCriteria" (change)="applyFilters()" [disabled]="!filters.mainCriteria">
+              <option value="">جميع المعايير الفرعية</option>
+              <option *ngFor="let subCriteria of filteredSubCriteria" [value]="subCriteria">{{ subCriteria }}</option>
+            </select>
+          </div>
+
+          <div class="col-12 col-sm-6 col-md-2">
             <label class="form-label fw-semibold">تاريخ بدء القرار</label>
             <input type="date" class="form-control" [(ngModel)]="dateRange.startDate" (change)="applyFilters()" />
           </div>
@@ -143,7 +159,9 @@
                 الجهه
               </div>
             </th>
-            <th scope="col" width="15%">
+            <th scope="col" width="10%">المعيار الرئيسي</th>
+            <th scope="col" width="10%">المعيار الفرعي</th>
+            <th scope="col" width="10%">
               <div class="d-flex align-items-center cursor-pointer" (click)="sortBy('createdAt')">
                 تاريخ الإنشاء
                 <i class="fa ms-1" [class.fa-sort]="sortField !== 'createdAt'"
@@ -180,6 +198,12 @@
                 <i class="fa fa-user-circle text-primary me-2"></i>
                 <span class="text-truncate d-block">{{ letter.user?.fullname || 'غير محدد' }}</span>
               </div>
+            </td>
+            <td data-label="المعيار الرئيسي">
+              <span class="badge bg-info">{{ letter.mainCriteria?.name || 'غير محدد' }}</span>
+            </td>
+            <td data-label="المعيار الفرعي">
+              <span class="badge bg-secondary">{{ letter.subCriteria?.name || 'غير محدد' }}</span>
             </td>
             <td data-label="تاريخ الإنشاء">
               <div class="created-at-cell">
@@ -282,12 +306,6 @@
 
 
           <div class="row g-2 mb-3">
-            <!-- <div class="col-12 col-sm-6">
-              <div class="form-group">
-                <label class="form-label fw-semibold">تاريخ المستند <span class="text-danger">*</span></label>
-                <input type="date" class="form-control" [(ngModel)]="newArchive.date" name="date" required />
-              </div>
-            </div> -->
             <div class="col-12 col-sm-6">
               <div class="form-group">
                 <label class="form-label fw-semibold">نوع الأرشيف</label>

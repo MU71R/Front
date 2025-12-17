@@ -7,12 +7,13 @@ export interface User {
   _id?: string;
   username: string;
   fullname: string;
-  role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' |  string;
-  sector: string[];
+  role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' | string;
+  sector?: string | string[];
   status?: 'active' | 'inactive';
-  sectorName?: string; 
+  sectorName?:string;
   department?: string;
   password?: string;
+  email?: string;
 }
 
 export interface LoginResponse {
@@ -26,9 +27,10 @@ export interface DecodedToken {
   userId: string;
   name?: string;
   email?: string;
-  role?: string;
-  exp?: number;
-  iat?: number;
+  role: string;
+  sector?: string | string[];
+  iat: number;
+  exp: number;
 }
 
 export interface Department {
@@ -36,8 +38,8 @@ export interface Department {
   username: string;
   fullname: string;
   password: string;
-  role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' |  string;
-  sector: string[];
+  role: 'preparer' | 'UniversityPresident' | 'supervisor' | 'admin' | string;
+  sector?: string | string[];
 }
 
 
@@ -46,7 +48,7 @@ export interface Sector {
   sector: string;
 }
 
-export interface addSector{
-  sector : string
+export interface addSector {
+  sector: string
 }
 

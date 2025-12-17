@@ -20,12 +20,12 @@ export class LetterDetailsComponent implements OnInit {
   pdfUrl: string | null = null;
   pdfFilename: string | null = null;
   pdfFile: any = null;
-  showUploadModal = false; // تم التعديل هنا من true إلى false
+  showUploadModal = false;
   selectedFile: File | null = null;
   private sectorsMap: Map<string, string> = new Map();
   private usersMap: Map<string, any> = new Map();
   sectors: any[] = [];
-
+  showCancelModal = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -35,7 +35,19 @@ export class LetterDetailsComponent implements OnInit {
     private authService: AuthService,
     private userService: AdministrationService
   ) { }
+
   user = this.authService.currentUserValue;
+
+  // دالة التحقق من إمكانية رفع الملفات
+  canUpload(): boolean {
+    if (!this.user || !this.letter) return false;
+
+    return (
+      this.user.role?.toLowerCase() === 'universitypresident' ||
+      this.user.fullname?.includes('رئيس الجامعة')
+    );
+  }
+
   ngOnInit(): void {
     this.letterId = this.route.snapshot.paramMap.get('id') || '';
     this.getAllSectors();
@@ -106,7 +118,6 @@ export class LetterDetailsComponent implements OnInit {
     return this.letter || this.data;
   }
 
-
   getAllSectors() {
     this.userService.getAllSectors().subscribe({
       next: (res: any) => {
@@ -117,7 +128,6 @@ export class LetterDetailsComponent implements OnInit {
       }
     });
   }
-
 
   openPdf(): void {
     if (!this.pdfUrl) return;
@@ -161,9 +171,11 @@ export class LetterDetailsComponent implements OnInit {
       });
     }
   }
+
   showPdfButton(): boolean {
     return this.letter?.status === 'approved' && (!!this.pdfUrl || !!this.pdfFilename);
   }
+
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
       approved: 'معتمد',
@@ -172,6 +184,7 @@ export class LetterDetailsComponent implements OnInit {
       draft: 'مسودة',
       reviewed: 'تمت المراجعة',
       archived: 'مؤرشف',
+      canceled: 'ملغي',
     };
     return statusMap[status] || 'غير محدد';
   }
@@ -184,6 +197,7 @@ export class LetterDetailsComponent implements OnInit {
       draft: 'status-draft',
       reviewed: 'status-reviewed',
       archived: 'status-archived',
+      canceled: 'status-canceled',
     };
     return classMap[status] || 'status-pending';
   }
@@ -253,9 +267,11 @@ export class LetterDetailsComponent implements OnInit {
       user: 'مستخدم',
       manager: 'مدير',
       director: 'مدير عام',
+      preparer: 'معد القرار',
     };
     return roleMap[role] || role;
   }
+
   getSectorName(sectorId: string, sectors: { _id: string, sector: string }[]): string {
     const found = sectors.find(s => s._id === sectorId);
     return found ? found.sector : 'غير معروف';
@@ -324,6 +340,7 @@ export class LetterDetailsComponent implements OnInit {
   }
 
   calculateDuration(startDate: string, endDate: string): string {
+    if (!startDate || !endDate) return 'غير محدد';
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end.getTime() - start.getTime());
@@ -334,7 +351,7 @@ export class LetterDetailsComponent implements OnInit {
   hasMultipleSections(): boolean {
     let count = 1;
     if (this.letter?.description || this.letter?.breeif) count++;
-    if (this.letter?.Rationale) count++;
+    if (this.letter?.Rationale && this.letter?.Rationale.length > 0) count++;
     if (this.letter?.decision) count++;
     if (this.letter?.approvals && this.letter.approvals.length > 0) count++;
     if (this.letter?.attachment) count++;
@@ -348,10 +365,9 @@ export class LetterDetailsComponent implements OnInit {
       'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
       'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
       'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
-      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون'
-      , 'حادي عشرون', 'ثاني عشرون', 'ثالث عشرون', 'رابع عشرون', 'خامس عشرون',
-      'سادس عشرون', 'سابع عشرون', 'ثامن عشرون', 'تاسع عشرون', 'عشرون'
-
+      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون',
+      'حادي عشرون', 'ثاني عشرون', 'ثالث عشرون', 'رابع عشرون', 'خامس عشرون',
+      'سادس عشرون', 'سابع عشرون', 'ثامن عشرون', 'تاسع عشرون', 'ثلاثون'
     ];
     return ordinals[index] || `${index + 1}`;
   }
@@ -368,7 +384,7 @@ export class LetterDetailsComponent implements OnInit {
 
   closeUploadModal() {
     this.showUploadModal = false;
-    this.selectedFile = null; // إعادة تعيين الملف المختار عند الإغلاق
+    this.selectedFile = null;
   }
 
   selectNewFile(event: any) {
@@ -409,5 +425,66 @@ export class LetterDetailsComponent implements OnInit {
           });
         },
       });
+  }
+
+  // وظيفة فتح نافذة التأكيد لإلغاء القرار
+  openCancelModal() {
+    this.showCancelModal = true;
+  }
+
+  // وظيفة إغلاق نافذة التأكيد
+  closeCancelModal() {
+    this.showCancelModal = false;
+  }
+
+  // وظيفة إلغاء القرار
+  cancelDecision() {
+    Swal.fire({
+      title: 'تأكيد الإلغاء',
+      html: '<p style="font-size: 16px; color: #d33;">يرجى العلم أنه سيتم إيقاف العمل بهذا القرار</p>',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'نعم، إلغاء القرار',
+      cancelButtonText: 'تراجع',
+      reverseButtons: true
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // استدعاء الـ API لتغيير حالة القرار إلى canceled
+        this.letterService.cancelLetter(this.letter.id || this.letter._id).subscribe({
+          next: (res) => {
+            this.letter.status = 'canceled';
+            this.closeCancelModal();
+            Swal.fire({
+              icon: 'success',
+              title: 'تم إلغاء القرار',
+              text: 'تم إيقاف العمل بالقرار بنجاح',
+              confirmButtonText: 'حسناً'
+            });
+          },
+          error: (err) => {
+            console.error('خطأ في إلغاء القرار:', err);
+            Swal.fire({
+              icon: 'error',
+              title: 'خطأ',
+              text: 'حدث خطأ أثناء إلغاء القرار',
+              confirmButtonText: 'حسناً'
+            });
+          },
+        });
+      }
+    });
+  }
+
+  // التحقق من إمكانية إظهار زر الإلغاء
+  canCancelDecision(): boolean {
+    if (!this.user) return false;
+
+    return (
+      this.letter?.status === 'approved' &&
+      (this.user.role === 'UniversityPresident' ||
+        this.user.fullname === 'مكتب رئيس الجامعة')
+    );
   }
 }

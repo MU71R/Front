@@ -5,10 +5,10 @@ import {
   HostListener,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { addLetter } from 'src/app/model/Letter';
 import { LetterService } from 'src/app/service/letter.service';
 import { Router } from '@angular/router';
 import { LoginService } from 'src/app/service/login.service';
+import { Letter } from 'src/app/model/Letter';
 
 @Component({
   selector: 'app-pending-reviews',
@@ -16,10 +16,12 @@ import { LoginService } from 'src/app/service/login.service';
   styleUrls: ['./pending-reviews.component.css'],
 })
 export class PendingReviewsComponent implements OnInit {
-  pendingList: addLetter[] = [];
-  filteredList: addLetter[] = [];
+  pendingList: Letter[] = [];
+  filteredList: Letter[] = [];
   selectedStatus: string = 'all';
   isDropdownOpen: boolean = false;
+  loading: boolean = false;
+  error: string = '';
 
   constructor(
     private letterService: LetterService,
@@ -39,40 +41,89 @@ export class PendingReviewsComponent implements OnInit {
   }
 
   getUniversityPresidentLetters() {
+    this.loading = true;
+    this.error = '';
+    
     this.letterService.getUniversityPresidentLetters().subscribe({
       next: (res: any) => {
-        this.pendingList = res.data ? res.data : res;
+        console.log('✅ Received data:', res);
+        
+        // 🔥 معالجة البيانات بشكل صحيح
+        if (res && res.success && Array.isArray(res.data)) {
+          this.pendingList = res.data;
+        } else if (Array.isArray(res)) {
+          this.pendingList = res;
+        } else {
+          console.warn('⚠️ Unexpected response format:', res);
+          this.pendingList = [];
+        }
+        
         this.filteredList = [...this.pendingList];
+        this.loading = false;
+        this.cdr.detectChanges();
+        
+        console.log('📋 Loaded letters:', this.pendingList.length);
+      },
+      error: (err) => {
+        console.error('❌ API Error:', err);
+        this.error = 'حدث خطأ في تحميل البيانات';
+        this.loading = false;
+        this.pendingList = [];
+        this.filteredList = [];
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('API Error:', err),
     });
   }
 
   getPendingLetters() {
+    this.loading = true;
+    this.error = '';
+    
     this.letterService.getLetterSupervisor().subscribe({
       next: (res: any) => {
-        this.pendingList = res.data ? res.data : res;
+        console.log('✅ Received data:', res);
+        
+        // 🔥 معالجة البيانات بشكل صحيح
+        if (res && res.success && Array.isArray(res.data)) {
+          this.pendingList = res.data;
+        } else if (Array.isArray(res)) {
+          this.pendingList = res;
+        } else {
+          console.warn('⚠️ Unexpected response format:', res);
+          this.pendingList = [];
+        }
+        
         this.filteredList = [...this.pendingList];
+        this.loading = false;
+        this.cdr.detectChanges();
+        
+        console.log('📋 Loaded letters:', this.pendingList.length);
+      },
+      error: (err) => {
+        console.error('❌ API Error:', err);
+        this.error = 'حدث خطأ في تحميل البيانات';
+        this.loading = false;
+        this.pendingList = [];
+        this.filteredList = [];
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('API Error:', err),
     });
   }
 
-  // filterByStatus(status: string) {
-  //   this.selectedStatus = status;
+  filterByStatus(status: string) {
+    this.selectedStatus = status;
 
-  //   if (status === 'all') {
-  //     this.filteredList = [...this.pendingList];
-  //   } else {
-  //     this.filteredList = this.pendingList.filter(
-  //       (item) => item.status === status
-  //     );
-  //   }
+    if (status === 'all') {
+      this.filteredList = [...this.pendingList];
+    } else {
+      this.filteredList = this.pendingList.filter(
+        (item) => item.status === status
+      );
+    }
 
-  //   this.closeDropdown();
-  // }
+    this.closeDropdown();
+    console.log('🔍 Filtered by status:', status, '- Count:', this.filteredList.length);
+  }
 
   getStatusText(status: string): string {
     switch (status) {
@@ -91,13 +142,46 @@ export class PendingReviewsComponent implements OnInit {
     }
   }
 
+  // 🔥 Helper method لعرض اسم المستخدم
+  getUserDisplayName(item: Letter): string {
+    if (item.user && typeof item.user === 'object') {
+      return item.user.fullname || item.user.username || 'غير محدد';
+    }
+    return 'غير محدد';
+  }
+
+  // 🔥 Helper method لعرض المعيار الرئيسي
+  getMainCriteriaName(item: Letter): string {
+    if (item.mainCriteria && typeof item.mainCriteria === 'object') {
+      return item.mainCriteria.name || 'غير محدد';
+    }
+    return 'غير محدد';
+  }
+
+  // 🔥 Helper method لعرض المعيار الفرعي
+  getSubCriteriaName(item: Letter): string {
+    if (item.subCriteria && typeof item.subCriteria === 'object') {
+      return item.subCriteria.name || 'غير محدد';
+    }
+    return 'غير محدد';
+  }
+
+  // 🔥 Helper method لتنظيف HTML
+  stripHtmlTags(html: string): string {
+    if (!html) return '';
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || '';
+  }
+
   open(id: string) {
+    console.log('🔍 Opening letter:', id);
     this.router.navigate(['letter-details', id]);
   }
 
-  // toggleDropdown() {
-  //   this.isDropdownOpen = !this.isDropdownOpen;
-  // }
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
 
   closeDropdown() {
     this.isDropdownOpen = false;

@@ -10,84 +10,158 @@
     <div class="card shadow-sm p-4 bg-white rounded-4">
       <form [formGroup]="messageForm" (ngSubmit)="onSubmit()">
 
-        <!-- نوع القرار -->
+        <!-- 🔥 المعيار الرئيسي -->
         <div class="mb-3">
-          <label for="typeSearch" class="form-label">نوع القرار *</label>
+          <label for="mainCriteriaSearch" class="form-label">المعيار الرئيسي *</label>
           <div class="search-dropdown position-relative">
-            <button
-              class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
-              type="button"
-              (click)="toggleDropdown()"
-              [class.is-invalid]="showFieldError('type')">
+            <button class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
+              type="button" (click)="toggleMainDropdown()" [class.is-invalid]="showFieldError('mainCriteria')">
               <span class="text-truncate">
-                <span *ngIf="selectedTypeTitle; else selectPlaceholder">
-                  {{ selectedTypeTitle }}
+                <span *ngIf="selectedMainCriteriaTitle; else selectMainPlaceholder">
+                  {{ selectedMainCriteriaTitle }}
                 </span>
-                <ng-template #selectPlaceholder>
-                  <span class="text-muted">اختر نوع القرار...</span>
+                <ng-template #selectMainPlaceholder>
+                  <span class="text-muted">اختر المعيار الرئيسي...</span>
                 </ng-template>
               </span>
-              <i class="bi bi-chevron-down ms-2 transition-all" [class.rotate-180]="showDropdown"></i>
+              <i class="bi bi-chevron-down ms-2 transition-all" [class.rotate-180]="showMainDropdown"></i>
             </button>
 
-            <div class="dropdown-results" *ngIf="showDropdown">
+            <div class="dropdown-results" *ngIf="showMainDropdown">
               <div class="p-2 border-bottom">
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  placeholder="ابحث عن نوع القرار..."
-                  [(ngModel)]="searchTerm"
-                  [ngModelOptions]="{standalone: true}"
-                  (input)="filterMessageTypes(searchTerm)"
-                  (click)="$event.stopPropagation()"
-                  autocomplete="off">
+                <input type="text" class="form-control form-control-sm" placeholder="ابحث عن المعيار الرئيسي..."
+                  [(ngModel)]="mainSearchTerm" [ngModelOptions]="{standalone: true}"
+                  (input)="filterMainCriteria(mainSearchTerm)" (click)="$event.stopPropagation()" autocomplete="off">
               </div>
 
               <div class="dropdown-options max-h-200 overflow-auto">
-                <div *ngIf="filteredMessageTypes.length === 0 && searchTerm"
+                <div *ngIf="filteredMainCriteria.length === 0 && mainSearchTerm"
                   class="dropdown-no-results text-center p-3 text-muted">
                   <i class="fa fa-search me-2"></i>
-                  لا توجد نتائج للبحث عن "{{ searchTerm }}"
+                  لا توجد نتائج للبحث عن "{{ mainSearchTerm }}"
                 </div>
 
-                <div *ngIf="filteredMessageTypes.length === 0 && !searchTerm"
+                <div *ngIf="filteredMainCriteria.length === 0 && !mainSearchTerm"
                   class="dropdown-no-results text-center p-3 text-muted">
                   <i class="fa fa-info-circle me-2"></i>
-                  لا توجد أنواع قرارات متاحة
+                  لا توجد معايير رئيسية متاحة
                 </div>
 
-                <div *ngFor="let type of filteredMessageTypes"
-                  class="dropdown-item cursor-pointer p-3"
-                  [class.selected]="f['type'].value === type._id"
-                  (click)="selectMessageType(type._id, type.title)">
+                <div *ngFor="let criteria of filteredMainCriteria" class="dropdown-item cursor-pointer p-3"
+                  [class.selected]="f['mainCriteria'].value === criteria._id"
+                  (click)="selectMainCriteria(criteria._id || '', criteria.name)">
                   <div class="d-flex align-items-center">
-                    <i class="fa fa-file-text me-3 text-primary"></i>
-                    <span class="flex-grow-1">{{ type.title }}</span>
-                    <i *ngIf="f['type'].value === type._id" class="fa fa-check-lg text-success"></i>
+                    <i class="fa fa-folder me-3 text-primary"></i>
+                    <span class="flex-grow-1">{{ criteria.name }}</span>
+                    <i *ngIf="f['mainCriteria'].value === criteria._id" class="fa fa-check-lg text-success"></i>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <input type="hidden" formControlName="type">
-          <div *ngIf="showFieldError('type')" class="invalid-feedback d-block">
-            <div *ngIf="f['type'].errors?.['required']">نوع القرار مطلوب</div>
-            <div *ngIf="f['type'].errors?.['invalidType']">يجب اختيار نوع قرار صالح من القائمة</div>
+          <input type="hidden" formControlName="mainCriteria">
+          <div *ngIf="showFieldError('mainCriteria')" class="invalid-feedback d-block">
+            <div *ngIf="f['mainCriteria'].errors?.['required']">المعيار الرئيسي مطلوب</div>
           </div>
         </div>
+
+        <!-- 🔥 المعيار الفرعي -->
+       <div class="mb-3">
+      <label for="subCriteriaSearch" class="form-label">
+        المعيار الفرعي *
+        <span *ngIf="!f['mainCriteria'].value" class="text-muted small">(اختر المعيار الرئيسي أولاً)</span>
+      </label>
+      
+      <div class="search-dropdown position-relative">
+        <button 
+          class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
+          type="button" 
+          (click)="toggleSubDropdown()" 
+          [class.is-invalid]="showFieldError('subCriteria')"
+          [disabled]="!f['mainCriteria'].value">
+          <span class="text-truncate">
+            <span *ngIf="selectedSubCriteriaTitle; else selectSubPlaceholder">
+              {{ selectedSubCriteriaTitle }}
+            </span>
+            <ng-template #selectSubPlaceholder>
+              <span class="text-muted">اختر المعيار الفرعي...</span>
+            </ng-template>
+          </span>
+          <i class="bi bi-chevron-down ms-2 transition-all" [class.rotate-180]="showSubDropdown"></i>
+        </button>
+
+        <!-- Dropdown Results -->
+        <div class="dropdown-results" *ngIf="showSubDropdown">
+          <!-- Search Input -->
+          <div class="p-2 border-bottom">
+            <input 
+              type="text" 
+              class="form-control form-control-sm" 
+              placeholder="ابحث عن المعيار الفرعي..."
+              [(ngModel)]="subSearchTerm" 
+              [ngModelOptions]="{standalone: true}"
+              (input)="filterSubCriteria(subSearchTerm)" 
+              (click)="$event.stopPropagation()" 
+              autocomplete="off"
+              #subSearchInput>
+          </div>
+
+          <!-- Options List -->
+          <div class="dropdown-options max-h-200 overflow-auto">
+            <!-- Loading State -->
+            <div *ngIf="loadingSubCriteria" class="text-center p-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">جاري التحميل...</span>
+              </div>
+              <p class="text-muted small mt-2 mb-0">جاري تحميل المعايير الفرعية...</p>
+            </div>
+
+            <!-- No Results Found (with search) -->
+            <div *ngIf="!loadingSubCriteria && filteredSubCriteria.length === 0 && subSearchTerm"
+              class="dropdown-no-results text-center p-3 text-muted">
+              <i class="fa fa-search me-2"></i>
+              لا توجد نتائج للبحث عن "{{ subSearchTerm }}"
+            </div>
+
+            <!-- No Data Available (without search) -->
+            <div *ngIf="!loadingSubCriteria && filteredSubCriteria.length === 0 && !subSearchTerm"
+              class="dropdown-no-results text-center p-3 text-muted">
+              <i class="fa fa-info-circle me-2"></i>
+              لا توجد معايير فرعية متاحة لهذا المعيار الرئيسي
+            </div>
+
+            <!-- Criteria List -->
+            <div *ngFor="let criteria of filteredSubCriteria; let i = index" 
+              class="dropdown-item cursor-pointer p-3"
+              [class.selected]="f['subCriteria'].value === criteria._id"
+              (click)="selectSubCriteria(criteria._id, criteria.name)"
+              [attr.data-index]="i">
+              <div class="d-flex align-items-center">
+                <i class="fa fa-file me-3 text-success"></i>
+                <span class="flex-grow-1">{{ criteria.name }}</span>
+                <i *ngIf="f['subCriteria'].value === criteria._id" 
+                  class="fa fa-check-lg text-success"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden Form Control -->
+      <input type="hidden" formControlName="subCriteria">
+      
+      <!-- Validation Messages -->
+      <div *ngIf="showFieldError('subCriteria')" class="invalid-feedback d-block">
+        <div *ngIf="f['subCriteria'].errors?.['required']">المعيار الفرعي مطلوب</div>
+      </div>
+    </div>
 
         <!-- عنوان القرار -->
         <div class="mb-3">
           <label for="title" class="form-label">عنوان القرار *</label>
-          <input
-            id="title"
-            type="text"
-            formControlName="title"
-            placeholder="ادخل عنوان القرار ..."
-            class="form-control"
-            [class.is-invalid]="showFieldError('title')"
-            (keydown)="preventLeadingSpace($event)"
+          <input id="title" type="text" formControlName="title" placeholder="ادخل عنوان القرار ..." class="form-control"
+            [class.is-invalid]="showFieldError('title')" (keydown)="preventLeadingSpace($event)"
             (blur)="markFieldAsTouched('title')" />
           <div *ngIf="showFieldError('title')" class="invalid-feedback">
             <div *ngIf="f['title'].errors?.['required']">عنوان القرار مطلوب</div>
@@ -95,31 +169,66 @@
           </div>
         </div>
 
+        <!-- 🔥 حقول التعيين (تظهر فقط للمعايير المناسبة) -->
+        <div class="card mb-4 p-3 border border-info">
+          <h5 class="mb-3 text-info">
+            <i class="fa fa-user me-2"></i>
+            بيانات التعيين
+          </h5>
+
+          <div class="row">
+            <!-- الاسم الرباعي / اسم الجهة -->
+            <div class="col-md-6 mb-3">
+              <label for="fullName" class="form-label">الاسم الرباعي (اختياري)</label>
+              <input id="fullName" type="text" formControlName="fullName" placeholder="ادخل الاسم الرباعي"
+                class="form-control" [class.is-invalid]="showFieldError('fullName')"
+                (blur)="markFieldAsTouched('fullName')" />
+              <div *ngIf="showFieldError('fullName')" class="invalid-feedback">
+                <div *ngIf="f['fullName']">الاسم الرباعي مطلوب</div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label for="entityName" class="form-label">اسم الجهة (اختياري)</label>
+              <input id="entityName" type="text" formControlName="entityName" placeholder="ادخل اسم الجهة"
+                class="form-control" [class.is-invalid]="showFieldError('entityName')"
+                (blur)="markFieldAsTouched('entityName')" />
+              <div *ngIf="showFieldError('entityName')" class="invalid-feedback">
+                <div *ngIf="f['entityName']">اسم الجهة مطلوب</div>
+              </div>
+            </div>
+
+            <!-- الرقم القومي (اختياري) -->
+            <div class="col-md-6 mb-3">
+              <label for="nationalId" class="form-label">الرقم القومي (اختياري)</label>
+              <input id="nationalId" type="text" formControlName="nationalId" placeholder="ادخل الرقم القومي"
+                class="form-control" maxlength="14" (blur)="markFieldAsTouched('nationalId')" />
+            </div>
+
+            <!-- رقم الموبايل (اختياري) -->
+            <div class="col-md-6 mb-3">
+              <label for="phoneNumber" class="form-label">رقم الموبايل (اختياري)</label>
+              <input id="phoneNumber" type="tel" formControlName="phoneNumber" placeholder="ادخل رقم الموبايل"
+                class="form-control" (blur)="markFieldAsTouched('phoneNumber')" />
+            </div>
+          </div>
+        </div>
+
         <!-- تواريخ القرار -->
         <div class="row mb-3">
           <div class="col-md-6">
-            <label for="startDate" class="form-label">تاريخ البداية القرار (اختياري)</label>
-            <input
-              id="startDate"
-              type="date"
-              formControlName="startDate"
-              class="form-control rtl-date"
-              [class.is-invalid]="showFieldError('startDate')"
-              (blur)="markFieldAsTouched('startDate')" />
+            <label for="startDate" class="form-label">تاريخ البداية (اختياري)</label>
+            <input id="startDate" type="date" formControlName="startDate" class="form-control rtl-date"
+              [class.is-invalid]="showFieldError('startDate')" (blur)="markFieldAsTouched('startDate')" />
             <div *ngIf="showFieldError('startDate')" class="invalid-feedback">
               <div *ngIf="f['startDate'].errors?.['invalidDate']">تاريخ البداية غير صالح</div>
             </div>
           </div>
 
           <div class="col-md-6">
-            <label for="endDate" class="form-label">تاريخ النهاية القرار (اختياري)</label>
-            <input
-              id="endDate"
-              type="date"
-              formControlName="endDate"
-              class="form-control rtl-date"
-              [class.is-invalid]="showFieldError('endDate')"
-              (blur)="markFieldAsTouched('endDate')" />
+            <label for="endDate" class="form-label">تاريخ النهاية (اختياري)</label>
+            <input id="endDate" type="date" formControlName="endDate" class="form-control rtl-date"
+              [class.is-invalid]="showFieldError('endDate')" (blur)="markFieldAsTouched('endDate')" />
             <div *ngIf="showFieldError('endDate')" class="invalid-feedback">
               <div *ngIf="f['endDate'].errors?.['invalidDate']">تاريخ النهاية غير صالح</div>
               <div *ngIf="f['endDate'].errors?.['endDateBeforeStart']">تاريخ النهاية يجب أن يكون بعد تاريخ البداية</div>
@@ -127,45 +236,33 @@
           </div>
         </div>
 
-        <!-- ⭐ حيثيات القرار مع Quill Editor -->
+        <!-- حيثيات القرار مع Quill Editor -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <label class="form-label mb-0">حيثيات القرار *</label>
-            <button
-              type="button"
-              class="btn btn-sm btn-success"
-              (click)="addRationaleField()">
+            <button type="button" class="btn btn-sm btn-success" (click)="addRationaleField()">
               <i class="fa fa-plus me-1"></i>
               إضافة حيثيات جديدة
             </button>
           </div>
 
           <div formArrayName="rationaleFields">
-            <div *ngFor="let rationaleField of rationaleFields.controls; let i = index"
-                 [formGroupName]="i"
-                 class="card mb-3 p-3 border"
-                 [class.border-primary]="rationaleField.get('isDefault')?.value">
+            <div *ngFor="let rationaleField of rationaleFields.controls; let i = index" [formGroupName]="i"
+              class="card mb-3 p-3 border" [class.border-primary]="rationaleField.get('isDefault')?.value">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label class="form-label mb-0 fw-bold">
                   <span *ngIf="rationaleField.get('isDefault')?.value" class="badge bg-primary me-2">افتراضية</span>
                   حيثيات رقم {{ i + 1 }}
                 </label>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  (click)="removeRationaleField(i)"
+                <button type="button" class="btn btn-sm btn-danger" (click)="removeRationaleField(i)"
                   [disabled]="rationaleField.get('isDefault')?.value">
                   <i class="fa fa-trash me-1"></i>
                   حذف
                 </button>
               </div>
 
-              <!-- ⭐ استخدام Quill بدل textarea -->
-              <quill-editor
-                formControlName="rationale"
-                [modules]="quillModules"
-                placeholder="اكتب حيثيات {{ i + 1 }} هنا..."
-                [styles]="{height: '150px', direction: 'rtl'}"
+              <quill-editor formControlName="rationale" [modules]="quillModules"
+                placeholder="اكتب حيثيات {{ i + 1 }} هنا..." [styles]="{height: '150px', direction: 'rtl'}"
                 [class.is-invalid]="rationaleField.get('rationale')?.invalid &&
                   (rationaleField.get('rationale')?.dirty || rationaleField.get('rationale')?.touched || formSubmitted)">
               </quill-editor>
@@ -181,41 +278,30 @@
           </div>
         </div>
 
-        <!-- ⭐ بنود القرار مع Quill Editor -->
+        <!-- بنود القرار مع Quill Editor -->
         <div class="mb-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <label class="form-label mb-0">بنود القرار *</label>
-            <button
-              type="button"
-              class="btn btn-sm btn-success"
-              (click)="addContentField()">
+            <button type="button" class="btn btn-sm btn-success" (click)="addContentField()">
               <i class="fa fa-plus me-1"></i>
               إضافة بند قرار جديد
             </button>
           </div>
 
           <div formArrayName="contentFields">
-            <div *ngFor="let contentField of contentFields.controls; let i = index"
-                 [formGroupName]="i"
-                 class="card mb-3 p-3 border">
+            <div *ngFor="let contentField of contentFields.controls; let i = index" [formGroupName]="i"
+              class="card mb-3 p-3 border">
               <div class="d-flex justify-content-between align-items-center mb-2">
                 <label class="form-label mb-0 fw-bold">بند القرار رقم {{ i + 1 }}</label>
-                <button
-                  *ngIf="contentFields.length > 1"
-                  type="button"
-                  class="btn btn-sm btn-danger"
+                <button *ngIf="contentFields.length > 1" type="button" class="btn btn-sm btn-danger"
                   (click)="removeContentField(i)">
                   <i class="fa fa-trash me-1"></i>
                   حذف
                 </button>
               </div>
 
-              <!-- ⭐ استخدام Quill بدل textarea -->
-              <quill-editor
-                formControlName="content"
-                [modules]="quillModules"
-                placeholder="اكتب بند القرار {{ i + 1 }} هنا..."
-                [styles]="{height: '200px', direction: 'rtl'}"
+              <quill-editor formControlName="content" [modules]="quillModules"
+                placeholder="اكتب بند القرار {{ i + 1 }} هنا..." [styles]="{height: '200px', direction: 'rtl'}"
                 [class.is-invalid]="contentField.get('content')?.invalid &&
                   (contentField.get('content')?.dirty || contentField.get('content')?.touched || formSubmitted)">
               </quill-editor>
@@ -235,20 +321,11 @@
         <div class="mb-3" *ngIf="user?.role === 'UniversityPresident'">
           <label class="form-label d-block mb-2">نوع التوقيع</label>
           <div class="form-check form-check-inline black-radio">
-            <input
-              class="form-check-input"
-              type="radio"
-              id="realScan"
-              value="حقيقية"
-              formControlName="signatureType" />
+            <input class="form-check-input" type="radio" id="realScan" value="حقيقية" formControlName="signatureType" />
             <label class="form-check-label" for="realScan">توقيع حي</label>
           </div>
           <div class="form-check form-check-inline black-radio">
-            <input
-              class="form-check-input"
-              type="radio"
-              id="electronic"
-              value="الممسوحة ضوئيا"
+            <input class="form-check-input" type="radio" id="electronic" value="الممسوحة ضوئيا"
               formControlName="signatureType" />
             <label class="form-check-label" for="electronic">توقيع إلكتروني</label>
           </div>
@@ -265,9 +342,7 @@
 
         <!-- أزرار الحفظ والإلغاء -->
         <div class="d-flex justify-content-end gap-2 mt-3">
-          <button
-            type="submit"
-            class="btn btn-primary d-flex align-items-center"
+          <button type="submit" class="btn btn-primary d-flex align-items-center"
             [disabled]="messageForm.invalid || submitting">
             <ng-container *ngIf="!submitting; else loading">
               <i class="fa fa-send me-1"></i>

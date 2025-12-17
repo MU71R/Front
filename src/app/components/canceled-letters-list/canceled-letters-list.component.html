@@ -1,0 +1,255 @@
+<div class="container-fluid py-4 rtl">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">
+                <i class="fa fa-ban me-3"></i>
+                القرارات الملغاة
+            </h1>
+            <p class="page-subtitle">قائمة بجميع القرارات التي تم إيقاف العمل بها</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline-primary" (click)="refreshList()">
+                <i class="fa fa-sync-alt me-2" [class.fa-spin]="loading"></i>
+                تحديث
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-row" *ngIf="!loading">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <i class="fa fa-list"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ totalCanceled }}</div>
+                <div class="stat-label">إجمالي القرارات الملغاة</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <i class="fa fa-calendar-week"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ canceledThisMonth }}</div>
+                <div class="stat-label">ملغاة هذا الشهر</div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <i class="fa fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{ canceledToday }}</div>
+                <div class="stat-label">ملغاة اليوم</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <label class="filter-label">
+                <i class="fa fa-search me-2"></i>
+                البحث
+            </label>
+            <input 
+                type="text" 
+                class="form-control" 
+                placeholder="البحث في العنوان أو رقم المعاملة..."
+                [(ngModel)]="searchQuery"
+                (input)="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <i class="fa fa-calendar me-2"></i>
+                من تاريخ
+            </label>
+            <input 
+                type="date" 
+                class="form-control"
+                [(ngModel)]="filterDateFrom"
+                (change)="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <i class="fa fa-calendar me-2"></i>
+                إلى تاريخ
+            </label>
+            <input 
+                type="date" 
+                class="form-control"
+                [(ngModel)]="filterDateTo"
+                (change)="applyFilters()">
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">
+                <i class="fa fa-filter me-2"></i>
+                نوع القرار
+            </label>
+            <select class="form-control" [(ngModel)]="filterType" (change)="applyFilters()">
+                <option value="">الكل</option>
+                <option value="عامة">عامة</option>
+                <option value="رئاسة الجمهورية">رئاسة الجمهورية</option>
+                <option value="وزارة التعليم العالي">وزارة التعليم العالي</option>
+                <option value="رئاسة الوزراء">رئاسة الوزراء</option>
+                <option value="اخرى">أخرى</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">&nbsp;</label>
+            <button class="btn btn-secondary w-100" (click)="clearFilters()">
+                <i class="fa fa-times me-2"></i>
+                مسح الفلاتر
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-container">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">جار التحميل...</span>
+        </div>
+        <p class="mt-3 text-muted">جارٍ تحميل القرارات الملغاة...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredLetters.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <i class="fa fa-inbox"></i>
+        </div>
+        <h4 class="empty-title">لا توجد قرارات ملغاة</h4>
+        <p class="empty-text">{{ searchQuery || filterDateFrom || filterDateTo || filterType ? 
+            'لم يتم العثور على نتائج تطابق معايير البحث' : 
+            'لا توجد قرارات ملغاة حتى الآن' }}</p>
+    </div>
+
+    <!-- Letters List -->
+    <div *ngIf="!loading && filteredLetters.length > 0" class="letters-grid">
+        <div class="letter-card" *ngFor="let letter of paginatedLetters" (click)="viewDetails(letter)">
+            <div class="card-header-section">
+                <div class="letter-badges">
+                    <span class="badge badge-canceled">
+                        <i class="fa fa-ban me-1"></i>
+                        ملغي
+                    </span>
+                    <span class="badge" [ngClass]="getTypeBadgeClass(letter.letterType)" *ngIf="letter.letterType">
+                        <i class="fa" [ngClass]="getTypeIcon(letter.letterType)"></i>
+                        {{ letter.letterType }}
+                    </span>
+                </div>
+                <div class="letter-number" *ngIf="letter.transactionNumber">
+                    #{{ letter.transactionNumber }}
+                </div>
+            </div>
+
+            <div class="card-body-section">
+                <h3 class="letter-title">{{ letter.title }}</h3>
+                
+                <div class="letter-meta">
+                    <div class="meta-item">
+                        <i class="fa fa-user text-muted me-2"></i>
+                        <span>{{ letter.user?.fullname || 'غير محدد' }}</span>
+                    </div>
+                    <div class="meta-item" *ngIf="letter.mainCriteria">
+                        <i class="fa fa-tasks text-muted me-2"></i>
+                        <span>{{ letter.mainCriteria?.name }}</span>
+                    </div>
+                </div>
+
+                <div class="letter-dates">
+                    <div class="date-item">
+                        <i class="fa fa-calendar-plus text-primary me-2"></i>
+                        <div class="date-content">
+                            <span class="date-label">تاريخ الإنشاء:</span>
+                            <span class="date-value">{{ letter.createdAt | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                    </div>
+                    <div class="date-item" *ngIf="letter.canceledAt">
+                        <i class="fa fa-ban text-danger me-2"></i>
+                        <div class="date-content">
+                            <span class="date-label">تاريخ الإلغاء:</span>
+                            <span class="date-value">{{ letter.canceledAt | date:'dd/MM/yyyy - hh:mm a' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="canceled-info" *ngIf="letter.canceledBy">
+                    <i class="fa fa-user-shield me-2"></i>
+                    <span>ألغى بواسطة: {{ getCanceledByName(letter.canceledBy) }}</span>
+                </div>
+
+                <div class="cancel-reason" *ngIf="letter.cancelReason">
+                    <strong>سبب الإلغاء:</strong>
+                    <p>{{ letter.cancelReason }}</p>
+                </div>
+            </div>
+
+            <div class="card-footer-section">
+                <button class="btn btn-primary btn-sm" (click)="viewDetails(letter); $event.stopPropagation()">
+                    <i class="fa fa-eye me-2"></i>
+                    عرض التفاصيل
+                </button>
+                <!-- <button 
+                    class="btn btn-success btn-sm" 
+                    *ngIf="canRestoreDecision()"
+                    (click)="restoreDecision(letter); $event.stopPropagation()">
+                    <i class="fa fa-undo me-2"></i>
+                    استرجاع القرار
+                </button> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="!loading && filteredLetters.length > 0">
+        <div class="pagination-info">
+            عرض {{ startIndex + 1 }} - {{ endIndex }} من {{ filteredLetters.length }}
+        </div>
+        <div class="pagination-controls">
+            <button 
+                class="btn btn-outline-primary btn-sm" 
+                [disabled]="currentPage === 1"
+                (click)="goToPage(1)">
+                <i class="fa fa-angle-double-right"></i>
+            </button>
+            <button 
+                class="btn btn-outline-primary btn-sm" 
+                [disabled]="currentPage === 1"
+                (click)="previousPage()">
+                <i class="fa fa-angle-right"></i>
+            </button>
+            
+            <span class="page-number">صفحة {{ currentPage }} من {{ totalPages }}</span>
+            
+            <button 
+                class="btn btn-outline-primary btn-sm" 
+                [disabled]="currentPage === totalPages"
+                (click)="nextPage()">
+                <i class="fa fa-angle-left"></i>
+            </button>
+            <button 
+                class="btn btn-outline-primary btn-sm" 
+                [disabled]="currentPage === totalPages"
+                (click)="goToPage(totalPages)">
+                <i class="fa fa-angle-double-left"></i>
+            </button>
+        </div>
+        <div class="items-per-page">
+            <label>عدد العناصر:</label>
+            <select class="form-control form-control-sm" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+                <option [value]="10">10</option>
+                <option [value]="20">20</option>
+                <option [value]="50">50</option>
+                <option [value]="100">100</option>
+            </select>
+        </div>
+    </div>
+</div>

@@ -7,115 +7,219 @@
 </div>
 
 <div class="container-fluid" dir="rtl" [class.blur-content]="loading">
+  <!-- Header -->
   <div class="d-flex justify-content-between align-items-center mb-4 mt-3 page-header">
-    <h2 class="fw-bold m-0 page-title">إدارة أنواع القرارات</h2>
+    <h2 class="fw-bold m-0 page-title">
+      <i class="fas fa-user-check me-2"></i>إدارة المراجعين
+    </h2>
     <button class="btn btn-primary add-btn" (click)="openFormModal()">
-      <i class="fas fa-plus-circle me-2"></i>إضافة قرار
+      <i class="fas fa-plus-circle me-2"></i>إضافة مراجع جديد
     </button>
   </div>
 
-  <div *ngIf="showFormModal" class="modal fade show d-block modal-backdrop-custom">
-    <div class="modal-dialog responsive-modal">
-      <div class="modal-content d-flex flex-column gap-3">
-
-        <div class="modal-header">
-          <h5 class="modal-title text-end">{{ editingId ? 'تعديل نوع القرار' : 'إضافة نوع قرار جديد' }}</h5>
-          <button type="button" class="btn-close position-absolute start-0" (click)="closeFormModal()" title="إغلاق"></button>
+  <!-- Modal -->
+  <div *ngIf="showFormModal" class="modal fade show d-block modal-backdrop-custom" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-user-plus me-2"></i>
+            {{ editingId ? 'تعديل بيانات المراجع' : 'إضافة مراجع جديد' }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeFormModal()" title="إغلاق"></button>
         </div>
 
-        <div class="modal-body d-flex flex-column gap-3">
-
-          <label>نوع القرار:</label>
-          <input class="form-control" placeholder="نوع القرار" [(ngModel)]="form.title" />
-
-          <label>القطاعات:</label>
-
-          <div class="custom-multiselect" (click)="toggleDropdown()" [class.open]="dropdownOpen">
-            
-            <div class="selected-tags">
-              <span class="tag" *ngFor="let item of selectedSectors; let i = index">
-                {{ item.sector }}
-                <span class="remove-tag"
-                      (click)="removeSector(i); $event.stopPropagation();">×</span>
-              </span>
-
-              <input type="text"
-                     placeholder="اختر..."
-                     [(ngModel)]="searchSector"
-                     (keyup)="filterSectors()"
-                     (click)="dropdownOpen = true; $event.stopPropagation();">
-            </div>
-
-            <div class="dropdown" *ngIf="dropdownOpen">
-              <div class="option"
-                   *ngFor="let s of filteredSectors"
-                   (click)="selectSector(s)">
-                {{ s.sector }}
-              </div>
-
-              <div class="no-results" *ngIf="filteredSectors.length === 0">
-                لا توجد نتائج
+        <!-- Modal Body -->
+        <div class="modal-body p-3">
+          <form #reviewerForm="ngForm">
+            <!-- القطاع - Single Select -->
+            <div class="mb-3">
+              <label class="form-label fw-bold required">
+                <i class="fas fa-building me-2 text-primary"></i>القطاع
+              </label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="form.sector" 
+                (ngModelChange)="onSectorChange()" 
+                name="sector"
+                [class.is-invalid]="!form.sector && formSubmitted"
+                required>
+                <option [ngValue]="null" disabled selected>-- اختر القطاع --</option>
+                <option *ngFor="let s of sectors" [ngValue]="s._id">{{ s.sector }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="!form.sector && formSubmitted">
+                يرجى اختيار القطاع
               </div>
             </div>
-          </div>
 
-          <label>جهة المراجعة:</label>
-          <select class="form-select" [(ngModel)]="form.supervisor">
-            <option value="" disabled>اختر جهة المراجعة</option>
-            <option *ngFor="let u of reviewers" [value]="u._id">{{ u.fullname }}</option>
-          </select>
+            <!-- المعيار الرئيسي - Single Select -->
+            <div class="mb-3">
+              <label class="form-label fw-bold required">
+                <i class="fas fa-list-alt me-2 text-success"></i>المعيار الرئيسي
+              </label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="form.mainCriteria" 
+                (ngModelChange)="onMainCriteriaChange()"
+                name="mainCriteria" 
+                [disabled]="!form.sector || loadingMainCriteria"
+                [class.is-invalid]="!form.mainCriteria && formSubmitted"
+                required>
+                <option [ngValue]="null" disabled selected>-- اختر المعيار الرئيسي --</option>
+                <option *ngFor="let m of mainCriteriaList" [ngValue]="m._id">{{ m.name }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="!form.mainCriteria && formSubmitted">
+                يرجى اختيار المعيار الرئيسي
+              </div>
+              <small class="text-muted d-block mt-1" *ngIf="loadingMainCriteria">
+                <i class="fas fa-spinner fa-spin me-1"></i>جاري تحميل المعايير الرئيسية...
+              </small>
+              <small class="text-muted d-block mt-1" *ngIf="!loadingMainCriteria && form.sector && mainCriteriaList.length === 0">
+                <i class="fas fa-exclamation-triangle me-1 text-warning"></i>لا توجد معايير رئيسية لهذا القطاع
+              </small>
+            </div>
 
+            <!-- المعيار الفرعي - Single Select -->
+            <div class="mb-3">
+              <label class="form-label fw-bold required">
+                <i class="fas fa-tasks me-2 text-info"></i>المعيار الفرعي
+              </label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="form.subCriteria" 
+                name="subCriteria"
+                [disabled]="!form.mainCriteria || loadingSubCriteria"
+                [class.is-invalid]="!form.subCriteria && formSubmitted"
+                required>
+                <option [ngValue]="null" disabled selected>-- اختر المعيار الفرعي --</option>
+                <option *ngFor="let s of subCriteriaList" [ngValue]="s._id">{{ s.name }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="!form.subCriteria && formSubmitted">
+                يرجى اختيار المعيار الفرعي
+              </div>
+              <small class="text-muted d-block mt-1" *ngIf="loadingSubCriteria">
+                <i class="fas fa-spinner fa-spin me-1"></i>جاري تحميل المعايير الفرعية...
+              </small>
+              <small class="text-muted d-block mt-1" *ngIf="!loadingSubCriteria && form.mainCriteria && subCriteriaList.length === 0">
+                <i class="fas fa-exclamation-triangle me-1 text-warning"></i>لا توجد معايير فرعية لهذا المعيار الرئيسي
+              </small>
+            </div>
+
+            <!-- المراجع (المشرف) -->
+            <div class="mb-3">
+              <label class="form-label fw-bold required">
+                <i class="fas fa-user-tie me-2 text-danger"></i>اختر المراجع
+              </label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="form.supervisor" 
+                name="supervisor"
+                [disabled]="!form.sector || loadingReviewers" 
+                [class.is-invalid]="!form.supervisor && formSubmitted"
+                required>
+                <option [ngValue]="null" disabled selected>-- اختر المراجع --</option>
+                <option *ngFor="let r of reviewers" [ngValue]="r._id">{{ r.fullname }}</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="!form.supervisor && formSubmitted">
+                يرجى اختيار المراجع
+              </div>
+              <small class="text-muted d-block mt-1" *ngIf="loadingReviewers">
+                <i class="fas fa-spinner fa-spin me-1"></i>جاري تحميل المراجعين...
+              </small>
+              <small class="text-danger d-block mt-1" *ngIf="!loadingReviewers && form.sector && reviewers.length === 0">
+                <i class="fas fa-exclamation-circle me-1"></i>لا يوجد مراجعين مسجلين لهذا القطاع
+              </small>
+              <small class="text-success d-block mt-1" *ngIf="!loadingReviewers && reviewers.length > 0">
+                <i class="fas fa-check-circle me-1"></i>{{ reviewers.length }} مراجع متاح
+              </small>
+            </div>
+
+            <!-- ملاحظة تعريفية -->
+            <div class="alert alert-info py-2 mb-0" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              <small><strong>ملاحظة:</strong> سيتم ربط المراجع بالقطاع والمعايير المحددة أعلاه</small>
+            </div>
+          </form>
         </div>
 
-        <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeFormModal()">إلغاء</button>
-          <button class="btn btn-primary" (click)="saveDecisionType()">
-            {{ editingId ? 'تحديث' : 'حفظ' }}
+        <!-- Modal Footer -->
+        <div class="modal-footer bg-light py-2">
+          <button type="button" class="btn btn-secondary" (click)="closeFormModal()">
+            <i class="fas fa-times me-2"></i>إلغاء
+          </button>
+          <button 
+            type="button" 
+            class="btn btn-primary" 
+            (click)="saveReviewer()"
+            [disabled]="loadingMainCriteria || loadingSubCriteria || loadingReviewers">
+            <i class="fas fa-save me-2"></i>{{ editingId ? 'تحديث البيانات' : 'حفظ المراجع' }}
           </button>
         </div>
-
       </div>
     </div>
   </div>
 
-  <div class="table-responsive shadow-sm rounded bg-white mt-4 decisions-table">
-    <table class="table table-hover text-center align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th class="decision-type">نوع القرار</th>
-          <th class="sector">القطاع</th>
-          <th class="supervisor">جهة المراجعة</th>
-          <th class="actions">الإجراءات</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let d of decisions">
-          <td>{{ d.title }}</td>
-          <td>
-            <span *ngIf="d.sector?.length; else noSector">
-              {{ getSectorNames(d.sector) }}
-            </span>
-            <ng-template #noSector>—</ng-template>
-          </td>
-          <td>{{ d.supervisor?.fullname || '—' }}</td>
+  <!-- Table -->
+  <div class="card shadow-sm border-0 mt-4">
+    <div class="card-header bg-white border-bottom">
+      <h5 class="mb-0">
+        <i class="fas fa-table me-2 text-primary"></i>قائمة المراجعين المسجلين
+        <span class="badge bg-primary ms-2">{{ reviewerAssignments.length }}</span>
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover text-center align-middle mb-0" *ngIf="reviewerAssignments.length > 0">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 50px;">#</th>
+              <th>القطاع</th>
+              <th>المعيار الرئيسي</th>
+              <th>المعيار الفرعي</th>
+              <th>اسم المراجع</th>
+              <th style="width: 150px;">الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of reviewerAssignments; let i = index">
+              <td class="fw-bold">{{ i + 1 }}</td>
+              <td>{{ getSectorName(item.sector) }}</td>
+              <td>{{ getMainCriteriaName(item.mainCriteria) }}</td>
+              <td>{{ getSubCriteriaName(item.subCriteria) }}</td>
+              <td>
+                <span class="badge bg-success">{{ getSupervisorName(item.supervisor) }}</span>
+              </td>
+              <td>
+                <button 
+                  class="btn btn-sm btn-warning me-1" 
+                  (click)="editReviewer(item)"
+                  title="تعديل">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="deleteReviewer(item._id)"
+                  title="حذف">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-          <td>
-            <div class="d-flex justify-content-center gap-2">
-              <button class="btn btn-sm btn-danger" 
-                  (click)="d._id ? deleteDecisionType(d._id) : null">
-                <i class="fas fa-trash"></i>
-              </button>
-              <button class="btn btn-sm btn-primary" (click)="editDecisionType(d)">
-                <i class="fas fa-edit"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div *ngIf="decisions.length === 0" class="text-center py-3 text-muted">
-      لا يوجد أنواع قرارات لعرضها
+        <!-- Empty State -->
+        <div *ngIf="reviewerAssignments.length === 0 && !loading" class="text-center py-5">
+          <div class="empty-state p-5">
+            <i class="fas fa-users-slash fa-4x text-muted mb-4"></i>
+            <h4 class="text-muted mb-3">لا توجد مراجعين مسجلين</h4>
+            <p class="text-muted mb-4">ابدأ بإضافة مراجع جديد للنظام</p>
+            <button class="btn btn-primary btn-lg" (click)="openFormModal()">
+              <i class="fas fa-plus-circle me-2"></i>إضافة أول مراجع
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

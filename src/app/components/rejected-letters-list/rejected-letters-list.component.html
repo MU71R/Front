@@ -32,7 +32,7 @@
 
           <td data-label="المرسل">{{ letter.user.fullname }}</td>
 
-          <td data-label="نوع القرار">{{ letter.decision.title }}</td>
+          <td data-label="نوع القرار">{{ letter.decision?.title }}</td>
 
           <td data-label="التاريخ">{{ letter.createdAt | date:'short' }}</td>
 

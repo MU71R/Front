@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LoginService } from 'src/app/service/login.service';
 import { ToastrService } from 'ngx-toastr';
+import { AuthService } from 'src/app/service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -13,29 +13,20 @@ export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage = '';
   isLoading = false;
-  showPassword: boolean = false;
+  showPassword = false;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private loginService: LoginService,
+    private authService: AuthService,
     private toastr: ToastrService
   ) {
     this.loginForm = this.fb.group({
       username: [
         '',
-        [
-          Validators.required,
-          Validators.minLength(3),
-          Validators.maxLength(20),
-        ],
+        [Validators.required, Validators.minLength(3), Validators.maxLength(20)],
       ],
-      password: [
-        '',
-        [
-          Validators.required,
-        ],
-      ],
+      password: ['', [Validators.required]],
     });
   }
 
@@ -62,51 +53,49 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-    this.errorMessage = '';
     this.isLoading = true;
-
-    const loginData = {
+    const credentials = {
       username: this.loginForm.value.username.trim(),
       password: this.loginForm.value.password,
     };
 
-    this.loginService.login(loginData).subscribe({
-      next: (response: any) => {
-        this.isLoading = false;
+    this.authService
+      .login(credentials) // استدعاء login من AuthService
+      .subscribe({
+        next: (response: any) => {
+          this.isLoading = false;
 
-        if (response.token && response.user) {
-          localStorage.setItem('token', response.token);
-          this.loginService.setUser(response.user);
+          if (response.token && response.user) {
+            // تحديث حالة المستخدم في AuthService
+            this.authService.loginManually(response.token, response.user);
 
-          const role = response.user.role;
+            this.toastr.success('تم تسجيل الدخول بنجاح!', 'نجاح');
 
-          this.toastr.success('تم تسجيل الدخول بنجاح!', 'نجاح');
-
-          if (role === 'admin') {
-            this.router.navigate(['/dashboard-admin']);
+            // توجيه حسب الدور
+            const role = response.user.role;
+            if (role === 'admin') {
+              this.router.navigate(['/dashboard-admin']);
+            } else {
+              this.router.navigate(['/home']);
+            }
           } else {
-            this.router.navigate(['/home']);
+            this.errorMessage = 'لم يتم استلام بيانات الدخول بشكل صحيح.';
+            this.toastr.error(this.errorMessage, 'خطأ');
           }
-        } else {
-          this.errorMessage = 'لم يتم استلام بيانات الدخول بشكل صحيح.';
-          this.toastr.error(this.errorMessage, 'خطأ');
-        }
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = error?.error?.message || 'حدث خطأ غير متوقع.';
-        this.toastr.error(this.errorMessage, 'فشل تسجيل الدخول');
-      },
-    });
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorMessage = error?.error?.message || 'حدث خطأ غير متوقع.';
+          this.toastr.error(this.errorMessage, 'فشل تسجيل الدخول');
+        },
+      });
   }
 
-  togglePassword() {
+  togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
   logout(): void {
-    this.loginService.logout();
-    localStorage.setItem('loggedOut', 'true');
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }
