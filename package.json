@@ -27,6 +27,7 @@
     "ngx-editor": "^19.0.0-beta.1",
     "ngx-quill": "^17.1.1",
     "ngx-toastr": "^19.1.0",
+    "or": "^0.2.0",
     "quill": "^2.0.3",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.8.1",

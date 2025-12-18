@@ -56,9 +56,9 @@
                 <i class="fa fa-search me-2"></i>
                 البحث
             </label>
-            <input 
-                type="text" 
-                class="form-control" 
+            <input
+                type="text"
+                class="form-control"
                 placeholder="البحث في العنوان أو رقم المعاملة..."
                 [(ngModel)]="searchQuery"
                 (input)="applyFilters()">
@@ -69,8 +69,8 @@
                 <i class="fa fa-calendar me-2"></i>
                 من تاريخ
             </label>
-            <input 
-                type="date" 
+            <input
+                type="date"
                 class="form-control"
                 [(ngModel)]="filterDateFrom"
                 (change)="applyFilters()">
@@ -81,26 +81,11 @@
                 <i class="fa fa-calendar me-2"></i>
                 إلى تاريخ
             </label>
-            <input 
-                type="date" 
+            <input
+                type="date"
                 class="form-control"
                 [(ngModel)]="filterDateTo"
                 (change)="applyFilters()">
-        </div>
-
-        <div class="filter-group">
-            <label class="filter-label">
-                <i class="fa fa-filter me-2"></i>
-                نوع القرار
-            </label>
-            <select class="form-control" [(ngModel)]="filterType" (change)="applyFilters()">
-                <option value="">الكل</option>
-                <option value="عامة">عامة</option>
-                <option value="رئاسة الجمهورية">رئاسة الجمهورية</option>
-                <option value="وزارة التعليم العالي">وزارة التعليم العالي</option>
-                <option value="رئاسة الوزراء">رئاسة الوزراء</option>
-                <option value="اخرى">أخرى</option>
-            </select>
         </div>
 
         <div class="filter-group">
@@ -126,8 +111,8 @@
             <i class="fa fa-inbox"></i>
         </div>
         <h4 class="empty-title">لا توجد قرارات ملغاة</h4>
-        <p class="empty-text">{{ searchQuery || filterDateFrom || filterDateTo || filterType ? 
-            'لم يتم العثور على نتائج تطابق معايير البحث' : 
+        <p class="empty-text">{{ searchQuery || filterDateFrom || filterDateTo || filterType ?
+            'لم يتم العثور على نتائج تطابق معايير البحث' :
             'لا توجد قرارات ملغاة حتى الآن' }}</p>
     </div>
 
@@ -152,7 +137,7 @@
 
             <div class="card-body-section">
                 <h3 class="letter-title">{{ letter.title }}</h3>
-                
+
                 <div class="letter-meta">
                     <div class="meta-item">
                         <i class="fa fa-user text-muted me-2"></i>
@@ -197,8 +182,8 @@
                     <i class="fa fa-eye me-2"></i>
                     عرض التفاصيل
                 </button>
-                <!-- <button 
-                    class="btn btn-success btn-sm" 
+                <!-- <button
+                    class="btn btn-success btn-sm"
                     *ngIf="canRestoreDecision()"
                     (click)="restoreDecision(letter); $event.stopPropagation()">
                     <i class="fa fa-undo me-2"></i>
@@ -214,29 +199,29 @@
             عرض {{ startIndex + 1 }} - {{ endIndex }} من {{ filteredLetters.length }}
         </div>
         <div class="pagination-controls">
-            <button 
-                class="btn btn-outline-primary btn-sm" 
+            <button
+                class="btn btn-outline-primary btn-sm"
                 [disabled]="currentPage === 1"
                 (click)="goToPage(1)">
                 <i class="fa fa-angle-double-right"></i>
             </button>
-            <button 
-                class="btn btn-outline-primary btn-sm" 
+            <button
+                class="btn btn-outline-primary btn-sm"
                 [disabled]="currentPage === 1"
                 (click)="previousPage()">
                 <i class="fa fa-angle-right"></i>
             </button>
-            
+
             <span class="page-number">صفحة {{ currentPage }} من {{ totalPages }}</span>
-            
-            <button 
-                class="btn btn-outline-primary btn-sm" 
+
+            <button
+                class="btn btn-outline-primary btn-sm"
                 [disabled]="currentPage === totalPages"
                 (click)="nextPage()">
                 <i class="fa fa-angle-left"></i>
             </button>
-            <button 
-                class="btn btn-outline-primary btn-sm" 
+            <button
+                class="btn btn-outline-primary btn-sm"
                 [disabled]="currentPage === totalPages"
                 (click)="goToPage(totalPages)">
                 <i class="fa fa-angle-double-left"></i>

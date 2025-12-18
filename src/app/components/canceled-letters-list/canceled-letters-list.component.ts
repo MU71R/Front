@@ -15,21 +15,21 @@ export class CanceledLettersListComponent implements OnInit {
   canceledLetters: any[] = [];
   filteredLetters: any[] = [];
   paginatedLetters: any[] = [];
-  
+
   // Loading
   loading = true;
-  
+
   // Statistics
   totalCanceled = 0;
   canceledThisMonth = 0;
   canceledToday = 0;
-  
+
   // Filters
   searchQuery = '';
   filterDateFrom = '';
   filterDateTo = '';
   filterType = '';
-  
+
   // Pagination
   currentPage = 1;
   itemsPerPage = 20;
@@ -79,19 +79,19 @@ export class CanceledLettersListComponent implements OnInit {
    */
   calculateStatistics() {
     this.totalCanceled = this.canceledLetters.length;
-    
+
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
     const today = now.toDateString();
-    
+
     this.canceledThisMonth = this.canceledLetters.filter(letter => {
       if (!letter.canceledAt) return false;
       const canceledDate = new Date(letter.canceledAt);
-      return canceledDate.getMonth() === currentMonth && 
+      return canceledDate.getMonth() === currentMonth &&
              canceledDate.getFullYear() === currentYear;
     }).length;
-    
+
     this.canceledToday = this.canceledLetters.filter(letter => {
       if (!letter.canceledAt) return false;
       const canceledDate = new Date(letter.canceledAt);
@@ -104,16 +104,16 @@ export class CanceledLettersListComponent implements OnInit {
    */
   applyFilters() {
     let filtered = [...this.canceledLetters];
-    
+
     // فلتر البحث
     if (this.searchQuery) {
       const query = this.searchQuery.toLowerCase();
-      filtered = filtered.filter(letter => 
+      filtered = filtered.filter(letter =>
         letter.title?.toLowerCase().includes(query) ||
         letter.transactionNumber?.toString().includes(query)
       );
     }
-    
+
     // فلتر التاريخ من
     if (this.filterDateFrom) {
       const fromDate = new Date(this.filterDateFrom);
@@ -122,7 +122,7 @@ export class CanceledLettersListComponent implements OnInit {
         return new Date(letter.canceledAt) >= fromDate;
       });
     }
-    
+
     // فلتر التاريخ إلى
     if (this.filterDateTo) {
       const toDate = new Date(this.filterDateTo);
@@ -132,19 +132,19 @@ export class CanceledLettersListComponent implements OnInit {
         return new Date(letter.canceledAt) <= toDate;
       });
     }
-    
+
     // فلتر النوع
     if (this.filterType) {
       filtered = filtered.filter(letter => letter.letterType === this.filterType);
     }
-    
+
     // ترتيب حسب تاريخ الإلغاء (الأحدث أولاً)
     filtered.sort((a, b) => {
       const dateA = new Date(a.canceledAt || a.createdAt).getTime();
       const dateB = new Date(b.canceledAt || b.createdAt).getTime();
       return dateB - dateA;
     });
-    
+
     this.filteredLetters = filtered;
     this.currentPage = 1;
     this.updatePagination();
@@ -168,7 +168,7 @@ export class CanceledLettersListComponent implements OnInit {
     this.totalPages = Math.ceil(this.filteredLetters.length / this.itemsPerPage);
     this.startIndex = (this.currentPage - 1) * this.itemsPerPage;
     this.endIndex = Math.min(this.startIndex + this.itemsPerPage, this.filteredLetters.length);
-    
+
     this.paginatedLetters = this.filteredLetters.slice(this.startIndex, this.endIndex);
   }
 
@@ -269,7 +269,7 @@ export class CanceledLettersListComponent implements OnInit {
    */
   canRestoreDecision(): boolean {
     return (
-      this.user?.role === 'UniversityPresident' || 
+      this.user?.role === 'UniversityPresident' ||
       this.user?.fullname === 'مكتب رئيس الجامعة'
     );
   }

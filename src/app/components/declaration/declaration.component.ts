@@ -65,23 +65,15 @@ export class DeclarationComponent implements OnInit {
   showSubDropdown = false;
   selectedMainCriteriaTitle = '';
   selectedSubCriteriaTitle = '';
-  // 🔥 تم إزالة showAssignmentFields
 
   quillModules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
-      [{ 'align': [] }],
-      [{ 'direction': 'rtl' }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       ['clean']
     ]
   };
 
-  defaultRationales: string[] = [
-    'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.',
-    'وعلى القانون رقم (١٤٢) لسنة ١٩٩٤م. بشأن تعديل بعض أحكام قانون تنظيم الجامعات رقم ٤٩ لسنة ١٩٧٢ م.',
-    'وعلى قرار رئيس الجمهورية بالقانون رقم (٥٢) لسنة ٢٠١٤م بشأن تعديل بعض أحكام قانون تنظيم الجامعات رقم ٤٩ لسنة ١٩٧٢ م.'
-  ];
+  defaultRationale: string = 'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.';
 
   constructor(
     private fb: FormBuilder,
@@ -95,7 +87,7 @@ export class DeclarationComponent implements OnInit {
   ngOnInit(): void {
     this.initializeForm();
     this.loadMainCriteria();
-    this.populateDefaultRationales();
+    this.addDefaultRationale();
   }
 
   private initializeForm(): void {
@@ -107,7 +99,6 @@ export class DeclarationComponent implements OnInit {
         rationaleFields: this.fb.array([]),
         signatureType: [''],
         contentFields: this.fb.array([this.createContentField()]),
-        // 🔥 حقول التعيين بدون validators مطلوبة (كلها اختيارية)
         fullName: [''],
         entityName: [''],
         nationalId: [''],
@@ -122,7 +113,6 @@ export class DeclarationComponent implements OnInit {
     this.messageForm.get('mainCriteria')?.valueChanges.subscribe(value => {
       if (value) {
         this.loadSubCriteria(value);
-        // 🔥 تم إزالة checkIfAssignmentCriteria
       } else {
         this.subCriteriaList = [];
         this.filteredSubCriteria = [];
@@ -132,28 +122,22 @@ export class DeclarationComponent implements OnInit {
     });
   }
 
-  // 🔥 تم إزالة checkIfAssignmentCriteria method
-
-  private populateDefaultRationales(): void {
+  private addDefaultRationale(): void {
     this.rationaleFields.clear();
 
-    if (this.defaultRationales && this.defaultRationales.length > 0) {
-      this.defaultRationales.forEach(rationale => {
-        const rationaleGroup = this.fb.group({
-          rationale: [rationale, [Validators.required]],
-          isDefault: [true]
-        });
-        this.rationaleFields.push(rationaleGroup);
-      });
-    } else {
-      this.addRationaleField();
-    }
+    // إضافة حيثية افتراضية ثابتة فقط (بدون حقل إضافي)
+    const defaultRationaleGroup = this.fb.group({
+      rationale: [this.defaultRationale, [Validators.required]],
+      isDefault: [true]
+    });
+
+    this.rationaleFields.push(defaultRationaleGroup);
   }
 
-  createRationaleField(): FormGroup {
+  createRationaleField(rationaleText: string = '', isDefault: boolean = false): FormGroup {
     return this.fb.group({
-      rationale: ['', [Validators.required]],
-      isDefault: [false]
+      rationale: [rationaleText, [Validators.required]],
+      isDefault: [isDefault]
     });
   }
 
@@ -162,36 +146,38 @@ export class DeclarationComponent implements OnInit {
   }
 
   addRationaleField(): void {
-    this.rationaleFields.push(this.createRationaleField());
+    this.rationaleFields.push(this.createRationaleField('', false));
   }
 
   removeRationaleField(index: number): void {
     const rationaleControl = this.rationaleFields.at(index);
     const isDefault = rationaleControl.get('isDefault')?.value;
 
-    if (isDefault) {
+    // إذا كانت الحيثية افتراضية ووحدها، لا يمكن حذفها
+    if (isDefault && this.rationaleFields.length === 1) {
       Swal.fire({
         icon: 'warning',
-        title: 'لا يمكن حذف الحيثيات الافتراضية',
-        text: 'يمكنك فقط تعديلها',
+        title: 'لا يمكن حذف الحيثية الافتراضية',
+        text: 'يجب أن يحتوي القرار على حيثية واحدة على الأقل',
         showConfirmButton: false,
         timer: 2000,
       });
       return;
     }
 
-    if (this.rationaleFields.length > 1) {
+    // إذا كانت الحيثية افتراضية ولكن هناك حيثيات أخرى، يمكن حذفها
+    if (isDefault && this.rationaleFields.length > 1) {
       this.rationaleFields.removeAt(index);
-    } else {
-      Swal.fire({
-        icon: 'warning',
-        title: 'يجب أن يحتوي القرار على حيثيات واحدة على الأقل',
-        showConfirmButton: false,
-        timer: 2000,
-      });
+      return;
+    }
+
+    // إذا كانت الحيثية غير افتراضية، يمكن حذفها بحرية
+    if (!isDefault) {
+      this.rationaleFields.removeAt(index);
     }
   }
 
+  // باقي الكود يبقى كما هو بدون تغيير
   createContentField(): FormGroup {
     return this.fb.group({
       content: ['', [Validators.required]]
@@ -440,55 +426,55 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
- private resetForm(): void {
+  private resetForm(): void {
+    // 1️⃣ امسح الـ FormArray قبل reset
+    this.contentFields.clear();
+    this.rationaleFields.clear();
 
-  // 1️⃣ امسح الـ FormArray قبل reset
-  this.contentFields.clear();
-  this.rationaleFields.clear();
+    // 2️⃣ اعمل reset بقيم STRING مش null
+    this.messageForm.reset({
+      mainCriteria: '',
+      subCriteria: '',
+      title: '',
+      signatureType: '',
+      fullName: '',
+      entityName: '',
+      nationalId: '',
+      phoneNumber: '',
+      startDate: '',
+      endDate: '',
+      date: new Date().toISOString().split('T')[0],
+    });
 
-  // 2️⃣ اعمل reset بقيم STRING مش null
-  this.messageForm.reset({
-    mainCriteria: '',
-    subCriteria: '',
-    title: '',
-    signatureType: '',
-    fullName: '',
-    entityName: '',
-    nationalId: '',
-    phoneNumber: '',
-    startDate: '',
-    endDate: '',
-    date: new Date().toISOString().split('T')[0],
-  });
+    // 3️⃣ أضف محتوى افتراضي
+    this.contentFields.push(
+      this.fb.group({
+        content: ['']
+      })
+    );
 
-  // 3️⃣ أضف Quill بقيم فاضية
-  this.contentFields.push(
-    this.fb.group({
-      content: ['']
-    })
-  );
+    // 4️⃣ أضف الحيثية الافتراضية فقط (بدون حقل إضافي)
+    this.addDefaultRationale();
 
-  this.populateDefaultRationales();
+    // 5️⃣ reset UI state
+    this.submitting = false;
+    this.loadingSubCriteria = false;
+    this.successMsg = '';
+    this.errorMsg = '';
+    this.formSubmitted = false;
+    this.mainSearchTerm = '';
+    this.subSearchTerm = '';
+    this.selectedMainCriteriaTitle = '';
+    this.selectedSubCriteriaTitle = '';
+    this.filteredMainCriteria = [];
+    this.filteredSubCriteria = [];
+    this.showMainDropdown = false;
+    this.showSubDropdown = false;
 
-  // 4️⃣ reset UI state
-  this.submitting = false;
-  this.loadingSubCriteria = false;
-  this.successMsg = '';
-  this.errorMsg = '';
-  this.formSubmitted = false;
-  this.mainSearchTerm = '';
-  this.subSearchTerm = '';
-  this.selectedMainCriteriaTitle = '';
-  this.selectedSubCriteriaTitle = '';
-  this.filteredMainCriteria = [];
-  this.filteredSubCriteria = [];
-  this.showMainDropdown = false;
-  this.showSubDropdown = false;
-
-  Object.keys(this.f).forEach((key) => {
-    this.f[key].markAsUntouched();
-  });
-}
+    Object.keys(this.f).forEach((key) => {
+      this.f[key].markAsUntouched();
+    });
+  }
 
   onSubmit() {
     this.formSubmitted = true;
@@ -535,7 +521,6 @@ export class DeclarationComponent implements OnInit {
       EndDate: this.f['endDate'].value
         ? new Date(this.f['endDate'].value).toISOString()
         : null,
-      // 🔥 إرسال حقول التعيين دائماً (حتى لو فارغة)
       fullName: this.f['fullName'].value || null,
       entityName: this.f['entityName'].value || null,
       nationalId: this.f['nationalId'].value || null,

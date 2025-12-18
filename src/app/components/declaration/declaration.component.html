@@ -72,12 +72,12 @@
         المعيار الفرعي *
         <span *ngIf="!f['mainCriteria'].value" class="text-muted small">(اختر المعيار الرئيسي أولاً)</span>
       </label>
-      
+
       <div class="search-dropdown position-relative">
-        <button 
+        <button
           class="form-select dropdown-toggle text-start d-flex justify-content-between align-items-center"
-          type="button" 
-          (click)="toggleSubDropdown()" 
+          type="button"
+          (click)="toggleSubDropdown()"
           [class.is-invalid]="showFieldError('subCriteria')"
           [disabled]="!f['mainCriteria'].value">
           <span class="text-truncate">
@@ -95,14 +95,14 @@
         <div class="dropdown-results" *ngIf="showSubDropdown">
           <!-- Search Input -->
           <div class="p-2 border-bottom">
-            <input 
-              type="text" 
-              class="form-control form-control-sm" 
+            <input
+              type="text"
+              class="form-control form-control-sm"
               placeholder="ابحث عن المعيار الفرعي..."
-              [(ngModel)]="subSearchTerm" 
+              [(ngModel)]="subSearchTerm"
               [ngModelOptions]="{standalone: true}"
-              (input)="filterSubCriteria(subSearchTerm)" 
-              (click)="$event.stopPropagation()" 
+              (input)="filterSubCriteria(subSearchTerm)"
+              (click)="$event.stopPropagation()"
               autocomplete="off"
               #subSearchInput>
           </div>
@@ -132,7 +132,7 @@
             </div>
 
             <!-- Criteria List -->
-            <div *ngFor="let criteria of filteredSubCriteria; let i = index" 
+            <div *ngFor="let criteria of filteredSubCriteria; let i = index"
               class="dropdown-item cursor-pointer p-3"
               [class.selected]="f['subCriteria'].value === criteria._id"
               (click)="selectSubCriteria(criteria._id, criteria.name)"
@@ -140,7 +140,7 @@
               <div class="d-flex align-items-center">
                 <i class="fa fa-file me-3 text-success"></i>
                 <span class="flex-grow-1">{{ criteria.name }}</span>
-                <i *ngIf="f['subCriteria'].value === criteria._id" 
+                <i *ngIf="f['subCriteria'].value === criteria._id"
                   class="fa fa-check-lg text-success"></i>
               </div>
             </div>
@@ -150,7 +150,7 @@
 
       <!-- Hidden Form Control -->
       <input type="hidden" formControlName="subCriteria">
-      
+
       <!-- Validation Messages -->
       <div *ngIf="showFieldError('subCriteria')" class="invalid-feedback d-block">
         <div *ngIf="f['subCriteria'].errors?.['required']">المعيار الفرعي مطلوب</div>

@@ -27,7 +27,6 @@
             <i class="fas fa-user-plus me-2"></i>
             {{ editingId ? 'تعديل بيانات المراجع' : 'إضافة مراجع جديد' }}
           </h5>
-          <button type="button" class="btn-close btn-close-white" (click)="closeFormModal()" title="إغلاق"></button>
         </div>
 
         <!-- Modal Body -->
@@ -38,10 +37,10 @@
               <label class="form-label fw-bold required">
                 <i class="fas fa-building me-2 text-primary"></i>القطاع
               </label>
-              <select 
-                class="form-select" 
-                [(ngModel)]="form.sector" 
-                (ngModelChange)="onSectorChange()" 
+              <select
+                class="form-select"
+                [(ngModel)]="form.sector"
+                (ngModelChange)="onSectorChange()"
                 name="sector"
                 [class.is-invalid]="!form.sector && formSubmitted"
                 required>
@@ -58,11 +57,11 @@
               <label class="form-label fw-bold required">
                 <i class="fas fa-list-alt me-2 text-success"></i>المعيار الرئيسي
               </label>
-              <select 
-                class="form-select" 
-                [(ngModel)]="form.mainCriteria" 
+              <select
+                class="form-select"
+                [(ngModel)]="form.mainCriteria"
                 (ngModelChange)="onMainCriteriaChange()"
-                name="mainCriteria" 
+                name="mainCriteria"
                 [disabled]="!form.sector || loadingMainCriteria"
                 [class.is-invalid]="!form.mainCriteria && formSubmitted"
                 required>
@@ -85,9 +84,9 @@
               <label class="form-label fw-bold required">
                 <i class="fas fa-tasks me-2 text-info"></i>المعيار الفرعي
               </label>
-              <select 
-                class="form-select" 
-                [(ngModel)]="form.subCriteria" 
+              <select
+                class="form-select"
+                [(ngModel)]="form.subCriteria"
                 name="subCriteria"
                 [disabled]="!form.mainCriteria || loadingSubCriteria"
                 [class.is-invalid]="!form.subCriteria && formSubmitted"
@@ -111,11 +110,11 @@
               <label class="form-label fw-bold required">
                 <i class="fas fa-user-tie me-2 text-danger"></i>اختر المراجع
               </label>
-              <select 
-                class="form-select" 
-                [(ngModel)]="form.supervisor" 
+              <select
+                class="form-select"
+                [(ngModel)]="form.supervisor"
                 name="supervisor"
-                [disabled]="!form.sector || loadingReviewers" 
+                [disabled]="!form.sector || loadingReviewers"
                 [class.is-invalid]="!form.supervisor && formSubmitted"
                 required>
                 <option [ngValue]="null" disabled selected>-- اختر المراجع --</option>
@@ -148,9 +147,9 @@
           <button type="button" class="btn btn-secondary" (click)="closeFormModal()">
             <i class="fas fa-times me-2"></i>إلغاء
           </button>
-          <button 
-            type="button" 
-            class="btn btn-primary" 
+          <button
+            type="button"
+            class="btn btn-primary"
             (click)="saveReviewer()"
             [disabled]="loadingMainCriteria || loadingSubCriteria || loadingReviewers">
             <i class="fas fa-save me-2"></i>{{ editingId ? 'تحديث البيانات' : 'حفظ المراجع' }}
@@ -164,7 +163,7 @@
   <div class="card shadow-sm border-0 mt-4">
     <div class="card-header bg-white border-bottom">
       <h5 class="mb-0">
-        <i class="fas fa-table me-2 text-primary"></i>قائمة المراجعين المسجلين
+        <i class=""></i>قائمة المراجعين
         <span class="badge bg-primary ms-2">{{ reviewerAssignments.length }}</span>
       </h5>
     </div>
@@ -190,19 +189,22 @@
               <td>
                 <span class="badge bg-success">{{ getSupervisorName(item.supervisor) }}</span>
               </td>
+              <!-- في جزء الجدول داخل HTML -->
               <td>
-                <button 
-                  class="btn btn-sm btn-warning me-1" 
-                  (click)="editReviewer(item)"
-                  title="تعديل">
-                  <i class="fas fa-edit"></i>
-                </button>
-                <button 
-                  class="btn btn-sm btn-danger" 
-                  (click)="deleteReviewer(item._id)"
-                  title="حذف">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
+                <div class="d-flex justify-content-center gap-1">
+                  <button
+                    class="btn btn-sm btn-warning"
+                    (click)="editReviewer(item)"
+                    title="تعديل">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="btn btn-sm btn-danger"
+                    (click)="deleteReviewer(item._id)"
+                    title="حذف">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>

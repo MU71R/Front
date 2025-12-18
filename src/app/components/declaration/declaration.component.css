@@ -311,3 +311,74 @@
 .dropdown-item:hover {
   background-color: #f8f9fa;
 }
+
+
+
+/* تنسيق محرر Quill ليكون RTL */
+::ng-deep .ql-editor {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+::ng-deep .ql-container {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+::ng-deep .ql-toolbar {
+  direction: rtl !important;
+}
+
+::ng-deep .ql-editor.ql-blank::before {
+  direction: rtl !important;
+  text-align: right !important;
+  right: 15px !important;
+  left: auto !important;
+}
+
+/* إذا كنت تريد تحسين تجربة RTL أكثر */
+::ng-deep .ql-editor p,
+::ng-deep .ql-editor h1,
+::ng-deep .ql-editor h2,
+::ng-deep .ql-editor h3,
+::ng-deep .ql-editor ul,
+::ng-deep .ql-editor ol {
+  direction: rtl !important;
+  text-align: right !important;
+}
+
+
+
+/* زيادة حجم الخط في محرر Quill فقط */
+::ng-deep .ql-editor {
+  direction: rtl !important;
+  text-align: right !important;
+  font-size: 1.2rem !important; /* زيادة حجم الخط */
+  line-height: 1.8 !important; /* زيادة ارتفاع السطور */
+}
+
+::ng-deep .ql-editor p,
+::ng-deep .ql-editor h1,
+::ng-deep .ql-editor h2,
+::ng-deep .ql-editor h3 {
+  font-size: 1.2rem !important;
+  line-height: 1.8 !important;
+}
+
+::ng-deep .ql-editor ul,
+::ng-deep .ql-editor ol {
+  font-size: 1.2rem !important;
+  line-height: 1.8 !important;
+}
+
+/* جعل placeholder حقل الموبايل على اليمين */
+input#phoneNumber::placeholder {
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* أو يمكنك استخدام هذا */
+input[formControlName="phoneNumber"]::placeholder {
+  text-align: right !important;
+  direction: rtl !important;
+}
