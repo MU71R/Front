@@ -56,12 +56,8 @@
                 <i class="fa fa-search me-2"></i>
                 البحث
             </label>
-            <input
-                type="text"
-                class="form-control"
-                placeholder="البحث في العنوان أو رقم المعاملة..."
-                [(ngModel)]="searchQuery"
-                (input)="applyFilters()">
+            <input type="text" class="form-control" placeholder="البحث في العنوان أو رقم القرار..."
+                [(ngModel)]="searchQuery" (input)="applyFilters()">
         </div>
 
         <div class="filter-group">
@@ -69,11 +65,7 @@
                 <i class="fa fa-calendar me-2"></i>
                 من تاريخ
             </label>
-            <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="filterDateFrom"
-                (change)="applyFilters()">
+            <input type="date" class="form-control" [(ngModel)]="filterDateFrom" (change)="applyFilters()">
         </div>
 
         <div class="filter-group">
@@ -81,11 +73,7 @@
                 <i class="fa fa-calendar me-2"></i>
                 إلى تاريخ
             </label>
-            <input
-                type="date"
-                class="form-control"
-                [(ngModel)]="filterDateTo"
-                (change)="applyFilters()">
+            <input type="date" class="form-control" [(ngModel)]="filterDateTo" (change)="applyFilters()">
         </div>
 
         <div class="filter-group">
@@ -199,30 +187,19 @@
             عرض {{ startIndex + 1 }} - {{ endIndex }} من {{ filteredLetters.length }}
         </div>
         <div class="pagination-controls">
-            <button
-                class="btn btn-outline-primary btn-sm"
-                [disabled]="currentPage === 1"
-                (click)="goToPage(1)">
+            <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === 1" (click)="goToPage(1)">
                 <i class="fa fa-angle-double-right"></i>
             </button>
-            <button
-                class="btn btn-outline-primary btn-sm"
-                [disabled]="currentPage === 1"
-                (click)="previousPage()">
+            <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === 1" (click)="previousPage()">
                 <i class="fa fa-angle-right"></i>
             </button>
 
             <span class="page-number">صفحة {{ currentPage }} من {{ totalPages }}</span>
 
-            <button
-                class="btn btn-outline-primary btn-sm"
-                [disabled]="currentPage === totalPages"
-                (click)="nextPage()">
+            <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === totalPages" (click)="nextPage()">
                 <i class="fa fa-angle-left"></i>
             </button>
-            <button
-                class="btn btn-outline-primary btn-sm"
-                [disabled]="currentPage === totalPages"
+            <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage === totalPages"
                 (click)="goToPage(totalPages)">
                 <i class="fa fa-angle-double-left"></i>
             </button>

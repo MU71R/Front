@@ -35,7 +35,7 @@
             </div>
             <div class="alert-content">
                 <h4 class="alert-title">هذا القرار ملغي</h4>
-                <p class="alert-text">تم إيقاف العمل بهذا القرار بتاريخ {{ letter.canceledAt | date:'dd/MM/yyyy - hh:mm a' }}</p>
+                <p class="alert-text">تم إيقاف العمل بهذا القرار بتاريخ {{ letter.canceledAt | date:'dd/MM/yyyy - hh:mma' }}</p>
                 <div class="canceled-by" *ngIf="letter.canceledBy">
                     <i class="fa fa-user-shield me-2"></i>
                     <span>ألغى بواسطة: {{ getCanceledByName(letter.canceledBy) }}</span>
@@ -73,7 +73,7 @@
                 </div>
                 <div class="letter-number" *ngIf="letter.transactionNumber">
                     <i class="fa fa-hashtag me-1"></i>
-                    رقم المعاملة: {{ letter.transactionNumber }}
+                    رقم القرار: {{ letter.transactionNumber }}
                 </div>
                 <button *ngIf="showPdfButton()" class="btn btn-pdf" (click)="openPdf()" [disabled]="pdfLoading">
                     <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
@@ -82,7 +82,7 @@
             </div>
 
             <div class="header-content">
-                <h1 class="letter-title">{{ letter.title }}</h1>
+                <h1 class="letter-title">عنوان القرار: {{ letter.title }}</h1>
             </div>
         </div>
 
@@ -169,7 +169,8 @@
                             </div>
                         </div>
 
-                        <div class="info-item" *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
+                        <div class="info-item"
+                            *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
                             </div>
@@ -341,7 +342,7 @@
             <!-- قسم مسار القرار -->
             <div class="content-section" *ngIf="letter.approvals && letter.approvals.length > 0" id="approvals">
                 <h3 class="section-title">
-                    <i class="fa fa-check-circle me-2"></i>مسار القرار
+                    <i class="fa fa-check-circle me-2"></i>مسار القرار قبل الإلغاء
                     <span class="approvals-count">{{ letter.approvals.length }}</span>
                 </h3>
                 <div class="section-content">

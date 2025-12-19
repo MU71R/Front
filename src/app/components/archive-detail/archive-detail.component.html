@@ -129,13 +129,13 @@
     <p class="empty-text">
       {{ letters.length === 0 ? 'لم يتم العثور على أي قرارات في هذا الأرشيف.' : 'لمطابقة معايير البحث المحددة.' }}
     </p>
-  <button
-  *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || isSpecialArchive()) && letters?.length === 0"
-  class="btn btn-primary"
-  (click)="openUploadModal()"
->
-  <i class="fa fa-plus me-2"></i>إضافة أول قرار
-</button>
+    <button
+      *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || isSpecialArchive()) && letters?.length === 0"
+      class="btn btn-primary"
+      (click)="openUploadModal()"
+    >
+      <i class="fa fa-plus me-2"></i>إضافة أول قرار
+    </button>
 
     <button *ngIf="letters.length > 0" class="btn btn-outline-primary" (click)="resetFilters()">
       <i class="fa fa-refresh me-2"></i>عرض جميع القرارت
@@ -183,11 +183,13 @@
               <div class="letter-title-cell">
                 <i class="fa fa-envelope text-primary me-2"></i>
                 <div class="letter-content">
-                  <span class="letter-title-text text-truncate d-block" [title]="letter.title" data-bs-toggle="tooltip"
-                    data-bs-placement="top">
+                  <span class="letter-title-text text-truncate d-block tooltip-wrapper" 
+                        [attr.data-tooltip]="letter.title">
                     {{ letter.title }}
                   </span>
-                  <small class="text-muted text-truncate d-block" *ngIf="letter.breeif" [title]="letter.breeif">
+                  <small class="text-muted text-truncate d-block tooltip-wrapper" 
+                         *ngIf="letter.breeif" 
+                         [attr.data-tooltip]="letter.breeif">
                     {{ letter.breeif }}
                   </small>
                 </div>
@@ -196,37 +198,50 @@
             <td data-label="المرسل">
               <div class="sender-cell">
                 <i class="fa fa-user-circle text-primary me-2"></i>
-                <span class="text-truncate d-block">{{ letter.user?.fullname || 'غير محدد' }}</span>
+                <span class="text-truncate d-block tooltip-wrapper" 
+                      [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
+                  {{ letter.user?.fullname || 'غير محدد' }}
+                </span>
               </div>
             </td>
             <td data-label="المعيار الرئيسي">
-              <span class="badge bg-info">{{ letter.mainCriteria?.name || 'غير محدد' }}</span>
+              <span class="badge bg-info tooltip-wrapper" 
+                    [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
+                {{ letter.mainCriteria?.name || 'غير محدد' }}
+              </span>
             </td>
             <td data-label="المعيار الفرعي">
-              <span class="badge bg-secondary">{{ letter.subCriteria?.name || 'غير محدد' }}</span>
+              <span class="badge bg-secondary tooltip-wrapper" 
+                    [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
+                {{ letter.subCriteria?.name || 'غير محدد' }}
+              </span>
             </td>
             <td data-label="تاريخ الإنشاء">
-              <div class="created-at-cell">
+              <div class="created-at-cell tooltip-wrapper"
+                   [attr.data-tooltip]="letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
                 <span>{{ letter.createdAt? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
             <td data-label="تاريخ بدء القرار">
-              <div class="created-at-cell">
+              <div class="created-at-cell tooltip-wrapper"
+                   [attr.data-tooltip]="letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
                 <span>{{ letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
             <td data-label="تاريخ انتهاء القرار">
-              <div class="created-at-cell">
+              <div class="created-at-cell tooltip-wrapper"
+                   [attr.data-tooltip]="letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
                 <span>{{ letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
             <td data-label="الإجراءات">
               <div class="actions-cell">
-                <button class="btn btn-primary btn-sm btn-action" (click)="viewLetterDetails(letter._id)"
-                  title="عرض التفاصيل">
+                <button class="btn btn-primary btn-sm btn-action tooltip-wrapper" 
+                        (click)="viewLetterDetails(letter._id)"
+                        data-tooltip="عرض تفاصيل القرار">
                   <i class="fa fa-eye"></i>
                   <span class="d-none d-md-inline ms-1">عرض</span>
                 </button>
@@ -238,128 +253,127 @@
     </div>
   </div>
 
-<div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
-  <div class="modal-container" (click)="$event.stopPropagation()">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-icon">
-          <i class="fa fa-cloud-upload-alt"></i>
-        </div>
-        <div class="modal-title">
-          <h4 class="mb-1 text-truncate">رفع أرشيف جديد</h4>
-          <p class="text-muted mb-0 text-truncate">أضف مستنداً جديداً إلى الأرشيف</p>
-        </div>
-        <button type="button" class="btn-close" (click)="closeUploadModal()">
-          <i class="fa fa-times"></i>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <form (ngSubmit)="uploadArchive()" #archiveForm="ngForm">
-          <div class="form-group mb-3">
-            <label class="form-label fw-semibold">عنوان المستند <span class="text-danger">*</span></label>
-            <input type="text" class="form-control form-control-lg" [(ngModel)]="newArchive.title" name="title"
-              placeholder="مثال: قرار رقم ٢٤٥ لسنة ٢٠٢٣" required />
+  <div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-icon">
+            <i class="fa fa-cloud-upload-alt"></i>
           </div>
-          <div class="form-group mb-3">
-
-          <label class="form-label fw-semibold">رقم القرار</label>
-          <input 
-            type="text" 
-            class="form-control form-control-lg" 
-            [(ngModel)]="newArchive.transactionNumber" 
-            name="transactionNumber"
-            placeholder="مثال: 245/2023" 
-          />
-        </div>
-          <div class="form-group mb-3">
-            <label class="form-label fw-semibold">الوصف</label>
-            <textarea class="form-control" rows="3" [(ngModel)]="newArchive.description" name="description"
-              placeholder="وصف مختصر للمستند..."></textarea>
+          <div class="modal-title">
+            <h4 class="mb-1 text-truncate">رفع أرشيف جديد</h4>
+            <p class="text-muted mb-0 text-truncate">أضف مستنداً جديداً إلى الأرشيف</p>
           </div>
-          
-          <div class="row g-2 mb-3">
-          <div class="col-12 col-sm-6">
-            <div class="form-group">
-              <label class="form-label fw-semibold">تاريخ البدء</label>
+          <button type="button" class="btn-close" (click)="closeUploadModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <form (ngSubmit)="uploadArchive()" #archiveForm="ngForm">
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">عنوان المستند <span class="text-danger">*</span></label>
+              <input type="text" class="form-control form-control-lg" [(ngModel)]="newArchive.title" name="title"
+                placeholder="مثال: قرار رقم ٢٤٥ لسنة ٢٠٢٣" required />
+            </div>
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">رقم القرار</label>
               <input 
-                type="date" 
-                class="form-control" 
-                [(ngModel)]="newArchive.startDate" 
-                name="startDate"
+                type="text" 
+                class="form-control form-control-lg" 
+                [(ngModel)]="newArchive.transactionNumber" 
+                name="transactionNumber"
+                placeholder="مثال: 245/2023" 
               />
             </div>
-          </div>
-
-          <div class="col-12 col-sm-6">
-            <div class="form-group">
-              <label class="form-label fw-semibold">تاريخ الانتهاء</label>
-              <input 
-                type="date" 
-                class="form-control" 
-                [(ngModel)]="newArchive.endDate" 
-                name="endDate"
-              />
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">الوصف</label>
+              <textarea class="form-control" rows="3" [(ngModel)]="newArchive.description" name="description"
+                placeholder="وصف مختصر للمستند..."></textarea>
             </div>
-          </div>
+            
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="form-label fw-semibold">تاريخ البدء</label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    [(ngModel)]="newArchive.startDate" 
+                    name="startDate"
+                  />
+                </div>
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="form-label fw-semibold">تاريخ الانتهاء</label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    [(ngModel)]="newArchive.endDate" 
+                    name="endDate"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-12 col-sm-6">
+                <div class="form-group">
+                  <label class="form-label fw-semibold">نوع الأرشيف</label>
+                  <select class="form-select" [(ngModel)]="newArchive.letterType" name="letterType">
+                    <option value="رئاسة الجمهورية">رئاسة الجمهورية</option>
+                    <option value="رئاسة الوزراء">رئاسة الوزراء</option>
+                    <option value="وزارة التعليم العالي">وزارة التعليم العالي</option>
+                    <option value="عامة">الجامعة</option>
+                    <option value="اخرى">اخرى</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group mb-4">
+              <label class="form-label fw-semibold">رفع الملف</label>
+              <div class="file-upload-area" [class.active]="newArchive.file" [class.has-file]="newArchive.file">
+                <input type="file" class="file-input" (change)="onFileSelected($event)" #fileInput
+                  accept=".pdf,.doc,.docx,.jpg,.png" />
+                <div class="upload-placeholder" (click)="fileInput.click()">
+                  <i class="fa fa-cloud-upload-alt text-muted mb-2"></i>
+                  <div class="upload-text">
+                    <h6 class="mb-1">انقر لرفع الملف</h6>
+                    <small class="text-muted">PDF, Word, أو صور - الحد الأقصى 10MB</small>
+                  </div>
+                </div>
+                <div class="file-preview" *ngIf="newArchive.file">
+                  <i class="fa fa-file-pdf text-primary me-2"></i>
+                  <div class="file-info flex-grow-1">
+                    <span class="file-name d-block fw-semibold text-truncate">{{ newArchive.file.name }}</span>
+                    <span class="file-size text-muted">{{ getFileSize(newArchive.file.size) }}</span>
+                  </div>
+                  <button type="button" class="btn-remove" (click)="removeFile()">
+                    <i class="fa fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="btn btn-cancel" (click)="closeUploadModal()">
+                <i class="fa fa-times me-2"></i>إلغاء
+              </button>
+              <button type="submit" class="btn btn-submit" [disabled]="uploading || !archiveForm.form.valid"
+                [class.btn-loading]="uploading">
+                <span *ngIf="!uploading">
+                  <i class="fa fa-cloud-upload me-2"></i>رفع الأرشيف
+                </span>
+                <span *ngIf="uploading">
+                  <i class="fa fa-spinner fa-spin me-2"></i>جاري الرفع...
+                </span>
+              </button>
+            </div>
+          </form>
         </div>
-
-
-          <div class="row g-2 mb-3">
-            <div class="col-12 col-sm-6">
-              <div class="form-group">
-                <label class="form-label fw-semibold">نوع الأرشيف</label>
-                <select class="form-select" [(ngModel)]="newArchive.letterType" name="letterType">
-                  <option value="رئاسة الجمهورية">رئاسة الجمهورية</option>
-                  <option value="رئاسة الوزراء">رئاسة الوزراء</option>
-                  <option value="وزارة التعليم العالي">وزارة التعليم العالي</option>
-                  <option value="عامة">الجامعة</option>
-                  <option value="اخرى">اخرى</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group mb-4">
-            <label class="form-label fw-semibold">رفع الملف</label>
-            <div class="file-upload-area" [class.active]="newArchive.file" [class.has-file]="newArchive.file">
-              <input type="file" class="file-input" (change)="onFileSelected($event)" #fileInput
-                accept=".pdf,.doc,.docx,.jpg,.png" />
-              <div class="upload-placeholder" (click)="fileInput.click()">
-                <i class="fa fa-cloud-upload-alt text-muted mb-2"></i>
-                <div class="upload-text">
-                  <h6 class="mb-1">انقر لرفع الملف</h6>
-                  <small class="text-muted">PDF, Word, أو صور - الحد الأقصى 10MB</small>
-                </div>
-              </div>
-              <div class="file-preview" *ngIf="newArchive.file">
-                <i class="fa fa-file-pdf text-primary me-2"></i>
-                <div class="file-info flex-grow-1">
-                  <span class="file-name d-block fw-semibold text-truncate">{{ newArchive.file.name }}</span>
-                  <span class="file-size text-muted">{{ getFileSize(newArchive.file.size) }}</span>
-                </div>
-                <button type="button" class="btn-remove" (click)="removeFile()">
-                  <i class="fa fa-times"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="modal-actions">
-            <button type="button" class="btn btn-cancel" (click)="closeUploadModal()">
-              <i class="fa fa-times me-2"></i>إلغاء
-            </button>
-            <button type="submit" class="btn btn-submit" [disabled]="uploading || !archiveForm.form.valid"
-              [class.btn-loading]="uploading">
-              <span *ngIf="!uploading">
-                <i class="fa fa-cloud-upload me-2"></i>رفع الأرشيف
-              </span>
-              <span *ngIf="uploading">
-                <i class="fa fa-spinner fa-spin me-2"></i>جاري الرفع...
-              </span>
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   </div>

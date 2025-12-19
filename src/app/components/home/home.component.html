@@ -29,7 +29,7 @@
             </div>
         </div>
         <!-- Status Summary Card -->
-        <div class="stat-card status-card">
+        <div *ngIf="user?.role !== 'UniversityPresident'" class="stat-card status-card">
             <div class="stat-icon">
                 <i class="fas fa-chart-pie"></i>
             </div>

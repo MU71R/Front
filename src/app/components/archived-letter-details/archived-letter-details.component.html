@@ -30,7 +30,7 @@
                 </div>
                 <div class="letter-number" *ngIf="letter.transactionNumber">
                     <i class="fa fa-hashtag me-1"></i>
-                    رقم المعاملة: {{ letter.transactionNumber }}
+                    رقم القرار: {{ letter.transactionNumber }}
                 </div>
                 <div class="letter-status" [ngClass]="getStatusClass(letter.status)">
                     <i class="fa fa-info-circle me-1"></i>
@@ -127,7 +127,8 @@
                         </div>
 
                         <!-- قطاع معد القرار -->
-                        <div class="info-item" *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
+                        <div class="info-item"
+                            *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
                             </div>
