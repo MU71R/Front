@@ -8,12 +8,7 @@
             </h1>
             <p class="page-subtitle">قائمة بجميع القرارات التي تم إيقاف العمل بها</p>
         </div>
-        <div class="header-actions">
-            <button class="btn btn-outline-primary" (click)="refreshList()">
-                <i class="fa fa-sync-alt me-2" [class.fa-spin]="loading"></i>
-                تحديث
-            </button>
-        </div>
+
     </div>
 
     <!-- Statistics Cards -->
@@ -59,7 +54,7 @@
             <input
                 type="text"
                 class="form-control"
-                placeholder="البحث في العنوان أو رقم المعاملة..."
+                placeholder="البحث في العنوان أو رقم القرار..."
                 [(ngModel)]="searchQuery"
                 (input)="applyFilters()">
         </div>
@@ -92,7 +87,7 @@
             <label class="filter-label">&nbsp;</label>
             <button class="btn btn-secondary w-100" (click)="clearFilters()">
                 <i class="fa fa-times me-2"></i>
-                مسح الفلاتر
+                مسح الفلتره
             </button>
         </div>
     </div>

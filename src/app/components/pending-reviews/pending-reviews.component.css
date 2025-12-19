@@ -6,7 +6,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(0, 0, 0, 0.08);
   min-height: 400px;
-}
+} 
 
 .table {
   font-family: "Cairo", sans-serif;
@@ -101,7 +101,7 @@
 }
 
 .bg-success {
-  background-color: #198754 !important;
+  background-color: #ffffff !important;
 }
 
 .bg-danger {

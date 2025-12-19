@@ -1,9 +1,4 @@
 <div class="container py-4 rtl">
-    <!-- Back Button -->
-    <button class="btn btn-back mb-3" (click)="goBack()">
-        <i class="fa fa-arrow-right me-2"></i>
-        العودة إلى القائمة
-    </button>
 
     <div *ngIf="loading" class="loading-state">
         <div class="spinner-container">
@@ -41,13 +36,6 @@
                     <span>ألغى بواسطة: {{ getCanceledByName(letter.canceledBy) }}</span>
                 </div>
             </div>
-            <!-- <button 
-                class="btn btn-restore" 
-                *ngIf="canRestoreDecision()"
-                (click)="restoreDecision()">
-                <i class="fa fa-undo me-2"></i>
-                استرجاع القرار
-            </button> -->
         </div>
 
         <!-- Cancel Reason -->
@@ -73,7 +61,7 @@
                 </div>
                 <div class="letter-number" *ngIf="letter.transactionNumber">
                     <i class="fa fa-hashtag me-1"></i>
-                    رقم المعاملة: {{ letter.transactionNumber }}
+                    رقم القرار: {{ letter.transactionNumber }}
                 </div>
                 <button *ngIf="showPdfButton()" class="btn btn-pdf" (click)="openPdf()" [disabled]="pdfLoading">
                     <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
@@ -148,16 +136,6 @@
                                 <span class="info-value">{{ letter.letterType }}</span>
                             </div>
                         </div>
-
-                        <!-- <div class="info-item" *ngIf="letter.user">
-                            <div class="info-icon">
-                                <i class="fa fa-user"></i>
-                            </div>
-                            <div class="info-content">
-                                <span class="info-label">معد القرار:</span>
-                                <span class="info-value">{{ letter.user.fullname }}</span>
-                            </div>
-                        </div> -->
 
                         <div class="info-item" *ngIf="letter.user && letter.user.role">
                             <div class="info-icon">

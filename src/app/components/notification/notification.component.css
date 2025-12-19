@@ -7,7 +7,7 @@
     position: relative;
     background: linear-gradient(135deg, #1976d2, #1565c0);
     border: none;
-    border-radius: 12px;
+    border-radius: 50px;
     width: 56px;
     height: 56px;
     display: flex;
@@ -1016,15 +1016,15 @@
   .notification-filters {
     flex-direction: column;
   }
-  
+
   .filter-btn {
     width: 100%;
   }
-  
+
   .notification-actions {
     flex-direction: column;
   }
-  
+
   .notification-btn {
     width: 100%;
     justify-content: center;
