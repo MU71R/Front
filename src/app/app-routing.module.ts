@@ -37,7 +37,7 @@ const routes: Routes = [
     { path: 'letter-details/:id', component: LetterDetailComponent, canActivate: [AuthGuard] },
     { path: 'archive', component: ArchiveComponent, canActivate: [AuthGuard] },
     { path: 'archive-detail', component: ArchiveDetailComponent, canActivate: [AuthGuard] },
-    { path: 'pdf-list', component: PdfListComponent, canActivate: [AuthGuard] },
+    // { path: 'pdf-list', component: PdfListComponent, canActivate: [AuthGuard] },
     { path: 'rejected-letters', component: RejectedLettersListComponent, canActivate: [AuthGuard] },
     { path: 'rejected-letter-details/:id', component: RejectedLetterDetailsComponent, canActivate: [AuthGuard] },
     { path: 'department-criteria-management', component: DepartmentCriteriaManagementComponent, canActivate: [AuthGuard] },

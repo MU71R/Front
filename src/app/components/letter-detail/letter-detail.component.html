@@ -17,7 +17,7 @@
     <div class="row align-items-center">
       <div class="col-md-8">
         <h1 class="page-title text-truncate" [title]="original?.title || form.value.title">
-          {{ original?.title || form.value.title || 'تفاصيل القرار' }}
+         عنوان القرار: {{ original?.title || form.value.title || 'تفاصيل القرار' }}
         </h1>
         <div class="page-meta d-flex flex-column flex-md-row flex-wrap gap-2 mt-2">
           <span class="meta-item">
@@ -65,8 +65,7 @@
     <div class="section-body">
       <div class="pdf-status-container">
 
-        <div *ngIf="pdfSearching"
-          class="alert alert-info d-flex align-items-center">
+        <div *ngIf="pdfSearching" class="alert alert-info d-flex align-items-center">
           <i class="fa fa-search me-2"></i>
           <span>جاري البحث عن ملف PDF...</span>
         </div>
@@ -89,7 +88,7 @@
             <button class="btn btn-primary" (click)="generateTestingPdf()" [disabled]="pdfGenerating">
               <i class="fa" [class.fa-file-pdf]="!pdfGenerating" [class.fa-spinner]="pdfGenerating"
                 [class.fa-spin]="pdfGenerating" me-2></i>
-              {{ pdfGenerating ? 'جاري الإنشاء...' : 'إنشاء PDF جديد' }}
+              {{ pdfGenerating ? 'جاري الإنشاء...' : 'إنشاء PDF قبل الموافقة النهائية' }}
             </button>
 
             <!-- زر عرض PDF -->
@@ -148,7 +147,7 @@
                 <span class="detail-value">{{ original?.subCriteria?.name || '---' }}</span>
               </div>
               <div class="detail-row">
-                <span class="detail-label">صلاحية القرار:</span>
+                <span class="detail-label">مدة القرار:</span>
                 <span class="detail-value">{{ original?.durationDays || 0 }} يوم</span>
               </div>
               <div class="detail-row" *ngIf="pdfUrl">
@@ -232,7 +231,7 @@
     <div class="section-header">
       <h3 class="section-title">
         <i class="fa fa-user me-2"></i>
-        البيانات الشخصية
+        بيانات القرار تخص الشخص او الجهة
       </h3>
     </div>
     <div class="section-body">
@@ -278,7 +277,7 @@
         <div *ngIf="!original?.fullName && !original?.entityName && !original?.nationalId && !original?.phoneNumber"
           class="text-muted text-center py-4">
           <i class="fa fa-info-circle me-2"></i>
-          لا توجد بيانات شخصية مضافة
+          لا توجد بيانات القرار تخص الشخص او الجهة
         </div>
       </div>
 

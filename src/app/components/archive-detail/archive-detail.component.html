@@ -142,7 +142,7 @@
     </button>
   </div>
 
-  <!-- ======== Letters Table ======== -->
+  <!-- ======== Letters Table - FIXED WITH TOOLTIPS ======== -->
   <div *ngIf="!loading && filteredLetters.length > 0" class="letters-table-container">
     <div class="table-responsive">
       <table class="table table-hover table-striped letters-table">
@@ -176,11 +176,15 @@
         </thead>
         <tbody>
           <tr *ngFor="let letter of filteredLetters; let i = index; trackBy: trackByLetterId" class="letter-row">
+            <!-- # -->
             <td data-label="#">
               <span class="badge bg-primary">{{ (currentPage - 1) * pageSize + i + 1 }}</span>
             </td>
+
+            <!-- عنوان القرار - FIXED: tooltip-wrapper على letter-title-cell -->
             <td data-label="عنوان القرار">
               <div class="letter-title-cell">
+                <i class="fa fa-envelope text-primary me-2"></i>
                 <div class="letter-content">
                   <span class="letter-title-text text-truncate d-block tooltip-wrapper"
                         [attr.data-tooltip]="letter.title">
@@ -194,8 +198,11 @@
                 </div>
               </div>
             </td>
+
+            <!-- الجهة - FIXED: tooltip-wrapper على sender-cell -->
             <td data-label="المرسل">
-              <div class="sender-cell">
+              <div class="sender-cell tooltip-wrapper"
+                   [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
                 <i class="fa fa-user-circle text-primary me-2"></i>
                 <span class="text-truncate d-block tooltip-wrapper"
                       [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
@@ -203,25 +210,33 @@
                 </span>
               </div>
             </td>
+
+            <!-- المعيار الرئيسي -->
             <td data-label="المعيار الرئيسي">
               <span class="badge bg-info tooltip-wrapper"
                     [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
                 {{ letter.mainCriteria?.name || 'غير محدد' }}
               </span>
             </td>
+
+            <!-- المعيار الفرعي -->
             <td data-label="المعيار الفرعي">
               <span class="badge bg-secondary tooltip-wrapper"
                     [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
                 {{ letter.subCriteria?.name || 'غير محدد' }}
               </span>
             </td>
+
+            <!-- تاريخ الإنشاء -->
             <td data-label="تاريخ الإنشاء">
               <div class="created-at-cell tooltip-wrapper"
                    [attr.data-tooltip]="letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span>{{ letter.createdAt? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
+                <span>{{ letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
+
+            <!-- تاريخ بدء القرار -->
             <td data-label="تاريخ بدء القرار">
               <div class="created-at-cell tooltip-wrapper"
                    [attr.data-tooltip]="letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
@@ -229,6 +244,8 @@
                 <span>{{ letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
+
+            <!-- تاريخ انتهاء القرار -->
             <td data-label="تاريخ انتهاء القرار">
               <div class="created-at-cell tooltip-wrapper"
                    [attr.data-tooltip]="letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
@@ -236,6 +253,8 @@
                 <span>{{ letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
+
+            <!-- الإجراءات -->
             <td data-label="الإجراءات">
               <div class="actions-cell">
                 <button class="btn btn-primary btn-sm btn-action tooltip-wrapper"
@@ -252,6 +271,7 @@
     </div>
   </div>
 
+  <!-- ======== Upload Modal ======== -->
   <div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-content">

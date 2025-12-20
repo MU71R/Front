@@ -149,22 +149,17 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   onMainCriteriaChange(): void {
-    // إعادة تعيين المعيار الفرعي عند تغيير المعيار الرئيسي
     this.filters.subCriteria = '';
     
     if (this.filters.mainCriteria) {
-      // فلترة المعايير الفرعية بناءً على المعيار الرئيسي المختار
-      // نجيب كل القرارات اللي ليها نفس المعيار الرئيسي
       const lettersWithSelectedMainCriteria = this.letters.filter(
         letter => letter.mainCriteria?.name === this.filters.mainCriteria
       );
       
-      // نستخرج المعايير الفرعية من القرارات المفلترة
       const subCriteriaNames = lettersWithSelectedMainCriteria
         .map(letter => letter.subCriteria?.name)
         .filter(name => name && name.trim() !== '');
       
-      // نشيل التكرار ونرتبهم
       this.filteredSubCriteria = [...new Set(subCriteriaNames)].sort();
     } else {
       this.filteredSubCriteria = [];
@@ -176,7 +171,6 @@ export class ArchiveDetailComponent implements OnInit {
   applyFilters(): void {
     let filtered = [...this.letters];
 
-    // فلتر البحث بالكلمة المفتاحية
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -189,7 +183,6 @@ export class ArchiveDetailComponent implements OnInit {
       );
     }
 
-    // فلتر "من تاريخ" و "إلى تاريخ" على createdAt
     if (this.filters.fromDate) {
       filtered = filtered.filter(
         (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
@@ -202,7 +195,6 @@ export class ArchiveDetailComponent implements OnInit {
       );
     }
 
-    // فلتر "تاريخ بدء القرار" و "تاريخ انتهاء القرار"
     if (this.dateRange.startDate) {
       filtered = filtered.filter(
         (letter) =>
@@ -219,28 +211,24 @@ export class ArchiveDetailComponent implements OnInit {
       );
     }
 
-    // فلتر الجهة
     if (this.filters.sender) {
       filtered = filtered.filter(
         (letter) => letter.user?.fullname === this.filters.sender
       );
     }
 
-    // فلتر المعيار الرئيسي
     if (this.filters.mainCriteria) {
       filtered = filtered.filter(
         (letter) => letter.mainCriteria?.name === this.filters.mainCriteria
       );
     }
 
-    // فلتر المعيار الفرعي
     if (this.filters.subCriteria) {
       filtered = filtered.filter(
         (letter) => letter.subCriteria?.name === this.filters.subCriteria
       );
     }
 
-    // الترتيب
     filtered = this.sortLetters(filtered);
 
     this.filteredLetters = filtered;
@@ -452,10 +440,6 @@ export class ArchiveDetailComponent implements OnInit {
     if (this.newArchive.file) {
       formData.append('file', this.newArchive.file);
     }
-    console.log("FormData:", {
-      startDate: this.newArchive.startDate,
-      endDate: this.newArchive.endDate
-    });
 
     this.archiveService.addArchive(formData).subscribe({
       next: (res: any) => {

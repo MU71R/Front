@@ -60,11 +60,11 @@
           <span>القرارات المعلقة</span>
         </a>
 
-        <a *ngIf="user?.role === 'UniversityPresident'" routerLink="/pdf-list"
-          routerLinkActive="active" class="menu-item">
-          <i class="fa-solid fa-inbox"></i>
-          <span>الملفات</span>
-        </a>
+      <a *ngIf="user?.role === 'UniversityPresident'" routerLink="/pdf-list"
+        routerLinkActive="active" class="menu-item">
+        <i class="fa-solid fa-inbox"></i>
+        <span>الملفات</span>
+      </a>
 
         <a *ngIf="user?.role !== 'admin'" routerLink="/canceled-letters" routerLinkActive="active" class="menu-item">
         <i class="fa-solid fa-file-circle-xmark"></i>
