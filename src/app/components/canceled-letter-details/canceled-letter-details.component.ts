@@ -197,7 +197,13 @@ export class CanceledLetterDetailsComponent implements OnInit {
   canViewNationalId(): boolean {
     // رئيس الجامعة يمكنه رؤية كل شيء
     if (this.user?.role === 'UniversityPresident' || 
-        this.user?.fullname === 'مكتب رئيس الجامعة') {
+        this.user?.fullname === 'مكتب رئيس الجامعة' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
+        this.user?.fullname === 'أمين عام الجامعة' ||
+        this.user?.fullname === 'أمين عام الجامعة المساعد' ||
+        this.user?.fullname === 'أمين عام الجامعة المساعد2') {
       return true;
     }
     

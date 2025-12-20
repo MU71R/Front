@@ -483,8 +483,7 @@ export class LetterDetailsComponent implements OnInit {
 
     return (
       this.letter?.status === 'approved' &&
-      (this.user.role === 'UniversityPresident' ||
-        this.user.fullname === 'مكتب رئيس الجامعة')
+      (this.user.role === 'UniversityPresident')
     );
   }
 }
