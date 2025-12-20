@@ -13,7 +13,7 @@ export class RejectedLettersListComponent implements OnInit {
   rejectedLetters: LetterDetail[] = [];
   loading = true;
 
-  constructor(private letterService: LetterService, private router: Router) {}
+  constructor(private letterService: LetterService, private router: Router) { }
 
   ngOnInit(): void {
     this.letterService.getRejectedLetters().subscribe({

@@ -33,10 +33,7 @@ export class LetterDetailComponent implements OnInit {
 
   quillModules = {
     toolbar: [
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'align': [] }],
-      [{ 'color': [] }, { 'background': [] }],
+      ['bold', 'italic', 'underline'],
       ['clean']
     ]
   };

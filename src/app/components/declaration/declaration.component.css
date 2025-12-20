@@ -201,10 +201,94 @@
   direction: rtl;
 }
 
+/* ========================================
+   إصلاح مشكلة السكرول والخط الأسود
+   ======================================== */
 
+/* إخفاء الخط الأسود وإصلاح الـ container */
+::ng-deep .ql-container {
+  border: 1px solid #e9ecef !important;
+  border-top: none !important;
+  overflow: hidden !important;
+}
 
+::ng-deep .ql-container.ql-snow {
+  border: 1px solid #e9ecef !important;
+  border-top: none !important;
+}
 
-/*  */
+/* تنسيق محرر Quill ليكون RTL مع إصلاح السكرول */
+::ng-deep .ql-editor {
+  direction: rtl !important;
+  text-align: right !important;
+  font-size: 1.2rem !important;
+  line-height: 1.8 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* إزالة الخط الأسود عند التركيز */
+::ng-deep .ql-editor:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* منع السكرول السريع عند اللصق */
+::ng-deep .ql-editor * {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* تحسين الـ scrollbar في محرر Quill */
+::ng-deep .ql-editor::-webkit-scrollbar {
+  width: 8px;
+}
+
+::ng-deep .ql-editor::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::ng-deep .ql-editor::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+::ng-deep .ql-editor::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* تنسيق placeholder */
+::ng-deep .ql-editor.ql-blank::before {
+  direction: rtl !important;
+  text-align: right !important;
+  right: 15px !important;
+  left: auto !important;
+}
+
+/* تنسيق العناصر داخل المحرر */
+::ng-deep .ql-editor p,
+::ng-deep .ql-editor h1,
+::ng-deep .ql-editor h2,
+::ng-deep .ql-editor h3,
+::ng-deep .ql-editor ul,
+::ng-deep .ql-editor ol {
+  direction: rtl !important;
+  text-align: right !important;
+  font-size: 1.2rem !important;
+  line-height: 1.8 !important;
+  margin: 0.5rem 0 !important;
+}
+
+/* ========================================
+   باقي التنسيقات
+   ======================================== */
 
 @media (max-width: 768px) {
   .page-content {
@@ -312,72 +396,12 @@
   background-color: #f8f9fa;
 }
 
-
-
-/* تنسيق محرر Quill ليكون RTL */
-::ng-deep .ql-editor {
-  direction: rtl !important;
-  text-align: right !important;
-}
-
-::ng-deep .ql-container {
-  direction: rtl !important;
-  text-align: right !important;
-}
-
-::ng-deep .ql-toolbar {
-  direction: rtl !important;
-}
-
-::ng-deep .ql-editor.ql-blank::before {
-  direction: rtl !important;
-  text-align: right !important;
-  right: 15px !important;
-  left: auto !important;
-}
-
-/* إذا كنت تريد تحسين تجربة RTL أكثر */
-::ng-deep .ql-editor p,
-::ng-deep .ql-editor h1,
-::ng-deep .ql-editor h2,
-::ng-deep .ql-editor h3,
-::ng-deep .ql-editor ul,
-::ng-deep .ql-editor ol {
-  direction: rtl !important;
-  text-align: right !important;
-}
-
-
-
-/* زيادة حجم الخط في محرر Quill فقط */
-::ng-deep .ql-editor {
-  direction: rtl !important;
-  text-align: right !important;
-  font-size: 1.2rem !important; /* زيادة حجم الخط */
-  line-height: 1.8 !important; /* زيادة ارتفاع السطور */
-}
-
-::ng-deep .ql-editor p,
-::ng-deep .ql-editor h1,
-::ng-deep .ql-editor h2,
-::ng-deep .ql-editor h3 {
-  font-size: 1.2rem !important;
-  line-height: 1.8 !important;
-}
-
-::ng-deep .ql-editor ul,
-::ng-deep .ql-editor ol {
-  font-size: 1.2rem !important;
-  line-height: 1.8 !important;
-}
-
 /* جعل placeholder حقل الموبايل على اليمين */
 input#phoneNumber::placeholder {
   text-align: right !important;
   direction: rtl !important;
 }
 
-/* أو يمكنك استخدام هذا */
 input[formControlName="phoneNumber"]::placeholder {
   text-align: right !important;
   direction: rtl !important;

@@ -116,7 +116,7 @@
 }
 
 /* ============================================ */
-/* الجدول - محسّن للـ Tooltips */
+/* الجدول - بدون scroll مع Tooltip على جميع الحقول */
 /* ============================================ */
 
 .letters-table-container {
@@ -125,16 +125,14 @@
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 1rem;
   border: 1px solid #e2e8f0;
-  position: relative;
-  overflow: visible !important;
+  overflow: visible;
+  width: 100%;
 }
 
-.letters-table-container .table-responsive {
-  overflow-x: auto;
-  overflow-y: visible !important;
-  position: relative;
-  padding-top: 5px;
-  padding-bottom: 5px;
+.table-wrapper {
+  overflow: visible;
+  width: 100%;
+  padding: 5px 0;
 }
 
 .letters-table {
@@ -143,18 +141,22 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
+  min-width: 100%;
 }
 
 .letters-table thead th {
   background: linear-gradient(135deg, #1e40af, #3b82f6);
   color: white;
   border: none;
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   font-weight: 600;
   font-size: 0.8rem;
   border-bottom: 2px solid #dbeafe;
   white-space: nowrap;
   position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .letters-table tbody tr {
@@ -166,51 +168,41 @@
 
 .letters-table tbody tr:hover {
   background-color: #f0f9ff;
-  transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-  z-index: 10 !important;
+  z-index: 10;
 }
 
 .letters-table tbody td {
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   vertical-align: middle;
   border: none;
   border-bottom: 1px solid #f1f5f9;
   position: relative;
-  overflow: visible !important;
+  overflow: visible;
+  max-width: 0;
 }
 
-.letter-title-cell {
+/* محتوى الخلايا - جميع الحقول عليها hover */
+.cell-content {
   display: flex;
   align-items: center;
-  font-weight: 500;
-  color: #1e3a8a;
+  gap: 0.5rem;
   min-width: 0;
+  width: 100%;
+  position: relative;
+  cursor: pointer;
 }
 
-.letter-title-text {
+.cell-content .text-truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
   min-width: 0;
-  max-width: 180px;
 }
 
-.sender-cell,
-.created-at-cell {
-  display: flex;
-  align-items: center;
-  color: #64748b;
-  min-width: 0;
-  font-size: 0.875rem;
-}
-
-.sender-cell span,
-.created-at-cell span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
+.cell-content i {
+  flex-shrink: 0;
 }
 
 .actions-cell {
@@ -232,6 +224,7 @@
   font-size: 0.8rem;
   background: #3b82f6;
   color: white;
+  position: relative;
 }
 
 .btn-action:hover {
@@ -240,24 +233,156 @@
   box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
 }
 
-.pagination-info-top {
-  background: #f1f5f9;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  color: #475569;
+/* البادجات - جميعها عليها hover */
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
 }
 
-.table-footer {
-  padding: 0.75rem 1rem;
-  background: #f1f5f9;
-  border-top: 1px solid #e2e8f0;
+.badge i {
+  flex-shrink: 0;
+  font-size: 0.65rem;
 }
 
-.table-actions {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
-  flex-wrap: wrap;
+/* ============================================ */
+/* Tooltip يظهر فوق جميع العناصر */
+/* ============================================ */
+
+/* Tooltip على جميع الخلايا */
+.letters-table tbody td {
+  position: relative;
+  cursor: pointer;
+}
+
+/* Tooltip على العناوين والنصوص */
+.cell-content:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.95);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: normal;
+  z-index: 99999;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-in;
+  max-width: 350px;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+  word-wrap: break-word;
+}
+
+.cell-content:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+  z-index: 99999;
+  animation: tooltipFadeIn 0.2s ease-in;
+  pointer-events: none;
+}
+
+/* Tooltip على البادجات */
+.badge:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.95);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: normal;
+  z-index: 99999;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-in;
+  max-width: 300px;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+  word-wrap: break-word;
+}
+
+.badge:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+  z-index: 99999;
+  animation: tooltipFadeIn 0.2s ease-in;
+  pointer-events: none;
+}
+
+/* Tooltip على أزرار الإجراءات */
+.btn-action:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.95);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+  z-index: 99999;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-in;
+  max-width: 200px;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+}
+
+.btn-action:hover::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 3px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 7px solid transparent;
+  border-top-color: rgba(15, 23, 42, 0.95);
+  z-index: 99999;
+  animation: tooltipFadeIn 0.2s ease-in;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* ============================================ */
@@ -412,6 +537,10 @@
   background: #f0f9ff;
 }
 
+.file-input {
+  display: none;
+}
+
 .upload-placeholder i {
   font-size: 2rem;
   margin-bottom: 0.75rem;
@@ -549,157 +678,6 @@
   }
 }
 
-/* ======================================= */
-/* Custom Tooltip Styles - محسّن ونهائي */
-/* ======================================= */
-
-.tooltip-wrapper {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-}
-
-/* الـ Tooltip يظهر فوق العنصر */
-.tooltip-wrapper:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 10px 14px;
-  background: rgba(15, 23, 42, 0.95);
-  color: white;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  white-space: normal;
-  z-index: 99999;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-  animation: tooltipFadeIn 0.2s ease-in;
-  max-width: 320px;
-  line-height: 1.5;
-  text-align: center;
-  pointer-events: none;
-}
-
-/* السهم يشير للأسفل */
-.tooltip-wrapper:hover::before {
-  content: '';
-  position: absolute;
-  bottom: calc(100% + 3px);
-  left: 50%;
-  transform: translateX(-50%);
-  border: 7px solid transparent;
-  border-top-color: rgba(15, 23, 42, 0.95);
-  z-index: 99999;
-  animation: tooltipFadeIn 0.2s ease-in;
-  pointer-events: none;
-}
-
-@keyframes tooltipFadeIn {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* Tooltip للـ badges */
-.badge.tooltip-wrapper:hover::after {
-  font-size: 0.8rem;
-  padding: 8px 12px;
-  max-width: 280px;
-}
-
-/* Tooltip للـ created-at-cell */
-.created-at-cell.tooltip-wrapper:hover::after {
-  font-size: 0.82rem;
-  white-space: nowrap;
-  max-width: 250px;
-}
-
-/* Tooltip للـ Action Buttons */
-.btn-action.tooltip-wrapper:hover::after {
-  font-size: 0.8rem;
-  padding: 6px 10px;
-  white-space: nowrap;
-}
-
-/* Tooltip للـ Table Header */
-.letters-table thead .tooltip-wrapper:hover::after {
-  bottom: calc(100% + 10px);
-}
-
-.letters-table thead .tooltip-wrapper:hover::before {
-  bottom: calc(100% + 3px);
-}
-
-/* خاص بالـ Table Cells - ضمان الظهور الصحيح */
-.letters-table tbody td.tooltip-wrapper:hover::after,
-.letters-table tbody td .tooltip-wrapper:hover::after {
-  z-index: 99999;
-}
-
-.letters-table tbody td.tooltip-wrapper:hover::before,
-.letters-table tbody td .tooltip-wrapper:hover::before {
-  z-index: 99999;
-}
-
-/* ============================================ */
-/* Utility Classes */
-/* ============================================ */
-
-.badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.25rem 0.5rem;
-}
-
-.text-primary {
-  color: #3b82f6 !important;
-}
-
-.text-info {
-  color: #0ea5e9 !important;
-}
-
-.bg-primary {
-  background-color: #3b82f6 !important;
-}
-
-.bg-secondary {
-  background-color: #64748b !important;
-}
-
-.table-primary {
-  background-color: #3b82f6 !important;
-}
-
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.d-block {
-  display: block;
-}
-
-.fa {
-  font-size: inherit;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.letter-content {
-  max-width: 300px;
-}
-
 /* ============================================ */
 /* Filters Section */
 /* ============================================ */
@@ -725,33 +703,49 @@
 }
 
 /* ============================================ */
-/* Pagination */
+/* Utility Classes */
 /* ============================================ */
 
-.pagination-container .page-link {
+.text-primary {
+  color: #3b82f6 !important;
+}
+
+.text-info {
+  color: #0ea5e9 !important;
+}
+
+.bg-primary {
+  background-color: #3b82f6 !important;
+}
+
+.bg-secondary {
+  background-color: #64748b !important;
+}
+
+.bg-info {
+  background-color: #0ea5e9 !important;
+}
+
+.table-primary {
+  background-color: #3b82f6 !important;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d-block {
+  display: block !important;
+}
+
+.cursor-pointer {
   cursor: pointer;
-  margin: 0 2px;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  color: #495057;
 }
-
-.pagination-container .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
-}
-
-.pagination-container .page-item.disabled .page-link {
-  color: #6c757d;
-  pointer-events: none;
-}
-
-
-
-
 
 /* ============================================ */
-/* Media Queries */
+/* Media Queries - Responsive */
 /* ============================================ */
 
 @media (max-width: 768px) {
@@ -781,6 +775,14 @@
   .letters-table-container {
     border-radius: 0.5rem;
     margin-bottom: 0.75rem;
+  }
+
+  .table-wrapper {
+    overflow: visible;
+  }
+
+  .letters-table {
+    table-layout: auto;
   }
 
   .letters-table thead {
@@ -821,37 +823,15 @@
     justify-content: center;
   }
 
-  .letter-title-cell,
-  .sender-cell,
-  .created-at-cell {
-    justify-content: space-between;
-    width: 100%;
-  }
-
-  .letter-title-text {
-    max-width: 150px;
-    text-align: left;
+  .cell-content {
+    justify-content: flex-start;
+    width: auto;
+    flex: 1;
   }
 
   .actions-cell {
     justify-content: center;
     width: 100%;
-  }
-
-  .btn-action span {
-    display: none;
-  }
-
-  .pagination-info-top {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .table-footer {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .table-actions {
-    justify-content: center;
   }
 
   .modal-overlay {
@@ -864,13 +844,6 @@
 
   .modal-header {
     padding: 0.75rem;
-    flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
-  }
-
-  .modal-icon {
-    margin-top: 0;
   }
 
   .modal-body {
@@ -879,12 +852,6 @@
 
   .file-upload-area {
     padding: 1rem 0.5rem;
-  }
-
-  .file-preview {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.5rem;
   }
 
   .modal-actions {
@@ -896,22 +863,16 @@
     width: 100%;
   }
 
-  .tooltip-wrapper:hover::after {
-    max-width: 220px;
+  .cell-content:hover::after,
+  .badge:hover::after,
+  .btn-action:hover::after {
+    max-width: 250px;
     font-size: 0.8rem;
     padding: 8px 12px;
   }
 
   .filters-section .card-body {
     padding: 1rem;
-  }
-
-  .filters-section .row.g-3 {
-    gap: 1rem !important;
-  }
-
-  .letter-content {
-    max-width: 200px;
   }
 }
 
@@ -936,10 +897,6 @@
     font-size: 1.1rem;
   }
 
-  .letter-title-text {
-    max-width: 120px;
-  }
-
   .form-control, .form-select {
     font-size: 0.8rem;
   }
@@ -952,13 +909,17 @@
     font-size: 0.8rem;
   }
 
-  .tooltip-wrapper:hover::after {
-    max-width: 180px;
+  .cell-content:hover::after,
+  .badge:hover::after,
+  .btn-action:hover::after {
+    max-width: 200px;
     font-size: 0.75rem;
     padding: 7px 10px;
   }
 
-  .tooltip-wrapper:hover::before {
+  .cell-content:hover::before,
+  .badge:hover::before,
+  .btn-action:hover::before {
     border-width: 5px;
   }
 
@@ -966,7 +927,7 @@
     margin-bottom: 0.5rem;
   }
 
-  .actions-cell .btn-sm {
+  .btn-action {
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
   }
@@ -990,14 +951,6 @@
     font-size: 0.8rem;
   }
 
-  .letter-title-text {
-    max-width: 100px;
-  }
-
-  .btn-action {
-    padding: 0.25rem 0.375rem;
-  }
-
   .modal-header {
     padding: 0.5rem;
   }
@@ -1006,41 +959,12 @@
     padding: 0.5rem;
   }
 
-  .tooltip-wrapper:hover::after {
-    max-width: 150px;
+  .cell-content:hover::after,
+  .badge:hover::after,
+  .btn-action:hover::after {
+    max-width: 180px;
     font-size: 0.7rem;
     padding: 6px 8px;
-  }
-}
-
-@media (max-width: 360px) {
-  .page-header .row {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .page-header .col-12 {
-    text-align: center;
-  }
-
-  .letter-title-text {
-    max-width: 80px;
-  }
-
-  .table-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .table-actions .btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .tooltip-wrapper:hover::after {
-    max-width: 130px;
-    font-size: 0.65rem;
-    padding: 5px 7px;
   }
 }
 
@@ -1050,25 +974,11 @@
     margin: 0 auto;
   }
 
-  .tooltip-wrapper:hover::after {
+  .cell-content:hover::after,
+  .badge:hover::after,
+  .btn-action:hover::after {
     max-width: 400px;
     font-size: 0.9rem;
     padding: 12px 16px;
-  }
-}
-
-@media (max-height: 500px) and (orientation: landscape) {
-  .modal-overlay {
-    align-items: flex-start;
-    padding-top: 1rem;
-  }
-
-  .modal-container {
-    max-height: 80vh;
-  }
-
-  .tooltip-wrapper:hover::after,
-  .tooltip-wrapper:hover::before {
-    display: none;
   }
 }

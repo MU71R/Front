@@ -73,8 +73,6 @@ export class DeclarationComponent implements OnInit {
     ]
   };
 
-  defaultRationale: string = 'بعد الاطلاع على القانون رقم ٤٩ لسنة ١٩٧٢م في شأن تنظيم الجامعات في جمهورية مصر العربية ولائحته التنفيذية وتعديلاتهما.';
-
   constructor(
     private fb: FormBuilder,
     private criteriaService: CriteriaService,
@@ -87,7 +85,6 @@ export class DeclarationComponent implements OnInit {
   ngOnInit(): void {
     this.initializeForm();
     this.loadMainCriteria();
-    this.addDefaultRationale();
   }
 
   private initializeForm(): void {
@@ -96,7 +93,7 @@ export class DeclarationComponent implements OnInit {
         mainCriteria: ['', [Validators.required]],
         subCriteria: ['', [Validators.required]],
         title: ['', [Validators.required, noLeadingSpaces]],
-        rationaleFields: this.fb.array([]),
+        rationaleFields: this.fb.array([this.createRationaleField()]), // حقل واحد افتراضي
         signatureType: [''],
         contentFields: this.fb.array([this.createContentField()]),
         fullName: [''],
@@ -122,22 +119,9 @@ export class DeclarationComponent implements OnInit {
     });
   }
 
-  private addDefaultRationale(): void {
-    this.rationaleFields.clear();
-
-    // إضافة حيثية افتراضية ثابتة فقط (بدون حقل إضافي)
-    const defaultRationaleGroup = this.fb.group({
-      rationale: [this.defaultRationale, [Validators.required]],
-      isDefault: [true]
-    });
-
-    this.rationaleFields.push(defaultRationaleGroup);
-  }
-
-  createRationaleField(rationaleText: string = '', isDefault: boolean = false): FormGroup {
+  createRationaleField(): FormGroup {
     return this.fb.group({
-      rationale: [rationaleText, [Validators.required]],
-      isDefault: [isDefault]
+      rationale: ['', [Validators.required]]
     });
   }
 
@@ -146,38 +130,23 @@ export class DeclarationComponent implements OnInit {
   }
 
   addRationaleField(): void {
-    this.rationaleFields.push(this.createRationaleField('', false));
+    this.rationaleFields.push(this.createRationaleField());
   }
 
   removeRationaleField(index: number): void {
-    const rationaleControl = this.rationaleFields.at(index);
-    const isDefault = rationaleControl.get('isDefault')?.value;
-
-    // إذا كانت الحيثية افتراضية ووحدها، لا يمكن حذفها
-    if (isDefault && this.rationaleFields.length === 1) {
+    // يجب أن يبقى حقل واحد على الأقل
+    if (this.rationaleFields.length > 1) {
+      this.rationaleFields.removeAt(index);
+    } else {
       Swal.fire({
         icon: 'warning',
-        title: 'لا يمكن حذف الحيثية الافتراضية',
-        text: 'يجب أن يحتوي القرار على حيثية واحدة على الأقل',
+        title: 'يجب أن يحتوي القرار على حيثية واحدة على الأقل',
         showConfirmButton: false,
         timer: 2000,
       });
-      return;
-    }
-
-    // إذا كانت الحيثية افتراضية ولكن هناك حيثيات أخرى، يمكن حذفها
-    if (isDefault && this.rationaleFields.length > 1) {
-      this.rationaleFields.removeAt(index);
-      return;
-    }
-
-    // إذا كانت الحيثية غير افتراضية، يمكن حذفها بحرية
-    if (!isDefault) {
-      this.rationaleFields.removeAt(index);
     }
   }
 
-  // باقي الكود يبقى كما هو بدون تغيير
   createContentField(): FormGroup {
     return this.fb.group({
       content: ['', [Validators.required]]
@@ -198,7 +167,7 @@ export class DeclarationComponent implements OnInit {
     } else {
       Swal.fire({
         icon: 'warning',
-        title: 'يجب أن يحتوي القرار على نص واحد على الأقل',
+        title: 'يجب أن يحتوي القرار على بند واحد على الأقل',
         showConfirmButton: false,
         timer: 2000,
       });
@@ -427,11 +396,11 @@ export class DeclarationComponent implements OnInit {
   }
 
   private resetForm(): void {
-    // 1️⃣ امسح الـ FormArray قبل reset
+    // مسح الـ FormArrays
     this.contentFields.clear();
     this.rationaleFields.clear();
 
-    // 2️⃣ اعمل reset بقيم STRING مش null
+    // إعادة تعيين النموذج
     this.messageForm.reset({
       mainCriteria: '',
       subCriteria: '',
@@ -446,17 +415,13 @@ export class DeclarationComponent implements OnInit {
       date: new Date().toISOString().split('T')[0],
     });
 
-    // 3️⃣ أضف محتوى افتراضي
-    this.contentFields.push(
-      this.fb.group({
-        content: ['']
-      })
-    );
+    // إضافة حقل محتوى افتراضي واحد
+    this.contentFields.push(this.createContentField());
 
-    // 4️⃣ أضف الحيثية الافتراضية فقط (بدون حقل إضافي)
-    this.addDefaultRationale();
+    // إضافة حقل حيثية افتراضي واحد
+    this.rationaleFields.push(this.createRationaleField());
 
-    // 5️⃣ reset UI state
+    // إعادة تعيين حالة الواجهة
     this.submitting = false;
     this.loadingSubCriteria = false;
     this.successMsg = '';

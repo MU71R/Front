@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <!-- ======= Filters Section ======= -->
+  <!-- Filters Section -->
   <div *ngIf="!loading && letters.length > 0" class="filters-section mb-4">
     <div class="card border-0 shadow-sm">
       <div class="card-body">
@@ -105,7 +105,7 @@
     </div>
   </div>
 
-  <!-- ======== Loading ======== -->
+  <!-- Loading State -->
   <div *ngIf="loading" class="loading-state">
     <div class="spinner-container">
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
@@ -118,7 +118,7 @@
     </div>
   </div>
 
-  <!-- ======== Empty State ======== -->
+  <!-- Empty State -->
   <div *ngIf="!loading && filteredLetters.length === 0" class="empty-state">
     <div class="empty-icon">
       <i class="fa" [class.fa-inbox]="letters.length === 0" [class.fa-search]="letters.length > 0"></i>
@@ -142,36 +142,21 @@
     </button>
   </div>
 
-  <!-- ======== Letters Table - FIXED WITH TOOLTIPS ======== -->
+  <!-- Letters Table - مع Tooltip فوق -->
   <div *ngIf="!loading && filteredLetters.length > 0" class="letters-table-container">
-    <div class="table-responsive">
+    <div class="table-wrapper">
       <table class="table table-hover table-striped letters-table">
         <thead class="table-primary">
           <tr>
             <th scope="col" width="5%">#</th>
-            <th scope="col" width="20%">
-              <div class="d-flex align-items-center cursor-pointer" (click)="sortBy('title')">
-                عنوان القرار
-              </div>
-            </th>
-            <th scope="col" width="15%">
-              <div class="d-flex align-items-center cursor-pointer" (click)="sortBy('user.fullname')">
-                الجهه
-              </div>
-            </th>
-            <th scope="col" width="10%">المعيار الرئيسي</th>
-            <th scope="col" width="10%">المعيار الفرعي</th>
-            <th scope="col" width="10%">
-              <div class="d-flex align-items-center cursor-pointer" (click)="sortBy('createdAt')">
-                تاريخ الإنشاء
-                <i class="fa ms-1" [class.fa-sort]="sortField !== 'createdAt'"
-                  [class.fa-sort-up]="sortField === 'createdAt' && sortDirection === 'asc'"
-                  [class.fa-sort-down]="sortField === 'createdAt' && sortDirection === 'desc'"></i>
-              </div>
-            </th>
-            <th scope="col" width="10%">تاريخ بدء القرار</th>
-            <th scope="col" width="10%">تاريخ انتهاء القرار</th>
-            <th scope="col" width="10%">الإجراءات</th>
+            <th scope="col" width="18%">عنوان القرار</th>
+            <th scope="col" width="12%">الجهه</th>
+            <th scope="col" width="13%">المعيار الرئيسي</th>
+            <th scope="col" width="13%">المعيار الفرعي</th>
+            <th scope="col" width="11%">تاريخ الإنشاء</th>
+            <th scope="col" width="11%">تاريخ بدء القرار</th>
+            <th scope="col" width="11%">تاريخ انتهاء القرار</th>
+            <th scope="col" width="6%">الإجراءات</th>
           </tr>
         </thead>
         <tbody>
@@ -181,76 +166,64 @@
               <span class="badge bg-primary">{{ (currentPage - 1) * pageSize + i + 1 }}</span>
             </td>
 
-            <!-- عنوان القرار - FIXED: tooltip-wrapper على letter-title-cell -->
+            <!-- عنوان القرار -->
             <td data-label="عنوان القرار">
-              <div class="letter-title-cell">
+              <div class="cell-content tooltip-wrapper" [attr.data-tooltip]="letter.title">
                 <i class="fa fa-envelope text-primary me-2"></i>
-                <div class="letter-content">
-                  <span class="letter-title-text text-truncate d-block tooltip-wrapper"
-                        [attr.data-tooltip]="letter.title">
-                    {{ letter.title }}
-                  </span>
-                  <small class="text-muted text-truncate d-block tooltip-wrapper"
-                         *ngIf="letter.breeif"
-                         [attr.data-tooltip]="letter.breeif">
-                    {{ letter.breeif }}
-                  </small>
-                </div>
+                <span class="text-truncate">{{ letter.title }}</span>
               </div>
             </td>
 
-            <!-- الجهة - FIXED: tooltip-wrapper على sender-cell -->
-            <td data-label="المرسل">
-              <div class="sender-cell tooltip-wrapper"
-                   [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
+            <!-- الجهة -->
+            <td data-label="الجهه">
+              <div class="cell-content tooltip-wrapper" [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
                 <i class="fa fa-user-circle text-primary me-2"></i>
-                <span class="text-truncate d-block tooltip-wrapper"
-                      [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
-                  {{ letter.user?.fullname || 'غير محدد' }}
-                </span>
+                <span class="text-truncate">{{ letter.user?.fullname || 'غير محدد' }}</span>
               </div>
             </td>
 
             <!-- المعيار الرئيسي -->
             <td data-label="المعيار الرئيسي">
-              <span class="badge bg-info tooltip-wrapper"
+              <span class="badge bg-info tooltip-wrapper text-truncate"
                     [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
+                <i class="fa fa-folder me-1"></i>
                 {{ letter.mainCriteria?.name || 'غير محدد' }}
               </span>
             </td>
 
             <!-- المعيار الفرعي -->
             <td data-label="المعيار الفرعي">
-              <span class="badge bg-secondary tooltip-wrapper"
+              <span class="badge bg-secondary tooltip-wrapper text-truncate"
                     [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
+                <i class="fa fa-file me-1"></i>
                 {{ letter.subCriteria?.name || 'غير محدد' }}
               </span>
             </td>
 
             <!-- تاريخ الإنشاء -->
             <td data-label="تاريخ الإنشاء">
-              <div class="created-at-cell tooltip-wrapper"
+              <div class="cell-content tooltip-wrapper"
                    [attr.data-tooltip]="letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span>{{ letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
+                <span class="text-truncate">{{ letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
 
             <!-- تاريخ بدء القرار -->
             <td data-label="تاريخ بدء القرار">
-              <div class="created-at-cell tooltip-wrapper"
+              <div class="cell-content tooltip-wrapper"
                    [attr.data-tooltip]="letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span>{{ letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
+                <span class="text-truncate">{{ letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
 
             <!-- تاريخ انتهاء القرار -->
             <td data-label="تاريخ انتهاء القرار">
-              <div class="created-at-cell tooltip-wrapper"
+              <div class="cell-content tooltip-wrapper"
                    [attr.data-tooltip]="letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span>{{ letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
+                <span class="text-truncate">{{ letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
 
@@ -261,7 +234,6 @@
                         (click)="viewLetterDetails(letter._id)"
                         data-tooltip="عرض تفاصيل القرار">
                   <i class="fa fa-eye"></i>
-                  <span class="d-none d-md-inline ms-1">عرض</span>
                 </button>
               </div>
             </td>
@@ -271,7 +243,7 @@
     </div>
   </div>
 
-  <!-- ======== Upload Modal ======== -->
+  <!-- Upload Modal -->
   <div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-content">
