@@ -104,6 +104,10 @@
   z-index: 5;
 }
 
+.filter-dropdown{
+  min-width: 160px;
+}
+
 .password-toggle-btn:hover {
   background-color: #f3f4f6;
   color: #374151;

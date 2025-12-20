@@ -181,14 +181,13 @@
             </td>
             <td data-label="عنوان القرار">
               <div class="letter-title-cell">
-                <i class="fa fa-envelope text-primary me-2"></i>
                 <div class="letter-content">
-                  <span class="letter-title-text text-truncate d-block tooltip-wrapper" 
+                  <span class="letter-title-text text-truncate d-block tooltip-wrapper"
                         [attr.data-tooltip]="letter.title">
                     {{ letter.title }}
                   </span>
-                  <small class="text-muted text-truncate d-block tooltip-wrapper" 
-                         *ngIf="letter.breeif" 
+                  <small class="text-muted text-truncate d-block tooltip-wrapper"
+                         *ngIf="letter.breeif"
                          [attr.data-tooltip]="letter.breeif">
                     {{ letter.breeif }}
                   </small>
@@ -198,20 +197,20 @@
             <td data-label="المرسل">
               <div class="sender-cell">
                 <i class="fa fa-user-circle text-primary me-2"></i>
-                <span class="text-truncate d-block tooltip-wrapper" 
+                <span class="text-truncate d-block tooltip-wrapper"
                       [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
                   {{ letter.user?.fullname || 'غير محدد' }}
                 </span>
               </div>
             </td>
             <td data-label="المعيار الرئيسي">
-              <span class="badge bg-info tooltip-wrapper" 
+              <span class="badge bg-info tooltip-wrapper"
                     [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
                 {{ letter.mainCriteria?.name || 'غير محدد' }}
               </span>
             </td>
             <td data-label="المعيار الفرعي">
-              <span class="badge bg-secondary tooltip-wrapper" 
+              <span class="badge bg-secondary tooltip-wrapper"
                     [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
                 {{ letter.subCriteria?.name || 'غير محدد' }}
               </span>
@@ -239,7 +238,7 @@
             </td>
             <td data-label="الإجراءات">
               <div class="actions-cell">
-                <button class="btn btn-primary btn-sm btn-action tooltip-wrapper" 
+                <button class="btn btn-primary btn-sm btn-action tooltip-wrapper"
                         (click)="viewLetterDetails(letter._id)"
                         data-tooltip="عرض تفاصيل القرار">
                   <i class="fa fa-eye"></i>
@@ -278,12 +277,12 @@
             </div>
             <div class="form-group mb-3">
               <label class="form-label fw-semibold">رقم القرار</label>
-              <input 
-                type="text" 
-                class="form-control form-control-lg" 
-                [(ngModel)]="newArchive.transactionNumber" 
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                [(ngModel)]="newArchive.transactionNumber"
                 name="transactionNumber"
-                placeholder="مثال: 245/2023" 
+                placeholder="مثال: 245/2023"
               />
             </div>
             <div class="form-group mb-3">
@@ -291,15 +290,15 @@
               <textarea class="form-control" rows="3" [(ngModel)]="newArchive.description" name="description"
                 placeholder="وصف مختصر للمستند..."></textarea>
             </div>
-            
+
             <div class="row g-2 mb-3">
               <div class="col-12 col-sm-6">
                 <div class="form-group">
                   <label class="form-label fw-semibold">تاريخ البدء</label>
-                  <input 
-                    type="date" 
-                    class="form-control" 
-                    [(ngModel)]="newArchive.startDate" 
+                  <input
+                    type="date"
+                    class="form-control"
+                    [(ngModel)]="newArchive.startDate"
                     name="startDate"
                   />
                 </div>
@@ -308,10 +307,10 @@
               <div class="col-12 col-sm-6">
                 <div class="form-group">
                   <label class="form-label fw-semibold">تاريخ الانتهاء</label>
-                  <input 
-                    type="date" 
-                    class="form-control" 
-                    [(ngModel)]="newArchive.endDate" 
+                  <input
+                    type="date"
+                    class="form-control"
+                    [(ngModel)]="newArchive.endDate"
                     name="endDate"
                   />
                 </div>

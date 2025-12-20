@@ -9,6 +9,12 @@
   height: 100%;
 }
 
+.logo{
+  width: 220px;
+  height: 65px;
+  border-radius: 8px;
+}
+
 .sidebar {
   width: 220px;
   height: 100vh;
@@ -132,6 +138,7 @@
 .menu-item span {
   flex: 1;
   line-height: 1.2;
+  font-size: 18px;
 }
 
 .menu-item:hover {
@@ -238,9 +245,9 @@
 
 .logout-btn {
   width: 100%;
-  background: transparent;
+  background: #161a4e;
   border: 1px solid #e2e8f0;
-  color: #64748b;
+  color: #ff0000;
   font-weight: 600;
   padding: 8px 12px;
   border-radius: 6px;
@@ -252,6 +259,14 @@
   justify-content: center;
   gap: 5px;
   min-height: 40px;
+}
+
+.logout-btn span {
+  font-size: 20px;
+}
+
+.logout-btn i {
+  font-size: 20px;
 }
 
 .logout-btn:hover {
