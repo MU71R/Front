@@ -381,12 +381,54 @@
     gap: 10px;
 }
 
+/* تحسين عنوان الإشعار */
 .notification-title {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1976d2;
-    flex: 1;
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1976d2;
+  flex: 1;
+
+  /* إضافة هذه الخصائص */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* تحسين وقت الإشعار */
+.notification-time {
+  font-size: 0.75rem;
+  color: #546e7a;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0; /* لمنع التمدد */
+}
+
+/* تحسين الهيدر */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 10px;
+  flex-wrap: wrap; /* يسمح بالتفاف العناصر على شاشات صغيرة */
+}
+
+/* تحسين العنصر الرئيسي */
+.notification-main {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  gap: 12px;
+  min-width: 0; /* مهم جداً لتفعيل text-overflow */
+}
+
+/* تحسين محتوى الإشعار */
+.notification-content {
+  flex: 1;
+  min-width: 0; /* مهم جداً - يسمح بتقلص العنصر */
+  overflow: hidden; /* يمنع المحتوى من الخروج */
 }
 
 .notification-time {

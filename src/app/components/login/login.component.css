@@ -6,6 +6,17 @@
   overflow: hidden;
 }
 
+.logo{
+  width: 300px;
+  height: 100px;
+}
+
+.name{
+  width: 85px;
+  height: 85px;
+  border-radius: 50%;
+}
+
 .login-page .overlay {
   position: absolute;
   inset: 0;

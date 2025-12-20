@@ -3,6 +3,7 @@ import { DashboardService, DashboardStats } from '../../service/home.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { RecentActivit } from 'src/app/model/letter-detail';
 import { AuthService } from 'src/app/service/auth.service';
+import { User } from 'src/app/model/user';
 
 @Component({
   selector: 'app-home',
@@ -27,18 +28,41 @@ export class HomeComponent implements OnInit {
   loadingTemplate!: TemplateRef<any>;
   loading = true;
   currentDate = new Date();
- 
+  user: User | null = null;
+
   constructor(
     private dashboardService: DashboardService,
     private letterService: LetterService,
     private authService: AuthService
   ) {}
 
-  user = this.authService.currentUserValue;
-
-
   ngOnInit(): void {
+    this.getCurrentUser();
     this.loadDashboardData();
+  }
+
+  getCurrentUser(): void {
+    // جلب بيانات المستخدم الحالي
+    this.user = this.authService.currentUserValue;
+
+    // الاشتراك للتحديثات (اختياري)
+    this.authService.currentUser$.subscribe((user) => {
+      this.user = user;
+    });
+  }
+
+  // دالة لتحويل اسم الدور العربي
+  getUserRoleDisplayName(): string {
+    if (!this.user?.role) return 'مستخدم';
+
+    const roleNames: { [key: string]: string } = {
+      admin: 'مدير النظام',
+      supervisor: 'مراجع',
+      UniversityPresident: 'رئيس الجامعة',
+      preparer: 'معد القرارت',
+    };
+
+    return roleNames[this.user.role] || 'مستخدم';
   }
 
   loadDashboardData(): void {
@@ -58,25 +82,23 @@ export class HomeComponent implements OnInit {
     this.getRecentLetters();
   }
 
-getRecentLetters() {
-  this.letterService.recentLetters().subscribe({
-    next: (res: { success: boolean; activities: RecentActivit[] }) => {
-      if (res && res.activities) {
-        this.recentLetters = res.activities.map(a => ({
-          id: a.id,
-          message: a.message,
-          time: a.time,
-          status: this.extractStatusFromMessage(a.message)
-        }));
+  getRecentLetters() {
+    this.letterService.recentLetters().subscribe({
+      next: (res: { success: boolean; activities: RecentActivit[] }) => {
+        if (res && res.activities) {
+          this.recentLetters = res.activities.map(a => ({
+            id: a.id,
+            message: a.message,
+            time: a.time,
+            status: this.extractStatusFromMessage(a.message)
+          }));
+        }
+      },
+      error: (err) => {
+        console.error('حدث خطأ عند جلب البيانات:', err);
       }
-    },
-    error: (err) => {
-      console.error('حدث خطأ عند جلب البيانات:', err);
-    }
-  });
-}
-
-
+    });
+  }
 
   extractStatusFromMessage(msg: string): string {
     const match = msg.match(/الحالة الحالية:\s*(.+)/);

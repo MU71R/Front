@@ -3,8 +3,11 @@
     <!-- Header -->
     <div class="dashboard-header">
         <div class="welcome-section">
-            <h1 class="welcome-title">مرحباً بك في لوحة التحكم</h1>
+            <h1 class="welcome-title">مرحباً بك {{user?.fullname}}</h1>
             <p class="welcome-subtitle">{{ currentDate | date:'fullDate' }}</p>
+            <p class="user-role" *ngIf="user?.role">
+                <small class="text-muted">{{ getUserRoleDisplayName() }}</small>
+            </p>
         </div>
         <div class="header-actions">
             <app-notification></app-notification>
@@ -48,35 +51,33 @@
       <h3 class="card-title">آخر القرارات</h3>
     </div>
     <div class="activities-list">
-  <div class="activities-list">
-  <div *ngFor="let activity of recentLetters" class="activity-item">
-    <div class="activity-icon">
-      <i class="fas fa-envelope"></i>
-    </div>
+      <div *ngFor="let activity of recentLetters" class="activity-item">
+        <div class="activity-icon">
+          <i class="fas fa-envelope"></i>
+        </div>
 
-    <div class="activity-content">
-      <!-- قسم الرسالة مفصولة على حسب • -->
-      <p class="activity-description">
-        <span *ngFor="let line of activity.message.split('•')">
-          {{ line.trim() }}<br>
+        <div class="activity-content">
+          <!-- قسم الرسالة مفصولة على حسب • -->
+          <p class="activity-description">
+            <span *ngFor="let line of activity.message.split('•')">
+              {{ line.trim() }}<br>
+            </span>
+          </p>
+
+          <div class="activity-meta">
+            <span class="activity-time">{{ activity.time }}</span>
+          </div>
+        </div>
+
+        <span *ngIf="activity.status"
+              class="activity-status badge"
+              [class]="'badge-' + getStatusColor(activity.status)">
+          {{ getStatusText(activity.status) }}
         </span>
-      </p>
-
-      <div class="activity-meta">
-        <span class="activity-time">{{ activity.time }}</span>
       </div>
     </div>
-
-    <span *ngIf="activity.status"
-          class="activity-status badge"
-          [class]="'badge-' + getStatusColor(activity.status)">
-      {{ getStatusText(activity.status) }}
-    </span>
   </div>
 </div>
-  </div>
-</div>
-
 
 <ng-template #loadingTemplate>
     <div class="loading-container">
