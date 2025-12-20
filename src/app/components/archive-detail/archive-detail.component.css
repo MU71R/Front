@@ -115,24 +115,34 @@
   color: #64748b;
 }
 
+/* ============================================ */
+/* الجدول - محسّن للـ Tooltips */
+/* ============================================ */
+
 .letters-table-container {
   background: white;
   border-radius: 0.75rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  overflow: visible;
   margin-bottom: 1rem;
   border: 1px solid #e2e8f0;
+  position: relative;
+  overflow: visible !important;
 }
 
 .letters-table-container .table-responsive {
   overflow-x: auto;
-  overflow-y: visible;
+  overflow-y: visible !important;
+  position: relative;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .letters-table {
   margin-bottom: 0;
   border: none;
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .letters-table thead th {
@@ -144,6 +154,7 @@
   font-size: 0.8rem;
   border-bottom: 2px solid #dbeafe;
   white-space: nowrap;
+  position: relative;
 }
 
 .letters-table tbody tr {
@@ -157,7 +168,7 @@
   background-color: #f0f9ff;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
-  z-index: 100;
+  z-index: 10 !important;
 }
 
 .letters-table tbody td {
@@ -165,9 +176,8 @@
   vertical-align: middle;
   border: none;
   border-bottom: 1px solid #f1f5f9;
-  max-width: 0;
-  overflow: visible;
   position: relative;
+  overflow: visible !important;
 }
 
 .letter-title-cell {
@@ -249,6 +259,10 @@
   justify-content: flex-end;
   flex-wrap: wrap;
 }
+
+/* ============================================ */
+/* Modal Styles */
+/* ============================================ */
 
 .modal-overlay {
   position: fixed;
@@ -530,27 +544,26 @@
   0% {
     transform: rotate(0deg);
   }
-
   100% {
     transform: rotate(360deg);
   }
 }
 
 /* ======================================= */
-/* Custom Tooltip Styles - الإضافة الجديدة */
+/* Custom Tooltip Styles - محسّن ونهائي */
 /* ======================================= */
 
 .tooltip-wrapper {
   position: relative;
   display: inline-block;
-  cursor: help;
+  cursor: pointer;
 }
 
-/* الـ Tooltip الأساسي - يظهر تحت */
+/* الـ Tooltip يظهر فوق العنصر */
 .tooltip-wrapper:hover::after {
   content: attr(data-tooltip);
   position: absolute;
-  top: 125%;
+  bottom: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   padding: 10px 14px;
@@ -561,35 +574,32 @@
   font-weight: 500;
   white-space: normal;
   z-index: 99999;
-  margin-top: 8px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-  animation: tooltipFadeInBottom 0.2s ease-in;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  animation: tooltipFadeIn 0.2s ease-in;
   max-width: 320px;
-  word-wrap: break-word;
   line-height: 1.5;
   text-align: center;
   pointer-events: none;
 }
 
-/* السهم يشير لفوق */
+/* السهم يشير للأسفل */
 .tooltip-wrapper:hover::before {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: calc(100% + 3px);
   left: 50%;
   transform: translateX(-50%);
   border: 7px solid transparent;
-  border-bottom-color: rgba(15, 23, 42, 0.95);
-  margin-top: 1px;
+  border-top-color: rgba(15, 23, 42, 0.95);
   z-index: 99999;
-  animation: tooltipFadeInBottom 0.2s ease-in;
+  animation: tooltipFadeIn 0.2s ease-in;
   pointer-events: none;
 }
 
-@keyframes tooltipFadeInBottom {
+@keyframes tooltipFadeIn {
   from {
     opacity: 0;
-    transform: translateX(-50%) translateY(-5px);
+    transform: translateX(-50%) translateY(5px);
   }
   to {
     opacity: 1;
@@ -602,7 +612,6 @@
   font-size: 0.8rem;
   padding: 8px 12px;
   max-width: 280px;
-  white-space: normal;
 }
 
 /* Tooltip للـ created-at-cell */
@@ -612,52 +621,138 @@
   max-width: 250px;
 }
 
-/* Tooltip للأزرار - يظهر فوق لأن الزرار في الأسفل */
+/* Tooltip للـ Action Buttons */
 .btn-action.tooltip-wrapper:hover::after {
-  top: auto;
-  bottom: 130%;
-  margin-top: 0;
-  margin-bottom: 8px;
-  animation: tooltipFadeInTop 0.2s ease-in;
   font-size: 0.8rem;
   padding: 6px 10px;
   white-space: nowrap;
 }
 
-.btn-action.tooltip-wrapper:hover::before {
-  top: auto;
-  bottom: 105%;
-  border-bottom-color: transparent;
-  border-top-color: rgba(15, 23, 42, 0.95);
-  margin-top: 0;
-  margin-bottom: 1px;
-  animation: tooltipFadeInTop 0.2s ease-in;
-  border-width: 6px;
-}
-
-@keyframes tooltipFadeInTop {
-  from {
-    opacity: 0;
-    transform: translateX(-50%) translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-/* للـ Table Header - يظهر تحت */
+/* Tooltip للـ Table Header */
 .letters-table thead .tooltip-wrapper:hover::after {
-  top: 125%;
-  bottom: auto;
+  bottom: calc(100% + 10px);
 }
 
 .letters-table thead .tooltip-wrapper:hover::before {
-  top: 100%;
-  bottom: auto;
-  border-bottom-color: rgba(15, 23, 42, 0.95);
-  border-top-color: transparent;
+  bottom: calc(100% + 3px);
 }
+
+/* خاص بالـ Table Cells - ضمان الظهور الصحيح */
+.letters-table tbody td.tooltip-wrapper:hover::after,
+.letters-table tbody td .tooltip-wrapper:hover::after {
+  z-index: 99999;
+}
+
+.letters-table tbody td.tooltip-wrapper:hover::before,
+.letters-table tbody td .tooltip-wrapper:hover::before {
+  z-index: 99999;
+}
+
+/* ============================================ */
+/* Utility Classes */
+/* ============================================ */
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+}
+
+.text-primary {
+  color: #3b82f6 !important;
+}
+
+.text-info {
+  color: #0ea5e9 !important;
+}
+
+.bg-primary {
+  background-color: #3b82f6 !important;
+}
+
+.bg-secondary {
+  background-color: #64748b !important;
+}
+
+.table-primary {
+  background-color: #3b82f6 !important;
+}
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.d-block {
+  display: block;
+}
+
+.fa {
+  font-size: inherit;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.letter-content {
+  max-width: 300px;
+}
+
+/* ============================================ */
+/* Filters Section */
+/* ============================================ */
+
+.filters-section .search-input-group {
+  position: relative;
+}
+
+.filters-section .search-input-group .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6c757d;
+}
+
+.filters-section .search-input-group input {
+  padding-left: 45px;
+}
+
+.filters-section .card {
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+/* ============================================ */
+/* Pagination */
+/* ============================================ */
+
+.pagination-container .page-link {
+  cursor: pointer;
+  margin: 0 2px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  color: #495057;
+}
+
+.pagination-container .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.pagination-container .page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+}
+
+
+
+
+
+/* ============================================ */
+/* Media Queries */
+/* ============================================ */
 
 @media (max-width: 768px) {
   .container-fluid {
@@ -801,26 +896,22 @@
     width: 100%;
   }
 
-  /* تعديل Tooltip للشاشات الصغيرة */
   .tooltip-wrapper:hover::after {
     max-width: 220px;
     font-size: 0.8rem;
     padding: 8px 12px;
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    top: 125%;
-    bottom: auto;
   }
 
-  .tooltip-wrapper:hover::before {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    top: 100%;
-    bottom: auto;
-    border-bottom-color: rgba(15, 23, 42, 0.95);
-    border-top-color: transparent;
+  .filters-section .card-body {
+    padding: 1rem;
+  }
+
+  .filters-section .row.g-3 {
+    gap: 1rem !important;
+  }
+
+  .letter-content {
+    max-width: 200px;
   }
 }
 
@@ -861,21 +952,23 @@
     font-size: 0.8rem;
   }
 
-  /* تعديل Tooltip للشاشات الأصغر */
   .tooltip-wrapper:hover::after {
     max-width: 180px;
     font-size: 0.75rem;
     padding: 7px 10px;
-    top: 125%;
-    bottom: auto;
   }
 
   .tooltip-wrapper:hover::before {
     border-width: 5px;
-    top: 100%;
-    bottom: auto;
-    border-bottom-color: rgba(15, 23, 42, 0.95);
-    border-top-color: transparent;
+  }
+
+  .filters-section .col-12 {
+    margin-bottom: 0.5rem;
+  }
+
+  .actions-cell .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
   }
 }
 
@@ -913,49 +1006,11 @@
     padding: 0.5rem;
   }
 
-  /* تعديل Tooltip للشاشات الصغيرة جداً */
   .tooltip-wrapper:hover::after {
     max-width: 150px;
     font-size: 0.7rem;
     padding: 6px 8px;
-    top: 125%;
-    bottom: auto;
   }
-
-  .tooltip-wrapper:hover::before {
-    top: 100%;
-    bottom: auto;
-    border-bottom-color: rgba(15, 23, 42, 0.95);
-    border-top-color: transparent;
-  }
-}
-
-@media (min-width: 1200px) {
-  .container-fluid {
-    max-width: 95%;
-    margin: 0 auto;
-  }
-
-  /* تحسين Tooltip للشاشات الكبيرة */
-  .tooltip-wrapper:hover::after {
-    max-width: 400px;
-    font-size: 0.9rem;
-    padding: 12px 16px;
-  }
-}
-
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.d-block {
-  display: block;
-}
-
-.fa {
-  font-size: inherit;
 }
 
 @media (max-width: 360px) {
@@ -982,20 +1037,23 @@
     justify-content: center;
   }
 
-  /* Tooltip للشاشات الصغيرة جداً */
   .tooltip-wrapper:hover::after {
     max-width: 130px;
     font-size: 0.65rem;
     padding: 5px 7px;
-    top: 125%;
-    bottom: auto;
+  }
+}
+
+@media (min-width: 1200px) {
+  .container-fluid {
+    max-width: 95%;
+    margin: 0 auto;
   }
 
-  .tooltip-wrapper:hover::before {
-    top: 100%;
-    bottom: auto;
-    border-bottom-color: rgba(15, 23, 42, 0.95);
-    border-top-color: transparent;
+  .tooltip-wrapper:hover::after {
+    max-width: 400px;
+    font-size: 0.9rem;
+    padding: 12px 16px;
   }
 }
 
@@ -1009,106 +1067,8 @@
     max-height: 80vh;
   }
 
-  /* إخفاء Tooltip في وضع Landscape للشاشات القصيرة */
   .tooltip-wrapper:hover::after,
   .tooltip-wrapper:hover::before {
     display: none;
-  }
-}
-
-.badge {
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.25rem 0.5rem;
-}
-
-.text-primary {
-  color: #3b82f6 !important;
-}
-
-.text-info {
-  color: #0ea5e9 !important;
-}
-
-.bg-primary {
-  background-color: #3b82f6 !important;
-}
-
-.bg-secondary {
-  background-color: #64748b !important;
-}
-
-.table-primary {
-  background-color: #3b82f6 !important;
-}
-
-.filters-section .search-input-group {
-  position: relative;
-}
-
-.filters-section .search-input-group .search-icon {
-  position: absolute;
-  left: 15px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6c757d;
-}
-
-.filters-section .search-input-group input {
-  padding-left: 45px;
-}
-
-.filters-section .card {
-  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.letter-content {
-  max-width: 300px;
-}
-
-.pagination-container .page-link {
-  cursor: pointer;
-  margin: 0 2px;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  color: #495057;
-}
-
-.pagination-container .page-item.active .page-link {
-  background-color: #007bff;
-  border-color: #007bff;
-}
-
-.pagination-container .page-item.disabled .page-link {
-  color: #6c757d;
-  pointer-events: none;
-}
-
-@media (max-width: 768px) {
-  .filters-section .card-body {
-    padding: 1rem;
-  }
-
-  .filters-section .row.g-3 {
-    gap: 1rem !important;
-  }
-
-  .letter-content {
-    max-width: 200px;
-  }
-}
-
-@media (max-width: 576px) {
-  .filters-section .col-12 {
-    margin-bottom: 0.5rem;
-  }
-
-  .actions-cell .btn-sm {
-    font-size: 0.75rem;
-    padding: 0.25rem 0.5rem;
   }
 }

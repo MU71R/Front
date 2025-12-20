@@ -4,9 +4,8 @@ import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
-import { Letter } from 'src/app/model/Letter';
-import Swal from 'sweetalert2';
 import { AuthService } from 'src/app/service/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-letter-detail',
@@ -16,33 +15,22 @@ import { AuthService } from 'src/app/service/auth.service';
 export class LetterDetailComponent implements OnInit {
   form!: FormGroup;
   original: any = null;
-  supervisor: any = null;
-  previewHtml = '';
-  reviewNotes = '';
-  previewText: string = '';
   loading = true;
   processing = false;
   isEditing = false;
   currentUserRole: string = '';
   showPresidentOptions = false;
-  showRejectionReason = false;
   showAmendmentReason = false;
-  rejectionReason = '';
   amendmentReason = '';
+
   pdfUrl: string | null = null;
   pdfFilename: string | null = null;
   pdfFile: any = null;
-
   pdfLoading = false;
   pdfGenerating = false;
   pdfSearching = false;
   pdfSearchAttempted = false;
 
-  // التعديل: إضافة متغيرات جديدة
-  descriptionsArrayControls: FormArray = this.fb.array([]);
-  rationalesArrayControls: FormArray = this.fb.array([]);
-
-  // Quill editor configuration
   quillModules = {
     toolbar: [
       ['bold', 'italic', 'underline', 'strike'],
@@ -73,7 +61,6 @@ export class LetterDetailComponent implements OnInit {
     return this.form.get('rationales') as FormArray;
   }
 
-  // Helper methods to get individual FormControl for Quill Editor
   getDescriptionControl(index: number): FormControl {
     return this.descriptionsArray.at(index) as FormControl;
   }
@@ -84,8 +71,6 @@ export class LetterDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-
-    // الحصول على دور المستخدم الحالي
     this.getCurrentUserRole();
 
     const letterId = this.route.snapshot.paramMap.get('id');
@@ -94,7 +79,6 @@ export class LetterDetailComponent implements OnInit {
     }
   }
 
-  // التعديل: دالة جديدة لتهيئة النموذج
   private initForm() {
     this.form = this.fb.group({
       title: [''],
@@ -109,20 +93,16 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // دالة جديدة للحصول على دور المستخدم
   private getCurrentUserRole(): void {
     const user = this.loginService.getUserFromLocalStorage();
     if (user && user.role) {
       this.currentUserRole = user.role === 'UniversityPresident' ? 'UniversityPresident' : 'supervisor';
-      console.log('Current User Role:', this.currentUserRole);
     } else {
-      // محاولة الحصول على الدور من localStorage مباشرة
       const userData = localStorage.getItem('user');
       if (userData) {
         try {
           const parsedUser = JSON.parse(userData);
           this.currentUserRole = parsedUser.role || '';
-          console.log('Current User Role from localStorage:', this.currentUserRole);
         } catch (e) {
           console.error('خطأ في قراءة بيانات المستخدم:', e);
         }
@@ -150,6 +130,10 @@ export class LetterDetailComponent implements OnInit {
     return ordinals[index] || `${index + 1}`;
   }
 
+  trackByIndex(index: number, obj: any): any {
+    return index;
+  }
+
   addDescription() {
     this.descriptionsArray.push(this.fb.control(''));
     this.cdr.detectChanges();
@@ -174,66 +158,6 @@ export class LetterDetailComponent implements OnInit {
     }
   }
 
-  // التعديل: دالة محسنة لتهيئة وصفات البنود
-  private initDescriptionsArray() {
-    const descriptionsArray = this.form.get('descriptions') as FormArray;
-    descriptionsArray.clear();
-
-    console.log('Original descriptions:', this.original?.descriptions);
-
-    if (this.original?.descriptions && this.original.descriptions.length > 0) {
-      this.original.descriptions.forEach((desc: string) => {
-        descriptionsArray.push(this.fb.control(desc || ''));
-      });
-    } else {
-      descriptionsArray.push(this.fb.control(''));
-    }
-
-    console.log('Descriptions array initialized with length:', descriptionsArray.length);
-    console.log('Descriptions array values:', descriptionsArray.value);
-  }
-
-  // التعديل: دالة محسنة لتهيئة الحيثيات
-  private initRationalesArray() {
-    const rationalesArray = this.form.get('rationales') as FormArray;
-    rationalesArray.clear();
-
-    console.log('Original Rationale:', this.original?.Rationale);
-
-    // معالجة البيانات لضمان أن تكون مصفوفة
-    let rationaleList = [];
-
-    if (this.original?.Rationale) {
-      if (Array.isArray(this.original.Rationale)) {
-        rationaleList = this.original.Rationale;
-      } else if (typeof this.original.Rationale === 'string') {
-        rationaleList = [this.original.Rationale];
-      } else if (this.original.Rationale && typeof this.original.Rationale === 'object') {
-        // إذا كان كائن، نحوله إلى مصفوفة
-        rationaleList = Object.values(this.original.Rationale);
-      }
-    }
-
-    console.log('Processed rationale list:', rationaleList);
-
-    if (rationaleList.length > 0) {
-      rationaleList.forEach((rationale: any) => {
-        if (rationale !== null && rationale !== undefined) {
-          rationalesArray.push(this.fb.control(rationale.toString() || ''));
-        }
-      });
-    }
-
-    // التأكد من وجود عنصر واحد على الأقل
-    if (rationalesArray.length === 0) {
-      rationalesArray.push(this.fb.control(''));
-    }
-
-    console.log('Rationales array initialized with length:', rationalesArray.length);
-    console.log('Rationales array values:', rationalesArray.value);
-  }
-
-  // التعديل: دالة محسنة لتحميل القرار
   loadLetter(id: string) {
     this.loading = true;
 
@@ -243,23 +167,16 @@ export class LetterDetailComponent implements OnInit {
           this.loading = false;
           return;
         }
+
         this.original = res;
 
-        console.log('======= Original Data Loaded =======');
-        console.log('Original object:', this.original);
-        console.log('Descriptions:', this.original?.descriptions);
-        console.log('Descriptions type:', typeof this.original?.descriptions);
-        console.log('Rationale:', this.original?.Rationale);
-        console.log('Rationale type:', typeof this.original?.Rationale);
-
-        // التعديل: إعادة تهيئة النموذج
+        // إعادة تهيئة الفورم عند تحميل القرار أول مرة
         this.initForm();
 
-        // تهيئة المصفوفات أولاً
-        this.initDescriptionsArray();
-        this.initRationalesArray();
+        // تحميل البنود والحيثيات في الفورم (للعرض فقط، مش edit)
+        this.loadDescriptionsIntoForm();
+        this.loadRationalesIntoForm();
 
-        // ثم تعبئة باقي الحقول
         this.form.patchValue({
           title: this.original?.title || '',
           startDate: this.formatDateForInput(this.original?.StartDate),
@@ -270,15 +187,9 @@ export class LetterDetailComponent implements OnInit {
           phoneNumber: this.original?.phoneNumber || ''
         });
 
-        // Always load PDF regardless of status
         this.loadPdfByLetterId(id);
-
         this.loading = false;
-
-        // التعديل: تأكد من تحديث العرض
-        setTimeout(() => {
-          this.cdr.detectChanges();
-        }, 100);
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('خطأ في تحميل القرار:', err);
@@ -292,63 +203,45 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // التعديل: دالة محسنة لتفعيل التعديل
+  private loadDescriptionsIntoForm() {
+    this.descriptionsArray.clear();
+    const descriptions = this.original?.descriptions || [];
+    if (Array.isArray(descriptions) && descriptions.length > 0) {
+      descriptions.forEach((desc: any) => {
+        const cleanDesc = desc?.toString().trim() || '';
+        if (cleanDesc) this.descriptionsArray.push(this.fb.control(cleanDesc));
+      });
+    }
+    if (this.descriptionsArray.length === 0) this.descriptionsArray.push(this.fb.control(''));
+  }
+
+  private loadRationalesIntoForm() {
+    this.rationalesArray.clear();
+    let rationales = [];
+    if (this.original?.Rationale) {
+      if (Array.isArray(this.original.Rationale)) rationales = this.original.Rationale;
+      else if (typeof this.original.Rationale === 'string') rationales = [this.original.Rationale];
+      else if (typeof this.original.Rationale === 'object') rationales = Object.values(this.original.Rationale);
+    }
+    if (rationales.length > 0) {
+      rationales.forEach((rat: any) => {
+        const cleanRat = rat?.toString().trim() || '';
+        if (cleanRat) this.rationalesArray.push(this.fb.control(cleanRat));
+      });
+    }
+    if (this.rationalesArray.length === 0) this.rationalesArray.push(this.fb.control(''));
+  }
+
   enableEdit() {
     console.log('======= Enabling Edit Mode =======');
-    console.log('Original descriptions before edit:', this.original?.descriptions);
-    console.log('Original Rationale before edit:', this.original?.Rationale);
-
     this.isEditing = true;
 
-    // التعديل: إعادة إنشاء FormArray بالكامل مع التأكد من البيانات
-    const descriptionsArray = this.form.get('descriptions') as FormArray;
-    descriptionsArray.clear();
+    this.descriptionsArray.clear();
+    this.rationalesArray.clear();
 
-    const descriptionsData = this.original?.descriptions || [];
-    console.log('Descriptions data to load:', descriptionsData);
+    this.loadDescriptionsIntoForm();
+    this.loadRationalesIntoForm();
 
-    if (descriptionsData.length > 0) {
-      descriptionsData.forEach((desc: any) => {
-        if (desc !== null && desc !== undefined) {
-          descriptionsArray.push(this.fb.control(desc.toString()));
-        }
-      });
-    } else {
-      descriptionsArray.push(this.fb.control(''));
-    }
-
-    console.log('Descriptions array after loading:', descriptionsArray.value);
-
-    // معالجة الحيثيات
-    const rationalesArray = this.form.get('rationales') as FormArray;
-    rationalesArray.clear();
-
-    let rationaleData = [];
-    if (this.original?.Rationale) {
-      if (Array.isArray(this.original.Rationale)) {
-        rationaleData = this.original.Rationale;
-      } else if (typeof this.original.Rationale === 'string') {
-        rationaleData = [this.original.Rationale];
-      } else {
-        rationaleData = Object.values(this.original.Rationale);
-      }
-    }
-
-    console.log('Rationale data to load:', rationaleData);
-
-    if (rationaleData.length > 0) {
-      rationaleData.forEach((rationale: any) => {
-        if (rationale !== null && rationale !== undefined) {
-          rationalesArray.push(this.fb.control(rationale.toString()));
-        }
-      });
-    } else {
-      rationalesArray.push(this.fb.control(''));
-    }
-
-    console.log('Rationales array after loading:', rationalesArray.value);
-
-    // تعبئة باقي الحقول
     this.form.patchValue({
       title: this.original?.title || '',
       startDate: this.formatDateForInput(this.original?.StartDate),
@@ -357,25 +250,17 @@ export class LetterDetailComponent implements OnInit {
       entityName: this.original?.entityName || '',
       nationalId: this.original?.nationalId || '',
       phoneNumber: this.original?.phoneNumber || ''
-    }, { emitEvent: false });
+    });
 
-    console.log('Form values after enabling edit:', this.form.value);
-
-    // إعطاء الوقت للعرض للتحديث
     setTimeout(() => {
-      this.cdr.markForCheck();
       this.cdr.detectChanges();
-    }, 50);
+    }, 0);
   }
 
-  // التعديل: دالة محسنة لإلغاء التعديل
   cancelEdit() {
     console.log('Canceling edit mode');
     this.isEditing = false;
-
-    // إعادة تحميل البيانات الأصلية
     this.loadLetter(this.original._id);
-
     this.cdr.detectChanges();
   }
 
@@ -487,24 +372,23 @@ export class LetterDetailComponent implements OnInit {
   }
 
   generatePdf(signatureType: 'حقيقية' | 'الممسوحة ضوئيا') {
-     if (!this.original?._id) return;
+    if (!this.original?._id) return;
 
-  this.pdfGenerating = true;
+    this.pdfGenerating = true;
 
-  this.letterService
-    .printLetterByType(this.original._id, signatureType)
-    .subscribe({
-      next: (res) => {
-        this.pdfGenerating = false;
-        this.pdfUrl = res.pdfUrl;
-        this.pdfFilename = this.extractFilenameFromUrl(res.pdfUrl);
-
-        this.savePdfUrlToDatabase(res.pdfUrl);
-      },
-      error: () => {
-        this.pdfGenerating = false;
-      }
-    });
+    this.letterService
+      .printLetterByType(this.original._id, signatureType)
+      .subscribe({
+        next: (res) => {
+          this.pdfGenerating = false;
+          this.pdfUrl = res.pdfUrl;
+          this.pdfFilename = this.extractFilenameFromUrl(res.pdfUrl);
+          this.savePdfUrlToDatabase(res.pdfUrl);
+        },
+        error: () => {
+          this.pdfGenerating = false;
+        }
+      });
   }
 
   generateTestingPdf(): void {
@@ -602,49 +486,70 @@ export class LetterDetailComponent implements OnInit {
     return html || '';
   }
 
-  // التعديل: دالة محسنة لحفظ التغييرات
+  isArray(val: any): boolean {
+    return Array.isArray(val);
+  }
+
   saveChanges() {
     console.log('======= Saving Changes =======');
     console.log('Current form descriptions:', this.descriptionsArray.value);
     console.log('Current form rationales:', this.rationalesArray.value);
 
+    // Filter out empty descriptions/rationales
     const cleanedDescriptions = this.descriptionsArray.value
-      .map((desc: string) => desc?.trim() || '')
+      .map((desc: string) => desc?.toString().trim() || '')
       .filter((desc: string) => desc !== '');
 
     const cleanedRationales = this.rationalesArray.value
-      .map((rationale: string) => rationale?.trim() || '')
+      .map((rationale: string) => rationale?.toString().trim() || '')
       .filter((rationale: string) => rationale !== '');
 
     console.log('Cleaned descriptions:', cleanedDescriptions);
     console.log('Cleaned rationales:', cleanedRationales);
 
-    const payload = {
-      ...this.original,
-      StartDate: this.form.value.startDate
-        ? new Date(this.form.value.startDate).toISOString()
-        : null,
-      EndDate: this.form.value.endDate
-        ? new Date(this.form.value.endDate).toISOString()
-        : null,
-      Rationale: cleanedRationales.length > 0 ? cleanedRationales : [],
-      descriptions: cleanedDescriptions,
+    // Construct the payload with specific fields only
+    const payload: Partial<any> = {
+      title: this.form.value.title || this.original.title,
       fullName: this.form.value.fullName || null,
       entityName: this.form.value.entityName || null,
       nationalId: this.form.value.nationalId || null,
       phoneNumber: this.form.value.phoneNumber || null,
-      title: this.form.value.title || null
+      descriptions: cleanedDescriptions,
+      Rationale: cleanedRationales,
     };
 
+    if (this.form.value.startDate) {
+      payload['StartDate'] = new Date(this.form.value.startDate).toISOString();
+    }
+
+    if (this.form.value.endDate) {
+      payload['EndDate'] = new Date(this.form.value.endDate).toISOString();
+    }
+
+    console.log('Sending Payload:', JSON.stringify(payload, null, 2));
+
     this.processing = true;
+
     this.letterService.updateLetter(this.original._id, payload).subscribe({
-      next: (res) => {
+      next: (updatedLetter) => {
+        // Update local object cautiously
         this.original = {
           ...this.original,
           ...payload,
-          Rationale: cleanedRationales,
-          descriptions: cleanedDescriptions
+          descriptions: cleanedDescriptions,
+          Rationale: cleanedRationales
         };
+
+        // If the backend returned a Full object, consider using it
+        if (updatedLetter && updatedLetter._id) {
+          console.log('Backend returned updated object:', updatedLetter);
+          // Update specific fields from backend response if needed, 
+          // but keeping local state usually feels faster. 
+          // Usually it's better to trust the server response for the single source of truth:
+          // this.original = updatedLetter; 
+          // However, if updatedLetter is not fully populated (e.g. user field), we might lose display data.
+          // So merging is safer.
+        }
 
         this.isEditing = false;
         this.processing = false;
@@ -656,15 +561,15 @@ export class LetterDetailComponent implements OnInit {
           timer: 1500
         });
 
-        // تحديث العرض
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error(err);
+        console.error('Save error:', err);
         this.processing = false;
         Swal.fire({
           icon: 'error',
           title: 'حدث خطأ أثناء الحفظ',
+          text: err.error?.message || 'يرجى المحاولة مرة أخرى',
           showConfirmButton: true
         });
       }
@@ -830,7 +735,6 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // دالة منفصلة للموافقة فقط بدون PDF
   approveLetter(signatureType?: 'حقيقية' | 'الممسوحة ضوئيا') {
     if (!this.original?._id) return;
 
@@ -868,7 +772,6 @@ export class LetterDetailComponent implements OnInit {
     } else if (this.currentUserRole === 'UniversityPresident') {
       console.log('Approving with signature type:', signatureType);
 
-      // ✅ إرسال signatureType بشكل صحيح
       this.letterService.updateStatusByUniversityPresident(
         this.original._id,
         'approved',
@@ -876,11 +779,9 @@ export class LetterDetailComponent implements OnInit {
         signatureType
       ).subscribe({
         next: () => {
-          // تحديث البيانات محليًا
           this.original.status = 'approved';
           this.original.signatureType = signatureType;
 
-          // 🔥 إنشاء PDF النهائي مباشرة
           this.generatePdf(signatureType || 'حقيقية');
 
           this.processing = false;
@@ -919,13 +820,12 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
-  // عرض قسم PDF دائماً
   showPdfButton(): boolean {
-    return true; // دائماً متاح
+    return true;
   }
 
   canShowPdf(): boolean {
-    return true; // دائماً متاح
+    return true;
   }
 
   canEdit(): boolean {
@@ -1003,7 +903,6 @@ export class LetterDetailComponent implements OnInit {
     );
   }
 
-  // التعديل: إضافة دالة لفحص البيانات (اختياري - للمساعدة في التنقيح)
   debugData() {
     console.log('======= DEBUG DATA =======');
     console.log('isEditing:', this.isEditing);
