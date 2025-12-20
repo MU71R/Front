@@ -150,91 +150,100 @@ export class ArchiveDetailComponent implements OnInit {
 
   onMainCriteriaChange(): void {
     this.filters.subCriteria = '';
-    
+
     if (this.filters.mainCriteria) {
       const lettersWithSelectedMainCriteria = this.letters.filter(
         letter => letter.mainCriteria?.name === this.filters.mainCriteria
       );
-      
+
       const subCriteriaNames = lettersWithSelectedMainCriteria
         .map(letter => letter.subCriteria?.name)
         .filter(name => name && name.trim() !== '');
-      
+
       this.filteredSubCriteria = [...new Set(subCriteriaNames)].sort();
     } else {
       this.filteredSubCriteria = [];
     }
-    
+
     this.applyFilters();
   }
 
   applyFilters(): void {
-    let filtered = [...this.letters];
+  let filtered = [...this.letters];
 
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (letter) =>
-          letter.title?.toLowerCase().includes(term) ||
-          letter.user?.fullname?.toLowerCase().includes(term) ||
-          letter.breeif?.toLowerCase().includes(term) ||
-          letter.mainCriteria?.name?.toLowerCase().includes(term) ||
-          letter.subCriteria?.name?.toLowerCase().includes(term)
-      );
-    }
-
-    if (this.filters.fromDate) {
-      filtered = filtered.filter(
-        (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
-      );
-    }
-
-    if (this.filters.toDate) {
-      filtered = filtered.filter(
-        (letter) => new Date(letter.createdAt) <= new Date(this.filters.toDate)
-      );
-    }
-
-    if (this.dateRange.startDate) {
-      filtered = filtered.filter(
-        (letter) =>
-          letter.StartDate &&
-          new Date(letter.StartDate) >= new Date(this.dateRange.startDate)
-      );
-    }
-
-    if (this.dateRange.endDate) {
-      filtered = filtered.filter(
-        (letter) =>
-          letter.EndDate &&
-          new Date(letter.EndDate) <= new Date(this.dateRange.endDate)
-      );
-    }
-
-    if (this.filters.sender) {
-      filtered = filtered.filter(
-        (letter) => letter.user?.fullname === this.filters.sender
-      );
-    }
-
-    if (this.filters.mainCriteria) {
-      filtered = filtered.filter(
-        (letter) => letter.mainCriteria?.name === this.filters.mainCriteria
-      );
-    }
-
-    if (this.filters.subCriteria) {
-      filtered = filtered.filter(
-        (letter) => letter.subCriteria?.name === this.filters.subCriteria
-      );
-    }
-
-    filtered = this.sortLetters(filtered);
-
-    this.filteredLetters = filtered;
-    this.currentPage = 1;
-    this.calculateTotalPages();
+  if (this.searchTerm) {
+    const term = this.searchTerm.toLowerCase();
+    filtered = filtered.filter(
+      (letter) =>
+        letter.title?.toLowerCase().includes(term) ||
+        letter.user?.fullname?.toLowerCase().includes(term) ||
+        letter.breeif?.toLowerCase().includes(term) ||
+        letter.mainCriteria?.name?.toLowerCase().includes(term) ||
+        letter.subCriteria?.name?.toLowerCase().includes(term)
+    );
   }
+
+  // حل مشكلة التاريخ - FIXED
+  if (this.filters.fromDate) {
+    filtered = filtered.filter(
+      (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
+    );
+  }
+
+  if (this.filters.toDate) {
+    // إضافة يوم كامل إلى تاريخ الانتهاء لتضمين اليوم نفسه
+    const toDatePlusOneDay = new Date(this.filters.toDate);
+    toDatePlusOneDay.setDate(toDatePlusOneDay.getDate() + 1);
+
+    filtered = filtered.filter(
+      (letter) => new Date(letter.createdAt) < toDatePlusOneDay
+    );
+  }
+
+  if (this.dateRange.startDate) {
+    filtered = filtered.filter(
+      (letter) =>
+        letter.StartDate &&
+        new Date(letter.StartDate) >= new Date(this.dateRange.startDate)
+    );
+  }
+
+  if (this.dateRange.endDate) {
+    // نفس الحل لتاريخ انتهاء القرار
+    const endDatePlusOneDay = new Date(this.dateRange.endDate);
+    endDatePlusOneDay.setDate(endDatePlusOneDay.getDate() + 1);
+
+    filtered = filtered.filter(
+      (letter) =>
+        letter.EndDate &&
+        new Date(letter.EndDate) < endDatePlusOneDay
+    );
+  }
+
+  if (this.filters.sender) {
+    filtered = filtered.filter(
+      (letter) => letter.user?.fullname === this.filters.sender
+    );
+  }
+
+  if (this.filters.mainCriteria) {
+    filtered = filtered.filter(
+      (letter) => letter.mainCriteria?.name === this.filters.mainCriteria
+    );
+  }
+
+  if (this.filters.subCriteria) {
+    filtered = filtered.filter(
+      (letter) => letter.subCriteria?.name === this.filters.subCriteria
+    );
+  }
+
+  filtered = this.sortLetters(filtered);
+
+  this.filteredLetters = filtered;
+  this.currentPage = 1;
+  this.calculateTotalPages();
+}
 
   sortLetters(letters: any[]): any[] {
     return letters.sort((a, b) => {
@@ -365,7 +374,7 @@ export class ArchiveDetailComponent implements OnInit {
       subtitles[this.type] || 'قائمة القرارت والأوامر المعتمدة ضمن هذا التصنيف'
     );
   }
-  
+
   getFileSize(bytes: number): string {
     if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -471,7 +480,7 @@ export class ArchiveDetailComponent implements OnInit {
     this.newArchive = {
       title: '',
       description: '',
-      transactionNumber: '', 
+      transactionNumber: '',
       startDate: '',
       endDate: '',
       letterType: 'رئاسة الجمهورية',
