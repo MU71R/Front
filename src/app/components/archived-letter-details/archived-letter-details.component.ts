@@ -477,6 +477,28 @@ export class LetterDetailsComponent implements OnInit {
     });
   }
 
+    canViewNationalId(): boolean {
+    // رئيس الجامعة يمكنه رؤية كل شيء
+    if (this.user?.role === 'UniversityPresident' || 
+        this.user?.fullname === 'مكتب رئيس الجامعة' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
+        this.user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
+        this.user?.fullname === 'أمين عام الجامعة' ||
+        this.user?.fullname === 'أمين عام الجامعة المساعد' ||
+        this.user?.fullname === 'أمين عام الجامعة المساعد2') {
+      return true;
+    }
+    
+    // معد القرار يمكنه رؤية الرقم الوطني لقراره فقط
+    if (this.letter?.user?._id === this.user?._id || 
+        this.letter?.user?.id === this.user?._id) {
+      return true;
+    }
+    
+    return false;
+  }
+
   // التحقق من إمكانية إظهار زر الإلغاء
   canCancelDecision(): boolean {
     if (!this.user) return false;

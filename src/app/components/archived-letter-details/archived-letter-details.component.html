@@ -183,7 +183,7 @@
                         </div>
 
                         <!-- الرقم الوطني -->
-                        <div class="info-item" *ngIf="letter.nationalId">
+                        <div class="info-item" *ngIf="letter.nationalId && canViewNationalId()">
                             <div class="info-icon">
                                 <i class="fa fa-id-card"></i>
                             </div>
