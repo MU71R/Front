@@ -19,7 +19,7 @@
     <tbody>
 
       <!-- رئاسة الجمهورية -->
-      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد'|| user?.fullname === 'أمين عام الجامعة المساعد2'"
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد'|| user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
           (click)="getArchivedLettersByType('رئاسة الجمهورية')" class="clickable-row">
         <td><span class="tag tag-danger">رئاسة الجمهورية</span></td>
         <td>{{ statsArchived?.republic }}</td>
