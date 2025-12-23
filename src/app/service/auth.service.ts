@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { jwtDecode } from 'jwt-decode';
-
+import { environment } from 'src/app/environments/environment';
 // Import interfaces from model
 import { User, LoginCredentials, LoginResponse, DecodedToken } from '../model/user';
 
@@ -16,8 +16,7 @@ export class AuthService {
   // Constants
   private readonly USER_KEY = 'userData';
   private readonly TOKEN_KEY = 'token';
-  private readonly API_URL = 'http://localhost:3000';
-
+  private readonly API_URL = environment.apiUrl;
   // State Management
   private currentUserSubject: BehaviorSubject<User | null>;
   public currentUser$: Observable<User | null>;

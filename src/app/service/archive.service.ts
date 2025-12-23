@@ -1,14 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-
+import { environment } from 'src/app/environments/environment';
 @Injectable({
   providedIn: 'root',
 })
 export class ArchiveService {
   constructor(private http: HttpClient) {}
 
-  url = 'http://localhost:3000/letters';
+  url = environment.apiUrl + '/letters';
 
   getAllArchivedLetters() {
     return this.http.get(this.url + '/get-all-archived-letters');

@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { User, Sector } from '../model/user';
-
+import { environment } from 'src/app/environments/environment';
 @Injectable({
   providedIn: 'root',
 })
 export class AdministrationService {
-  private baseUrl = 'http://localhost:3000/users';
+  private baseUrl = environment.apiUrl + '/users';
 
   constructor(private http: HttpClient) {}
 

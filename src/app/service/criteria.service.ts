@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { LoginService } from './login.service';
 import { MainCriteria, SubCriteria } from '../model/criteria';
 import { map } from 'rxjs/operators';
+import { environment } from 'src/app/environments/environment';
 
 export interface AddMainCriteriaRequest {
   name: string;
@@ -48,10 +49,9 @@ export interface ReviewerAssignment {
   providedIn: 'root',
 })
 export class CriteriaService {
-  // 🔥 Base URLs - تأكد من أن الـ base URL صحيح
-  private apiUrl = 'http://localhost:3000/criteria';
-  private usersUrl = 'http://localhost:3000/users';
-  private reviewerUrl = 'http://localhost:3000/reviewer'; // للـ reviewer assignments
+  private apiUrl = environment.apiUrl + '/criteria';
+  private usersUrl = environment.apiUrl + '/users';
+  private reviewerUrl = environment.apiUrl + '/reviewer'; // للـ reviewer assignments
 
   constructor(private http: HttpClient, private loginService: LoginService) { }
 

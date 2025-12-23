@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'src/app/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DecisioService {
-  private baseUrl = "http://localhost:3000/reviewer"; // أو أي baseUrl تستخدمه
-  private baseUrl2 = "http://localhost:3000/criteria"; // أو أي baseUrl تستخدمه
+  private baseUrl = environment.apiUrl + '/reviewer'; // أو أي baseUrl تستخدمه
+  private baseUrl2 = environment.apiUrl + '/criteria'; // أو أي baseUrl تستخدمه
   constructor(private http: HttpClient) { }
 
   /**

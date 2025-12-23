@@ -4,6 +4,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Notification } from '../model/notification';
 import io from 'socket.io-client';
 import { Socket } from 'socket.io-client';
+import { environment } from 'src/app/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -13,7 +14,7 @@ export class NotificationService {
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
   public notifications$ = this.notificationsSubject.asObservable();
 
-  private API_URL = 'http://localhost:3000/notifications';
+  private API_URL = environment.apiUrl + '/notifications';
 
   constructor(private http: HttpClient) {
     this.initializeNotifications();

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import * as ioClient from 'socket.io-client'; 
+import { environment } from 'src/app/environments/environment';
 
 export interface Notification {
   id: string;
@@ -17,7 +18,7 @@ export interface Notification {
 })
 export class SocketService {
   private socket: any;
-  private readonly apiUrl = 'http://localhost:3000'; 
+  private readonly apiUrl = environment.apiUrl; 
 
   constructor() {
     this.socket = ioClient.connect(this.apiUrl, {

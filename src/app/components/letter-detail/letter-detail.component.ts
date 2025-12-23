@@ -411,6 +411,28 @@ export class LetterDetailComponent implements OnInit {
     });
   }
 
+  openPdfTesting(): void {
+    if (!this.pdfUrl) return;
+
+    this.pdfLoading = true;
+    if (this.pdfUrl.startsWith('http')) {
+      window.open(this.pdfUrl, '_blank');
+      this.pdfLoading = false;
+    } else if (this.pdfFilename) {
+      const baseUrl = 'http://localhost:3000/generated-files/testing';
+      const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
+      window.open(pdfUrl, '_blank');
+      this.pdfLoading = false;
+    } else {
+      this.pdfLoading = false;
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يوجد ملف PDF متاح للعرض',
+        showConfirmButton: true
+      });
+    }
+  }
+
   openPdf(): void {
     if (!this.pdfUrl) return;
 

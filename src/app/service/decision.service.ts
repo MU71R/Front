@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Decision } from '../model/decision';
+import { environment } from 'src/app/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DecisionService {
 
-  baseUrl = 'http://localhost:3000/decision';
+  baseUrl = environment.apiUrl + '/decision';
 
   constructor(private http: HttpClient) { }
 

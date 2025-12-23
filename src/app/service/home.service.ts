@@ -5,6 +5,7 @@ import { LetterService } from './letter.service';
 import { DecisionService } from './decision.service';
 import { Letter } from '../model/Letter';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/app/environments/environment';
 
 export interface DashboardStats {
   totalUsers: number;
@@ -43,7 +44,7 @@ export class DashboardService {
     private decisionService: DecisionService,
     private http: HttpClient
   ) {}
-      private baseUrl = 'http://localhost:3000/letters';
+      private baseUrl = environment.apiUrl + '/letters';
     getDashboardStats(){
             return this.http.get<DashboardStatsResponse>(`${this.baseUrl}/stats`);
     }

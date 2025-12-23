@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Letter } from '../model/Letter';
 import { map } from 'rxjs/operators';
 import { LetterDetail, RecentActivit } from '../model/letter-detail';
-
+import { environment } from 'src/app/environments/environment';
 export interface PDFFile {
   _id: string;
   pdfurl: string;
@@ -22,7 +22,7 @@ export interface PDFFile {
   providedIn: 'root',
 })
 export class LetterService {
-  baseUrl = 'http://localhost:3000/letters';
+  baseUrl = environment.apiUrl + '/letters';
 
   constructor(private http: HttpClient) { }
 
