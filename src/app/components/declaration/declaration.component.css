@@ -286,6 +286,474 @@
   margin: 0.5rem 0 !important;
 }
 
+
+
+/* ========================== */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1040;
+}
+
+.modal.show {
+  display: block !important;
+  overflow-y: auto;
+  z-index: 1050;
+}
+
+.modal-dialog {
+  margin: 1.75rem auto;
+  max-width: 90%;
+}
+
+.modal-xl {
+  max-width: 1140px;
+}
+
+.modal-content {
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 1rem 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #dee2e6;
+}
+
+/* تنسيقات الجدول داخل Modal */
+.table-responsive {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  padding: 10px;
+}
+
+.table-bordered {
+  border: 2px solid #495057;
+}
+
+.table-bordered td {
+  border: 1px solid #6c757d;
+  vertical-align: middle;
+  min-width: 120px;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #e9ecef;
+}
+
+/* تنسيقات input داخل الخلايا */
+.table input.form-control-sm {
+  border: none;
+  background: transparent;
+  text-align: right;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.95rem;
+  direction: rtl;
+}
+
+.table input.form-control-sm:focus {
+  outline: none;
+  background: white;
+  border: 1px solid #0d6efd;
+  border-radius: 4px;
+}
+
+/* تنسيقات الجدول المعروض في البنود */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  direction: rtl;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.decision-table td {
+  border: 2px solid #495057;
+  padding: 12px 16px;
+  text-align: right;
+  min-width: 80px;
+  font-size: 1rem;
+  vertical-align: middle;
+  background: white;
+}
+
+.decision-table tr:nth-child(odd) td {
+  background: #f8f9fa;
+}
+
+.decision-table tr:hover td {
+  background: #e9ecef;
+}
+
+.editable-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.editable-cell {
+  padding: 8px !important;
+}
+
+.editable-cell input {
+  width: 100%;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 10px;
+  font-size: 14px;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  background-color: white;
+}
+
+.editable-cell input:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.editable-cell input:hover {
+  border-color: #86b7fe;
+}
+
+/* منع فقدان التركيز عند تحديث القيمة */
+.editable-cell input {
+  caret-color: #0d6efd;
+}
+
+/* تنسيق لخلايا الجدول عند التحرير */
+.editable-table td {
+  vertical-align: middle;
+  background-color: #fff;
+}
+
+/* تصميم للجدول في المودال */
+.table-responsive .table {
+  margin-bottom: 0;
+}
+
+/* تحسين ظهور العناصر */
+.editable-cell:focus-within {
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* تصميم للصفوف */
+.editable-table tr:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* تصميم للخلايا الفارغة */
+.editable-cell input:placeholder-shown {
+  color: #6c757d;
+  opacity: 0.7;
+}
+
+/* أزرار التحكم */
+.btn-edit-table {
+  background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+  color: white;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.btn-edit-table:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
+}
+
+/* تنسيقات Scroll bar للجدول */
+.table-responsive::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* تحسين زر الإغلاق */
+.btn-close-white {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+.btn-close-white:hover {
+  opacity: 0.8;
+}
+
+/* Animation للـ Modal */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal.show .modal-dialog {
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+/* تنسيقات للطباعة */
+@media print {
+  .decision-table {
+    page-break-inside: avoid;
+    border: 2px solid black;
+  }
+
+  .decision-table td {
+    border: 1px solid black;
+    padding: 8px;
+  }
+
+  .btn-group,
+  .modal,
+  .modal-backdrop {
+    display: none !important;
+  }
+}
+
+/* Responsive للجداول */
+@media (max-width: 768px) {
+  .modal-dialog {
+    max-width: 95%;
+    margin: 0.5rem;
+  }
+
+  .table-responsive {
+    max-height: 300px;
+  }
+
+  .decision-table td {
+    padding: 8px;
+    font-size: 0.9rem;
+    min-width: 60px;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+}
+/* ======================================= */
+.pdf-testing-actions .btn {
+  min-width: 120px;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-right-radius: 0.375rem;
+  border-bottom-right-radius: 0.375rem;
+}
+
+.btn-group .btn:last-child {
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+}
+
+.fa-spin {
+  animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Card Enhancements */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+.alert-info {
+  border-right: 4px solid #0dcaf0;
+}
+
+/* Table Styles */
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  direction: rtl;
+}
+
+.decision-table td {
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.editable-table td {
+  min-width: 120px;
+}
+
+.editable-cell {
+  text-align: right;
+  direction: rtl;
+  border: none;
+  background: transparent;
+}
+
+.editable-cell:focus {
+  background: #fff3cd;
+  outline: 2px solid #0d6efd;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1040;
+}
+
+.modal.fade.show {
+  display: block !important;
+}
+
+/* Dropdown Styles */
+.search-dropdown {
+  position: relative;
+}
+
+.dropdown-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+}
+
+.dropdown-item.selected {
+  background-color: #e7f3ff;
+}
+
+/* Form Styles */
+.form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+  display: block;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Button Styles */
+.btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* Spinner */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+  border-width: 0.15em;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .btn-group .btn {
+    border-radius: 0.375rem !important;
+    margin-bottom: 0.5rem;
+  }
+  
+  .pdf-testing-actions {
+    margin-top: 1rem;
+  }
+}
 /* ========================================
    باقي التنسيقات
    ======================================== */

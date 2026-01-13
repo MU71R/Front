@@ -45,6 +45,9 @@ export class LetterService {
     return this.http.delete<Letter>(`${this.baseUrl}/delete-letter/${id}`);
   }
 
+
+
+
   /**
    * تحديث قرار
    * Endpoint: PUT /letters/update-letter/:id
@@ -347,6 +350,22 @@ export class LetterService {
       window.URL.revokeObjectURL(url);
     });
   }
+
+  getPDF(url: string): Observable<Blob> {
+    return this.http.get(url, { responseType: 'blob' });
+  }
+
+  printTestingPdfFromData(letterData: FormData): Observable<any> {
+    return this.http.post<any>(
+      `${this.baseUrl}/print-testing-from-data`, 
+      letterData
+    );
+  }
+
+   deleteLetter(letterId: string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/delete-letter/${letterId}`);
+  }
+
 
   /**
    * فتح PDF في نافذة جديدة

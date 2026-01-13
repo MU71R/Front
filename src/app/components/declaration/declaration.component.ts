@@ -5,6 +5,7 @@ import { CriteriaService } from 'src/app/service/criteria.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { LoginService } from 'src/app/service/login.service';
 import Swal from 'sweetalert2';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 export function noLeadingSpaces(control: AbstractControl): ValidationErrors | null {
   if (!control.value) return null;
@@ -66,6 +67,19 @@ export class DeclarationComponent implements OnInit {
   selectedMainCriteriaTitle = '';
   selectedSubCriteriaTitle = '';
 
+  // متغيرات للجداول
+  showTableModal = false;
+  tableRows = 3;
+  tableCols = 3;
+  currentTableData: any[][] = [];
+  editingTableIndex: number | null = null;
+  private lastFocusedCell: { row: number, col: number } | null = null;
+
+  // متغيرات PDF Testing
+  pdfGenerating = false;
+  pdfLoading = false;
+  pdfFilename: string | null = null;
+
   quillModules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
@@ -77,7 +91,8 @@ export class DeclarationComponent implements OnInit {
     private fb: FormBuilder,
     private criteriaService: CriteriaService,
     private letterService: LetterService,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private sanitizer: DomSanitizer
   ) { }
 
   user = this.loginService.getUserFromLocalStorage();
@@ -87,15 +102,179 @@ export class DeclarationComponent implements OnInit {
     this.loadMainCriteria();
   }
 
+  // حفظ اسم ملف PDF
+  private savePdfFilename(filename: string): void {
+    this.pdfFilename = filename;
+  }
+
+  // مسح البيانات المحفوظة
+  private clearSavedData(): void {
+    this.pdfFilename = null;
+  }
+
+  // دالة جديدة لتجهيز البيانات من الفورم
+  private prepareLetterDataForPDF(): any {
+    const contentTexts = this.contentFields.controls.map(control => {
+      const htmlContent = control.get('content')?.value || '';
+      return htmlContent.trim();
+    }).filter(text => text.length > 0);
+
+    const rationaleTexts = this.rationaleFields.controls.map(control => {
+      const htmlContent = control.get('rationale')?.value || '';
+      return htmlContent.trim();
+    }).filter(text => text.length > 0);
+
+    const tables = this.tablesArray.value;
+
+    return {
+      title: this.f['title'].value,
+      descriptions: contentTexts,
+      mainCriteria: this.f['mainCriteria'].value,
+      subCriteria: this.f['subCriteria'].value,
+      Rationale: rationaleTexts,
+      signatureType: this.f['signatureType'].value || null,
+      date: new Date().toISOString(), // ✅ إضافة تاريخ الإنشاء الحالي
+      transactionNumber: null, // رقم مؤقت
+      StartDate: this.f['startDate'].value
+        ? new Date(this.f['startDate'].value).toISOString()
+        : null,
+      EndDate: this.f['endDate'].value
+        ? new Date(this.f['endDate'].value).toISOString()
+        : null,
+      fullName: this.f['fullName'].value || null,
+      entityName: this.f['entityName'].value || null,
+      nationalId: this.f['nationalId'].value || null,
+      phoneNumber: this.f['phoneNumber'].value || null,
+      tables: tables
+    };
+  }
+
+  // توليد PDF تجريبي من بيانات الفورم مباشرة
+  generateTestingPdf(): void {
+    // التحقق من صحة النموذج
+    if (this.messageForm.invalid) {
+      // تحديد الحقول غير الصالحة
+      Object.keys(this.f).forEach((key) => {
+        this.f[key].markAsTouched();
+      });
+      this.contentFields.controls.forEach(control => {
+        control.markAllAsTouched();
+      });
+      this.rationaleFields.controls.forEach(control => {
+        control.markAllAsTouched();
+      });
+
+      Swal.fire({
+        icon: 'warning',
+        title: 'يرجى إكمال جميع الحقول المطلوبة',
+        text: 'يجب ملء جميع البيانات الإلزامية قبل إنشاء PDF',
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    this.pdfGenerating = true;
+
+    // تجهيز البيانات من الفورم
+    const letterData = this.prepareLetterDataForPDF();
+
+    // إرسال البيانات مباشرة بدون حفظ في قاعدة البيانات
+    this.letterService.printTestingPdfFromData(letterData).subscribe({
+      next: (res) => {
+        this.pdfGenerating = false;
+        const filename = res.data.fileName;
+        this.savePdfFilename(filename);
+
+        Swal.fire({
+          icon: 'success',
+          title: 'تم إنشاء PDF بنجاح',
+          text: 'يمكنك الآن معاينة القرار قبل الحفظ النهائي',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      },
+      error: (err) => {
+        console.error('Error generating testing PDF:', err);
+        this.pdfGenerating = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'حدث خطأ',
+          text: err?.error?.message || 'لم نتمكن من إنشاء PDF',
+          showConfirmButton: true
+        });
+      }
+    });
+  }
+
+  // فتح PDF التجريبي
+  openPdfTesting(): void {
+    if (!this.pdfFilename) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يوجد ملف PDF متاح للعرض',
+        text: 'يرجى إنشاء PDF أولاً',
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    const apiUrl = `http://localhost:3000/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
+
+    this.pdfLoading = true;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        this.pdfLoading = false;
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: (err) => {
+        console.error('Error fetching PDF:', err);
+        this.pdfLoading = false;
+        Swal.fire({
+          icon: 'warning',
+          title: 'لا يمكن عرض الملف حالياً',
+          text: 'يرجى المحاولة مرة أخرى',
+          showConfirmButton: true
+        });
+      }
+    });
+  }
+
+  // تنزيل PDF
+  downloadPdf(): void {
+    if (!this.pdfFilename) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يوجد ملف PDF متاح للتنزيل',
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    const downloadName = this.generateDownloadName();
+    this.letterService.downloadPDF(this.pdfFilename, downloadName);
+  }
+
+  // توليد اسم الملف للتنزيل
+  private generateDownloadName(): string {
+    const title = this.f['title'].value
+      ? this.f['title'].value.replace(/[^\w\u0600-\u06FF]/g, '_')
+      : 'قرار';
+    const date = new Date().toISOString().split('T')[0];
+    return `قرار_تجريبي_${title}_${date}.pdf`;
+  }
+
   private initializeForm(): void {
     this.messageForm = this.fb.group(
       {
         mainCriteria: ['', [Validators.required]],
         subCriteria: ['', [Validators.required]],
         title: ['', [Validators.required, noLeadingSpaces]],
-        rationaleFields: this.fb.array([this.createRationaleField()]), // حقل واحد افتراضي
+        rationaleFields: this.fb.array([this.createRationaleField()]),
         signatureType: [''],
         contentFields: this.fb.array([this.createContentField()]),
+        tables: this.fb.array([]),
         fullName: [''],
         entityName: [''],
         nationalId: [''],
@@ -129,12 +308,25 @@ export class DeclarationComponent implements OnInit {
     return this.messageForm.get('rationaleFields') as FormArray;
   }
 
+  createContentField(): FormGroup {
+    return this.fb.group({
+      content: ['', [Validators.required]]
+    });
+  }
+
+  get contentFields(): FormArray {
+    return this.messageForm.get('contentFields') as FormArray;
+  }
+
+  get tablesArray(): FormArray {
+    return this.messageForm.get('tables') as FormArray;
+  }
+
   addRationaleField(): void {
     this.rationaleFields.push(this.createRationaleField());
   }
 
   removeRationaleField(index: number): void {
-    // يجب أن يبقى حقل واحد على الأقل
     if (this.rationaleFields.length > 1) {
       this.rationaleFields.removeAt(index);
     } else {
@@ -147,22 +339,25 @@ export class DeclarationComponent implements OnInit {
     }
   }
 
-  createContentField(): FormGroup {
-    return this.fb.group({
-      content: ['', [Validators.required]]
-    });
-  }
-
-  get contentFields(): FormArray {
-    return this.messageForm.get('contentFields') as FormArray;
-  }
-
   addContentField(): void {
     this.contentFields.push(this.createContentField());
   }
 
   removeContentField(index: number): void {
     if (this.contentFields.length > 1) {
+      const tableIndex = this.tablesArray.controls.findIndex(
+        (ctrl: any) => ctrl.value.descriptionIndex === index
+      );
+      if (tableIndex >= 0) {
+        this.tablesArray.removeAt(tableIndex);
+      }
+
+      this.tablesArray.controls.forEach((ctrl: any, i: number) => {
+        if (ctrl.value.descriptionIndex > index) {
+          ctrl.value.descriptionIndex -= 1;
+        }
+      });
+
       this.contentFields.removeAt(index);
     } else {
       Swal.fire({
@@ -172,6 +367,233 @@ export class DeclarationComponent implements OnInit {
         timer: 2000,
       });
     }
+  }
+
+  openTableModal(descriptionIndex?: number): void {
+    this.showTableModal = true;
+    this.editingTableIndex = descriptionIndex !== undefined ? descriptionIndex : null;
+
+    if (descriptionIndex !== undefined && descriptionIndex !== null) {
+      const existingTable = this.getExistingTable(descriptionIndex);
+      if (existingTable) {
+        this.tableRows = existingTable.rows;
+        this.tableCols = existingTable.cols;
+        this.currentTableData = JSON.parse(JSON.stringify(existingTable.data));
+      } else {
+        this.resetTableModal();
+      }
+    } else {
+      this.resetTableModal();
+    }
+
+    setTimeout(() => {
+      this.focusFirstCell();
+    }, 100);
+  }
+
+  resetTableModal(): void {
+    this.tableRows = 3;
+    this.tableCols = 3;
+    this.currentTableData = this.createEmptyTable(3, 3);
+    this.lastFocusedCell = null;
+  }
+
+  createEmptyTable(rows: number, cols: number): any[][] {
+    const table: any[][] = [];
+    for (let i = 0; i < rows; i++) {
+      table[i] = [];
+      for (let j = 0; j < cols; j++) {
+        table[i][j] = '';
+      }
+    }
+    return table;
+  }
+
+  changeTableSize(): void {
+    const newRows = Math.max(1, Math.min(20, this.tableRows));
+    const newCols = Math.max(1, Math.min(10, this.tableCols));
+
+    const newTable = this.createEmptyTable(newRows, newCols);
+
+    for (let i = 0; i < Math.min(this.currentTableData.length, newRows); i++) {
+      for (let j = 0; j < Math.min(this.currentTableData[0]?.length || 0, newCols); j++) {
+        newTable[i][j] = this.currentTableData[i][j];
+      }
+    }
+
+    this.currentTableData = newTable;
+    this.tableRows = newRows;
+    this.tableCols = newCols;
+
+    setTimeout(() => {
+      this.restoreFocus();
+    }, 50);
+  }
+
+  saveTable(): void {
+    if (!this.currentTableData || this.currentTableData.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'الجدول فارغ!',
+        timer: 1500
+      });
+      return;
+    }
+
+    const tableData = {
+      rows: this.tableRows,
+      cols: this.tableCols,
+      data: this.currentTableData,
+      descriptionIndex: this.editingTableIndex !== null ? this.editingTableIndex : this.contentFields.length
+    };
+
+    const tableHTML = this.generateTableHTML(this.currentTableData);
+
+    if (this.editingTableIndex !== null && this.editingTableIndex >= 0) {
+      const contentField = this.contentFields.at(this.editingTableIndex);
+      contentField.get('content')?.setValue(tableHTML);
+
+      const existingIndex = this.tablesArray.controls.findIndex(
+        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex
+      );
+      if (existingIndex >= 0) {
+        this.tablesArray.at(existingIndex).setValue(tableData);
+      } else {
+        this.tablesArray.push(this.fb.control(tableData));
+      }
+    } else {
+      const newContentField = this.createContentField();
+      newContentField.get('content')?.setValue(tableHTML);
+      this.contentFields.push(newContentField);
+
+      tableData.descriptionIndex = this.contentFields.length - 1;
+      this.tablesArray.push(this.fb.control(tableData));
+    }
+
+    this.closeTableModal();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'تم إضافة الجدول بنجاح',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }
+
+  generateTableHTML(data: any[][]): string {
+    if (!data || data.length === 0) {
+      return '<p>جدول فارغ</p>';
+    }
+
+    let html = `
+      <div class="table-responsive">
+        <table class="table table-bordered table-hover decision-table" 
+               style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">
+          <tbody>`;
+
+    data.forEach((row, rowIndex) => {
+      html += '<tr>';
+      row.forEach((cell, colIndex) => {
+        const cellContent = cell || '&nbsp;';
+        html += `
+          <td style="border: 1px solid #dee2e6; padding: 8px; 
+                     text-align: right; vertical-align: middle;">
+            ${cellContent}
+          </td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += `
+          </tbody>
+        </table>
+      </div>`;
+
+    return html;
+  }
+
+  getExistingTable(descriptionIndex: number): any {
+    const tableControl = this.tablesArray.controls.find(
+      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex
+    );
+    return tableControl ? tableControl.value : null;
+  }
+
+  isTableDescription(index: number): boolean {
+    const tableData = this.getExistingTable(index);
+    return !!tableData && !!tableData.data && tableData.data.length > 0;
+  }
+
+  getTableContent(index: number): string {
+    const tableData = this.getExistingTable(index);
+
+    if (!tableData) {
+      const contentField = this.contentFields.at(index);
+      return contentField?.get('content')?.value || '';
+    }
+
+    return this.generateTableHTML(tableData.data);
+  }
+
+  getTableNumber(index: number): number {
+    const tables = this.tablesArray.value;
+    const tableIndices = tables
+      .map((table: any) => table.descriptionIndex)
+      .sort((a: number, b: number) => a - b);
+
+    const position = tableIndices.indexOf(index);
+    return position >= 0 ? position + 1 : 1;
+  }
+
+  closeTableModal(): void {
+    this.showTableModal = false;
+    this.editingTableIndex = null;
+    this.lastFocusedCell = null;
+    this.resetTableModal();
+  }
+
+  updateCellValue(rowIndex: number, colIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    if (this.currentTableData[rowIndex] && this.currentTableData[rowIndex][colIndex] !== undefined) {
+      this.currentTableData[rowIndex][colIndex] = value;
+    }
+
+    this.lastFocusedCell = { row: rowIndex, col: colIndex };
+  }
+
+  trackFocus(rowIndex: number, colIndex: number): void {
+    this.lastFocusedCell = { row: rowIndex, col: colIndex };
+  }
+
+  restoreFocus(): void {
+    if (this.lastFocusedCell) {
+      const { row, col } = this.lastFocusedCell;
+      const cellId = `cell-${row}-${col}`;
+      const cellInput = document.getElementById(cellId);
+      if (cellInput) {
+        cellInput.focus();
+      }
+    } else {
+      this.focusFirstCell();
+    }
+  }
+
+  focusFirstCell(): void {
+    const firstCell = document.getElementById('cell-0-0');
+    if (firstCell) {
+      firstCell.focus();
+    }
+  }
+
+  trackByRow(index: number, row: any[]): any {
+    return index;
+  }
+
+  trackByCell(index: number, cell: any): any {
+    return index;
   }
 
   toggleMainDropdown(): void {
@@ -194,7 +616,6 @@ export class DeclarationComponent implements OnInit {
       next: (criteria: MainCriteria[]) => {
         this.mainCriteriaList = criteria;
         this.filteredMainCriteria = [];
-        console.log('✅ Loaded main criteria:', criteria.length, 'items');
       },
       error: (err) => {
         console.error('❌ Error loading main criteria:', err);
@@ -216,15 +637,11 @@ export class DeclarationComponent implements OnInit {
     this.selectedSubCriteriaTitle = '';
     this.subSearchTerm = '';
 
-    console.log('🔄 Loading sub criteria for main criteria:', mainCriteriaId);
-
     this.criteriaService.getSubCriteriaById(mainCriteriaId).subscribe({
       next: (criteria: SubCriteria[]) => {
         if (Array.isArray(criteria)) {
           this.subCriteriaList = criteria;
           this.filteredSubCriteria = [...criteria];
-          console.log('✅ Loaded sub criteria:', criteria.length, 'items');
-          console.log('📋 Sub criteria data:', criteria);
         } else {
           console.warn('⚠️ Received non-array response:', criteria);
           this.subCriteriaList = [];
@@ -270,8 +687,6 @@ export class DeclarationComponent implements OnInit {
 
     this.f['subCriteria'].setValue('');
     this.selectedSubCriteriaTitle = '';
-
-    console.log('✅ Main criteria selected:', criteriaName);
   }
 
   openSubDropdown(): void {
@@ -281,7 +696,6 @@ export class DeclarationComponent implements OnInit {
     }
     this.showSubDropdown = true;
     this.filteredSubCriteria = [...this.subCriteriaList];
-    console.log('🔍 Opening sub dropdown with', this.filteredSubCriteria.length, 'items');
   }
 
   toggleSubDropdown(): void {
@@ -294,7 +708,6 @@ export class DeclarationComponent implements OnInit {
 
     if (this.showSubDropdown) {
       this.filteredSubCriteria = [...this.subCriteriaList];
-      console.log('🔍 Opening sub dropdown with', this.filteredSubCriteria.length, 'items');
     }
   }
 
@@ -304,7 +717,6 @@ export class DeclarationComponent implements OnInit {
     this.selectedSubCriteriaTitle = '';
     this.subSearchTerm = '';
     this.filteredSubCriteria = [...this.subCriteriaList];
-    console.log('🗑️ Sub criteria cleared');
   }
 
   filterSubCriteria(searchTerm: string): void {
@@ -318,8 +730,6 @@ export class DeclarationComponent implements OnInit {
         criteria.name.toLowerCase().includes(lowerSearchTerm)
       );
     }
-
-    console.log('🔍 Filtered sub criteria:', this.filteredSubCriteria.length, 'items');
   }
 
   selectSubCriteria(criteriaId: string, criteriaName: string): void {
@@ -335,8 +745,6 @@ export class DeclarationComponent implements OnInit {
     this.showSubDropdown = false;
     this.f['subCriteria'].setErrors(null);
     this.f['subCriteria'].markAsTouched();
-
-    console.log('✅ Sub criteria selected:', criteriaName);
   }
 
   @HostListener('document:click', ['$event'])
@@ -396,11 +804,10 @@ export class DeclarationComponent implements OnInit {
   }
 
   private resetForm(): void {
-    // مسح الـ FormArrays
     this.contentFields.clear();
     this.rationaleFields.clear();
+    this.tablesArray.clear();
 
-    // إعادة تعيين النموذج
     this.messageForm.reset({
       mainCriteria: '',
       subCriteria: '',
@@ -415,13 +822,9 @@ export class DeclarationComponent implements OnInit {
       date: new Date().toISOString().split('T')[0],
     });
 
-    // إضافة حقل محتوى افتراضي واحد
     this.contentFields.push(this.createContentField());
-
-    // إضافة حقل حيثية افتراضي واحد
     this.rationaleFields.push(this.createRationaleField());
 
-    // إعادة تعيين حالة الواجهة
     this.submitting = false;
     this.loadingSubCriteria = false;
     this.successMsg = '';
@@ -435,6 +838,9 @@ export class DeclarationComponent implements OnInit {
     this.filteredSubCriteria = [];
     this.showMainDropdown = false;
     this.showSubDropdown = false;
+
+    // مسح بيانات PDF المحفوظة
+    this.clearSavedData();
 
     Object.keys(this.f).forEach((key) => {
       this.f[key].markAsUntouched();
@@ -458,49 +864,62 @@ export class DeclarationComponent implements OnInit {
       return;
     }
 
+    const actionText = this.user?.role === 'UniversityPresident' ? 'اعتماد' : 'إرسال';
+
+    Swal.fire({
+      title: 'تأكيد ' + actionText + ' القرار',
+      html: `
+        <div style="text-align: right; direction: rtl;">
+          <p style="font-size: 16px; margin-bottom: 15px;">
+            <strong>يرجى معاينة ملف القرار قبل ${actionText}</strong>
+          </p>
+          <p style="font-size: 14px; color: #666;">
+            اضغط "${actionText}" إذا كنت متأكداً من أن القرار سليم
+          </p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: '<i class="fa fa-check me-1"></i> ' + actionText,
+      cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
+      reverseButtons: true,
+      customClass: {
+        popup: 'rtl-popup',
+        title: 'rtl-title',
+        confirmButton: 'px-4',
+        cancelButton: 'px-4'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.proceedWithSubmit();
+      } else {
+        this.formSubmitted = false;
+      }
+    });
+  }
+
+  private proceedWithSubmit() {
     this.submitting = true;
     this.successMsg = '';
     this.errorMsg = '';
 
-    const contentTexts = this.contentFields.controls.map(control => {
-      const htmlContent = control.get('content')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
-
-    const rationaleTexts = this.rationaleFields.controls.map(control => {
-      const htmlContent = control.get('rationale')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
-
-    const payload: any = {
-      title: this.f['title'].value,
-      descriptions: contentTexts,
-      mainCriteria: this.f['mainCriteria'].value,
-      subCriteria: this.f['subCriteria'].value,
-      Rationale: rationaleTexts,
-      signatureType: this.f['signatureType'].value,
-      date: new Date().toISOString().split('T')[0],
-      StartDate: this.f['startDate'].value
-        ? new Date(this.f['startDate'].value).toISOString()
-        : null,
-      EndDate: this.f['endDate'].value
-        ? new Date(this.f['endDate'].value).toISOString()
-        : null,
-      fullName: this.f['fullName'].value || null,
-      entityName: this.f['entityName'].value || null,
-      nationalId: this.f['nationalId'].value || null,
-      phoneNumber: this.f['phoneNumber'].value || null,
-    };
+    const payload = this.prepareLetterDataForPDF();
 
     this.letterService.addLetterType(payload).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (this.user?.role === 'UniversityPresident') {
-          this.showSuccess('تم اعتماد القرار');
+          this.showSuccess('تم اعتماد القرار بنجاح');
         } else {
           this.showSuccess('تم إرسال القرار بنجاح');
         }
+
+        // مسح البيانات المؤقتة وإعادة تعيين النموذج
+        this.clearSavedData();
         this.resetForm();
         this.submitting = false;
+        this.formSubmitted = false;
       },
       error: (err) => {
         console.error('❌ Error saving letter:', err);

@@ -1156,6 +1156,71 @@
     display: flex;
     gap: 0.5rem;
 }
+/* ====================================== */
+
+/* تنسيقات الجداول */
+.table-container {
+  margin: 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  direction: rtl;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.decision-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  text-align: right;
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  color: #2c3e50;
+}
+
+.decision-table td {
+  text-align: right;
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.decision-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.decision-table tr:hover {
+  background-color: #e9ecef;
+}
+
+/* تحسين عرض HTML في النصوص */
+.description-text .table-responsive {
+  margin: 15px 0;
+}
+
+.description-text h4.description-subtitle {
+  color: #2c3e50;
+  font-weight: bold;
+  margin: 15px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.description-text .description-list {
+  margin-right: 20px;
+  margin-bottom: 15px;
+}
+
+.description-text .description-list li {
+  margin-bottom: 5px;
+  line-height: 1.6;
+}
 
 /* Responsive */
 @media (max-width: 768px) {

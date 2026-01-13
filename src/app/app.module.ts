@@ -35,6 +35,7 @@ import { DepartmentCriteriaManagementComponent } from './components/department-c
 import { NgSelectModule } from '@ng-select/ng-select';
 import { CanceledLettersListComponent } from './components/canceled-letters-list/canceled-letters-list.component';
 import { CanceledLetterDetailsComponent } from './components/canceled-letter-details/canceled-letter-details.component';
+import { SafeHtmlPipe } from './pipes/safe-html.pipe';
 
 
 @NgModule({
@@ -59,6 +60,7 @@ import { CanceledLetterDetailsComponent } from './components/canceled-letter-det
     DepartmentCriteriaManagementComponent,
     CanceledLettersListComponent,
     CanceledLetterDetailsComponent,
+    SafeHtmlPipe,
   ],
   imports: [
     BrowserModule,

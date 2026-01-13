@@ -9,6 +9,84 @@
   </div>
 </ng-template>
 
+<!-- Modal للجدول -->
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" 
+     tabindex="-1" role="dialog" *ngIf="showTableModal">
+  <div class="modal-backdrop fade show" (click)="closeTableModal()"></div>
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="z-index: 1050;">
+    <div class="modal-content" dir="rtl">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fa fa-table me-2"></i>
+          {{ editingTableIndex !== null ? 'تعديل الجدول' : 'إنشاء جدول جديد' }}
+        </h5>
+        <!-- <button type="button" (click)="closeTableModal()"></button> -->
+      </div>
+      
+      <div class="modal-body">
+        <!-- إعدادات حجم الجدول -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <label class="form-label fw-bold">
+              <i class="fa fa-arrows-up-down me-1"></i>
+              عدد الصفوف:
+            </label>
+            <input type="number" class="form-control" [(ngModel)]="tableRows" 
+                   min="1" max="20" (change)="changeTableSize()">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold">
+              <i class="fa fa-arrows-left-right me-1"></i>
+              عدد الأعمدة:
+            </label>
+            <input type="number" class="form-control" [(ngModel)]="tableCols" 
+                   min="1" max="10" (change)="changeTableSize()">
+          </div>
+        </div>
+
+        <!-- الجدول القابل للتحرير - التعديل هنا -->
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-bordered table-hover editable-table">
+            <tbody>
+              <tr *ngFor="let row of currentTableData; let i = index; trackBy: trackByRow">
+                <td *ngFor="let cell of row; let j = index; trackBy: trackByCell" style="min-width: 120px;">
+                  <input 
+                    type="text" 
+                    class="form-control form-control-sm editable-cell" 
+                    [id]="'cell-' + i + '-' + j"
+                    [value]="currentTableData[i][j]"
+                    (input)="updateCellValue(i, j, $event)"
+                    (focus)="trackFocus(i, j)"
+                    (blur)="trackFocus(i, j)"
+                    [placeholder]="'خلية ' + (i+1) + '-' + (j+1)"
+                    style="text-align: right; direction: rtl;">
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="alert alert-info mt-3">
+          <i class="fa fa-info-circle me-2"></i>
+          <strong>ملاحظة:</strong> سيتم إضافة الجدول كبند جديد في القرار. يمكنك تعديل محتوى كل خلية.
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeTableModal()">
+          <i class="fa fa-x-lg me-2"></i>
+          إلغاء
+        </button>
+        <button type="button" class="btn btn-success" (click)="saveTable()">
+          <i class="fa fa-check-lg me-2"></i>
+          {{ editingTableIndex !== null ? 'تحديث الجدول' : 'إضافة الجدول' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- باقي الكود يبقى كما هو بدون تغيير -->
 <!-- Main Container -->
 <div class="container-fluid py-4" *ngIf="!loading; else loadTpl" dir="rtl">
 
@@ -92,7 +170,7 @@
             </button>
 
             <!-- زر عرض PDF -->
-            <button class="btn btn-success" (click)="openPdf()" [disabled]="!pdfUrl || pdfLoading || pdfGenerating">
+            <button class="btn btn-success" (click)="openPdfTesting()" [disabled]="!pdfUrl || pdfLoading || pdfGenerating">
               <i class="bi" [class]="getViewButtonIcon()"></i>
               {{ getViewButtonText() }}
             </button>
@@ -387,7 +465,7 @@
           <div class="description-number">
             <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
           </div>
-          <div class="description-text" [innerHTML]="desc"></div>
+          <div class="description-text" [innerHTML]="safeHtml(desc)"></div>
         </div>
         <div *ngIf="!original?.descriptions || original?.descriptions.length === 0" class="text-muted text-center py-4">
           <i class="fa fa-info-circle me-2"></i>
@@ -404,27 +482,53 @@
                 <div class="card-header bg-light d-flex justify-content-between align-items-center">
                   <div class="d-flex align-items-center gap-2">
                     <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
-                    <span class="fw-bold">بند رقم {{ i + 1 }}</span>
+                    <span class="fw-bold">
+                      {{ isTableDescription(i) ? 'جدول رقم ' + (i + 1) : 'بند رقم ' + (i + 1) }}
+                    </span>
                   </div>
-                  <button type="button" class="btn btn-danger btn-sm" (click)="removeDescription(i)"
-                    [disabled]="descriptionsArray.length === 1" *ngIf="descriptionsArray.length > 1">
-                    <i class="fa fa-trash me-1"></i> حذف
-                  </button>
+                  <div class="btn-group">
+                    <!-- زر تعديل الجدول -->
+                    <button type="button" class="btn btn-warning btn-sm me-2" 
+                            *ngIf="isTableDescription(i)" 
+                            (click)="openTableModal(i)">
+                      <i class="fa fa-edit me-1"></i> تعديل الجدول
+                    </button>
+                    <!-- زر حذف -->
+                    <button type="button" class="btn btn-danger btn-sm" (click)="removeDescription(i)"
+                      [disabled]="descriptionsArray.length === 1" *ngIf="descriptionsArray.length > 1">
+                      <i class="fa fa-trash me-1"></i> حذف
+                    </button>
+                  </div>
                 </div>
                 <div class="card-body p-0">
-                  <quill-editor [formControl]="getDescriptionControl(i)" [modules]="quillModules"
-                    [styles]="{'min-height': '200px', 'border': 'none'}"
-                    [placeholder]="'أدخل نص البند ' + getArabicOrdinal(i) + '...'" class="description-editor">
+                  <!-- إذا كان جدول نعرضه فقط -->
+                  <div *ngIf="isTableDescription(i)" class="p-3">
+                    <div [innerHTML]="safeHtml(descControl.value)"></div>
+                  </div>
+                  <!-- إذا كان نص عادي نستخدم المحرر -->
+                  <quill-editor *ngIf="!isTableDescription(i)" 
+                                [formControl]="getDescriptionControl(i)" 
+                                [modules]="quillModules"
+                                [styles]="{'min-height': '200px', 'border': 'none'}"
+                                [placeholder]="'أدخل نص البند ' + getArabicOrdinal(i) + '...'" 
+                                class="description-editor">
                   </quill-editor>
                 </div>
               </div>
             </div>
           </div>
 
-          <button type="button" class="btn btn-outline-primary mt-2" (click)="addDescription()">
-            <i class="fa fa-plus me-2"></i>
-            إضافة بند جديد
-          </button>
+          <!-- أزرار الإضافة -->
+          <div class="btn-group mt-2">
+            <button type="button" class="btn btn-outline-primary" (click)="addDescription()">
+              <i class="fa fa-plus me-2"></i>
+              إضافة بند نصي جديد
+            </button>
+            <button type="button" class="btn btn-outline-success" (click)="openTableModal()">
+              <i class="fa fa-table me-2"></i>
+              إضافة جدول جديد
+            </button>
+          </div>
         </form>
       </div>
     </div>

@@ -29,7 +29,7 @@ export class PendingReviewsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private loginService: LoginService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const user = this.loginService.getUserFromLocalStorage();
@@ -40,15 +40,24 @@ export class PendingReviewsComponent implements OnInit {
     }
   }
 
+  // دالة الفرز من الأحدث إلى الأقدم
+  sortByDate() {
+    this.filteredList.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA; // ترتيب تنازلي (الأحدث أولاً)
+    });
+  }
+
   getUniversityPresidentLetters() {
     this.loading = true;
     this.error = '';
-    
+
     this.letterService.getUniversityPresidentLetters().subscribe({
       next: (res: any) => {
-        console.log('✅ Received data:', res);
-        
-        // 🔥 معالجة البيانات بشكل صحيح
+        // console.log('✅ Received data:', res);
+
+        // معالجة البيانات بشكل صحيح
         if (res && res.success && Array.isArray(res.data)) {
           this.pendingList = res.data;
         } else if (Array.isArray(res)) {
@@ -57,15 +66,16 @@ export class PendingReviewsComponent implements OnInit {
           console.warn('⚠️ Unexpected response format:', res);
           this.pendingList = [];
         }
-        
+
         this.filteredList = [...this.pendingList];
+        this.sortByDate(); // فرز البيانات بعد التحميل
         this.loading = false;
         this.cdr.detectChanges();
-        
-        console.log('📋 Loaded letters:', this.pendingList.length);
+
+        // console.log('📋 Loaded letters:', this.pendingList.length);
       },
       error: (err) => {
-        console.error('❌ API Error:', err);
+        // console.error('❌ API Error:', err);
         this.error = 'حدث خطأ في تحميل البيانات';
         this.loading = false;
         this.pendingList = [];
@@ -78,12 +88,12 @@ export class PendingReviewsComponent implements OnInit {
   getPendingLetters() {
     this.loading = true;
     this.error = '';
-    
+
     this.letterService.getLetterSupervisor().subscribe({
       next: (res: any) => {
-        console.log('✅ Received data:', res);
-        
-        // 🔥 معالجة البيانات بشكل صحيح
+        // console.log('✅ Received data:', res);
+
+        // معالجة البيانات بشكل صحيح
         if (res && res.success && Array.isArray(res.data)) {
           this.pendingList = res.data;
         } else if (Array.isArray(res)) {
@@ -92,12 +102,13 @@ export class PendingReviewsComponent implements OnInit {
           console.warn('⚠️ Unexpected response format:', res);
           this.pendingList = [];
         }
-        
+
         this.filteredList = [...this.pendingList];
+        this.sortByDate(); //  فرز البيانات بعد التحميل
         this.loading = false;
         this.cdr.detectChanges();
-        
-        console.log('📋 Loaded letters:', this.pendingList.length);
+
+        // console.log('📋 Loaded letters:', this.pendingList.length);
       },
       error: (err) => {
         console.error('❌ API Error:', err);
@@ -121,8 +132,9 @@ export class PendingReviewsComponent implements OnInit {
       );
     }
 
+    this.sortByDate(); // 🔥 فرز البيانات بعد الفلترة
     this.closeDropdown();
-    console.log('🔍 Filtered by status:', status, '- Count:', this.filteredList.length);
+    // console.log('🔍 Filtered by status:', status, '- Count:', this.filteredList.length);
   }
 
   getStatusText(status: string): string {
@@ -142,7 +154,7 @@ export class PendingReviewsComponent implements OnInit {
     }
   }
 
-  // 🔥 Helper method لعرض اسم المستخدم
+  //  Helper method لعرض اسم المستخدم
   getUserDisplayName(item: Letter): string {
     if (item.user && typeof item.user === 'object') {
       return item.user.fullname || item.user.username || 'غير محدد';
@@ -150,7 +162,7 @@ export class PendingReviewsComponent implements OnInit {
     return 'غير محدد';
   }
 
-  // 🔥 Helper method لعرض المعيار الرئيسي
+  //  Helper method لعرض المعيار الرئيسي
   getMainCriteriaName(item: Letter): string {
     if (item.mainCriteria && typeof item.mainCriteria === 'object') {
       return item.mainCriteria.name || 'غير محدد';
@@ -158,7 +170,7 @@ export class PendingReviewsComponent implements OnInit {
     return 'غير محدد';
   }
 
-  // 🔥 Helper method لعرض المعيار الفرعي
+  //  Helper method لعرض المعيار الفرعي
   getSubCriteriaName(item: Letter): string {
     if (item.subCriteria && typeof item.subCriteria === 'object') {
       return item.subCriteria.name || 'غير محدد';
@@ -166,7 +178,7 @@ export class PendingReviewsComponent implements OnInit {
     return 'غير محدد';
   }
 
-  // 🔥 Helper method لتنظيف HTML
+  //  Helper method لتنظيف HTML
   stripHtmlTags(html: string): string {
     if (!html) return '';
     const tmp = document.createElement('DIV');
@@ -175,7 +187,7 @@ export class PendingReviewsComponent implements OnInit {
   }
 
   open(id: string) {
-    console.log('🔍 Opening letter:', id);
+    // console.log('🔍 Opening letter:', id);
     this.router.navigate(['letter-details', id]);
   }
 

@@ -73,7 +73,7 @@ export class AddadecisionComponent implements OnInit {
       this.userservice.getAllSectors().subscribe(
         (res: any) => { 
           this.sectors = res?.data || []; 
-          console.log('Sectors loaded:', this.sectors);
+          // console.log('Sectors loaded:', this.sectors);
           resolve(); 
         },
         (err) => { 
@@ -86,10 +86,10 @@ export class AddadecisionComponent implements OnInit {
 
   onSectorChange() {
     const rawValue = this.form.sector;
-    console.log('🔄 Sector changed - Raw value:', rawValue);
-    console.log('🔄 Type:', typeof rawValue);
-    console.log('🔄 Is null?:', rawValue === null);
-    console.log('🔄 Is string?:', typeof rawValue === 'string');
+    // console.log('🔄 Sector changed - Raw value:', rawValue);
+    // console.log('🔄 Type:', typeof rawValue);
+    // console.log('🔄 Is null?:', rawValue === null);
+    // console.log('🔄 Is string?:', typeof rawValue === 'string');
     
     // Reset dependent fields
     this.form.mainCriteria = null;
@@ -101,7 +101,7 @@ export class AddadecisionComponent implements OnInit {
 
     // Validate and extract sector ID
     if (!rawValue) {
-      console.log('⚠️ No sector selected');
+      // console.log('⚠️ No sector selected');
       return;
     }
 
@@ -117,8 +117,8 @@ export class AddadecisionComponent implements OnInit {
       return;
     }
     
-    console.log('✅ Final sector ID to use:', sectorId);
-    console.log('✅ Sector ID type:', typeof sectorId);
+    // console.log('✅ Final sector ID to use:', sectorId);
+    // console.log('✅ Sector ID type:', typeof sectorId);
     
     this.loadMainCriteriaBySector(sectorId);
     this.loadReviewersBySector(sectorId);
@@ -129,7 +129,7 @@ export class AddadecisionComponent implements OnInit {
     this.decisionService.getMainCriteriaBySector(sectorId).subscribe(
       (res: any) => { 
         this.mainCriteriaList = res?.data || []; 
-        console.log('Main criteria loaded:', this.mainCriteriaList);
+        // console.log('Main criteria loaded:', this.mainCriteriaList);
         this.loadingMainCriteria = false; 
       },
       (err) => { 
@@ -141,14 +141,14 @@ export class AddadecisionComponent implements OnInit {
 
   onMainCriteriaChange() {
     const rawValue = this.form.mainCriteria;
-    console.log('🔄 Main criteria changed - Raw value:', rawValue);
-    console.log('🔄 Type:', typeof rawValue);
+    // console.log('🔄 Main criteria changed - Raw value:', rawValue);
+    // console.log('🔄 Type:', typeof rawValue);
     
     this.form.subCriteria = null;
     this.subCriteriaList = [];
     
     if (!rawValue) {
-      console.log('⚠️ No main criteria selected');
+      // console.log('⚠️ No main criteria selected');
       return;
     }
 
@@ -158,13 +158,13 @@ export class AddadecisionComponent implements OnInit {
       mainCriteriaId = rawValue;
     } else if (typeof rawValue === 'object' && rawValue._id) {
       mainCriteriaId = rawValue._id;
-      console.warn('⚠️ Main criteria value is object, extracting _id');
+      // console.warn('⚠️ Main criteria value is object, extracting _id');
     } else {
-      console.error('❌ Invalid main criteria value:', rawValue);
+      // console.error('❌ Invalid main criteria value:', rawValue);
       return;
     }
     
-    console.log('✅ Final main criteria ID to use:', mainCriteriaId);
+    // console.log('✅ Final main criteria ID to use:', mainCriteriaId);
     
     this.loadSubCriteriaByMainCriteria(mainCriteriaId);
   }
@@ -174,7 +174,7 @@ export class AddadecisionComponent implements OnInit {
     this.decisionService.getSubCriteriaByMainCriteria(mainCriteriaId).subscribe(
       (res: any) => { 
         this.subCriteriaList = res?.data || []; 
-        console.log('Sub criteria loaded:', this.subCriteriaList);
+        // console.log('Sub criteria loaded:', this.subCriteriaList);
         this.loadingSubCriteria = false; 
       },
       (err) => { 
@@ -185,28 +185,28 @@ export class AddadecisionComponent implements OnInit {
   }
 
   loadReviewersBySector(sectorId: string) {
-    console.log('🔍 Loading reviewers for sector:', sectorId);
-    console.log('🔍 Sector ID type:', typeof sectorId);
+    // console.log('🔍 Loading reviewers for sector:', sectorId);
+    // console.log('🔍 Sector ID type:', typeof sectorId);
     this.loadingReviewers = true;
     
     this.userservice.getusersbyrole(sectorId).subscribe(
       (res: any) => { 
-        console.log('📦 Raw response from backend:', res);
+        // console.log('📦 Raw response from backend:', res);
         
         // Fix: البيانات راجعة مباشرة في res مش في res.data
         const allReviewers = Array.isArray(res) ? res : (res?.data || []);
         
-        console.log('📊 Total reviewers from backend:', allReviewers.length);
+        // console.log('📊 Total reviewers from backend:', allReviewers.length);
         
         // Log each reviewer's sectors for debugging
         allReviewers.forEach((reviewer: any, index: number) => {
-          console.log(`👤 Reviewer ${index + 1}: ${reviewer.fullname}`);
-          console.log('   Sectors:', reviewer.sector);
+          // console.log(`👤 Reviewer ${index + 1}: ${reviewer.fullname}`);
+          // console.log('   Sectors:', reviewer.sector);
           if (reviewer.sector && Array.isArray(reviewer.sector)) {
             reviewer.sector.forEach((s: any, i: number) => {
               const sid = s._id || s;
-              console.log(`   - Sector ${i + 1} ID: "${sid}" (type: ${typeof sid})`);
-              console.log(`   - Match with selected "${sectorId}": ${sid === sectorId}`);
+              // console.log(`   - Sector ${i + 1} ID: "${sid}" (type: ${typeof sid})`);
+              // console.log(`   - Match with selected "${sectorId}": ${sid === sectorId}`);
             });
           }
         });
@@ -214,7 +214,7 @@ export class AddadecisionComponent implements OnInit {
         // Filter reviewers by sector
         this.reviewers = allReviewers.filter((reviewer: any) => {
           if (!reviewer.sector || !Array.isArray(reviewer.sector)) {
-            console.log(`❌ Reviewer ${reviewer.fullname}: No sector array`);
+            // console.log(`❌ Reviewer ${reviewer.fullname}: No sector array`);
             return false;
           }
           
@@ -225,18 +225,18 @@ export class AddadecisionComponent implements OnInit {
             return match;
           });
           
-          console.log(`${hasMatch ? '✅' : '❌'} Reviewer ${reviewer.fullname}: ${hasMatch ? 'MATCHED' : 'NOT MATCHED'}`);
+          // console.log(`${hasMatch ? '✅' : '❌'} Reviewer ${reviewer.fullname}: ${hasMatch ? 'MATCHED' : 'NOT MATCHED'}`);
           return hasMatch;
         });
         
-        console.log('✅ Filtered reviewers for sector:', this.reviewers);
-        console.log('📏 Number of matching reviewers:', this.reviewers.length);
+        // console.log('✅ Filtered reviewers for sector:', this.reviewers);
+        // console.log('📏 Number of matching reviewers:', this.reviewers.length);
         
         if (this.reviewers.length > 0) {
-          console.log('👤 First filtered reviewer:', this.reviewers[0]);
+          // console.log('👤 First filtered reviewer:', this.reviewers[0]);
         } else {
-          console.log('⚠️ No reviewers found for this sector');
-          console.log('⚠️ Selected sector ID was:', sectorId);
+          // console.log('⚠️ No reviewers found for this sector');
+          // console.log('⚠️ Selected sector ID was:', sectorId);
         }
         
         this.loadingReviewers = false; 
@@ -255,7 +255,7 @@ export class AddadecisionComponent implements OnInit {
       this.decisionService.getReviewerAssignments().subscribe(
         (res: any) => { 
           this.reviewerAssignments = res?.data || []; 
-          console.log('Reviewer assignments loaded:', this.reviewerAssignments);
+          // console.log('Reviewer assignments loaded:', this.reviewerAssignments);
           resolve(); 
         },
         (err) => { 
@@ -296,7 +296,7 @@ export class AddadecisionComponent implements OnInit {
         (res: any) => { 
           // Fix: Handle both array response and object with data property
           this.allReviewers = Array.isArray(res) ? res : (res?.data || []);
-          console.log('All reviewers loaded:', this.allReviewers.length);
+          // console.log('All reviewers loaded:', this.allReviewers.length);
           resolve(); 
         },
         (err) => reject(err)
@@ -396,7 +396,7 @@ export class AddadecisionComponent implements OnInit {
     }
 
     const payload = { ...this.form };
-    console.log('Saving reviewer with payload:', payload);
+    // console.log('Saving reviewer with payload:', payload);
 
     if (this.editingId) {
       this.updateReviewer(this.editingId, payload);
@@ -452,11 +452,11 @@ export class AddadecisionComponent implements OnInit {
     const subCriteriaId = this.extractId(assignment.subCriteria);
     const supervisorId = this.extractId(assignment.supervisor);
     
-    console.log('📝 Editing reviewer assignment:');
-    console.log('   Sector ID:', sectorId);
-    console.log('   Main Criteria ID:', mainCriteriaId);
-    console.log('   Sub Criteria ID:', subCriteriaId);
-    console.log('   Supervisor ID:', supervisorId);
+    // console.log('📝 Editing reviewer assignment:');
+    // console.log('   Sector ID:', sectorId);
+    // console.log('   Main Criteria ID:', mainCriteriaId);
+    // console.log('   Sub Criteria ID:', subCriteriaId);
+    // console.log('   Supervisor ID:', supervisorId);
     
     this.form = {
       sector: sectorId,

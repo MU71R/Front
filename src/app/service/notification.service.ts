@@ -27,7 +27,7 @@ export class NotificationService {
   }
 
   private initializeSocketConnection(): void {
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('http://www.svu.edu.eg:8080', {
       transports: ['websocket', 'polling'],
     });
 

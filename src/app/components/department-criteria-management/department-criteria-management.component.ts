@@ -66,7 +66,7 @@ export class DepartmentCriteriaManagementComponent implements OnInit {
     // تحميل المعايير الرئيسية
     this.criteriaService.getAllMainCriteria().subscribe({
   next: (data) => { 
-    console.log('Main Criteria Data:', data); // 👈 أضف هذا السطر
+    // console.log('Main Criteria Data:', data); // 👈 أضف هذا السطر
     this.mainCriteriaList = data; 
     this.isLoading = false; 
   },

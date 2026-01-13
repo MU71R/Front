@@ -91,7 +91,14 @@
                             <div class="description-number">
                                 <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
                             </div>
-                            <div class="description-text" [innerHTML]="formatDescription(desc)"></div>
+                            <div class="description-text">
+                                <!-- عرض الجدول إذا كان موجوداً في هذا البند -->
+                                <div *ngIf="isTableDescription(desc)" class="table-container mt-3 mb-3">
+                                    <div [innerHTML]="getTableFromDescription(desc) | safeHtml"></div>
+                                </div>
+                                <!-- عرض النص العادي إذا لم يكن جدولاً -->
+                                <div *ngIf="!isTableDescription(desc)" [innerHTML]="formatDescription(desc)"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -234,43 +241,43 @@
             </div>
 
             <!-- قسم المرفقات -->
-            <div class="content-section" *ngIf="canUpload()" id="attachments">
-                <h3 class="section-title">
-                    <i class="fa fa-paperclip me-2"></i>المرفقات
-                </h3>
-                <div class="section-content">
-                    <!-- إذا كان هناك مرفق -->
-                    <div *ngIf="letter.attachment" class="attachment-card">
-                        <div class="attachment-info">
-                            <div class="attachment-icon">
-                                <i class="fa" [ngClass]="getFileIcon(letter.attachment)"></i>
-                            </div>
-                            <div class="attachment-details">
-                                <div class="attachment-name">{{ getFileName(letter.attachment) }}</div>
-                                <div class="attachment-meta">
-                                    <span><i class="fa fa-calendar me-1"></i>تم الرفع في {{ letter.createdAt | date:
-                                        'dd/MM/yyyy' }}</span>
-                                    <span *ngIf="getFileSize(letter.attachment)"><i class="fa fa-hdd me-1"></i>{{
-                                        getFileSize(letter.attachment) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="attachment-actions">
-                            <a [href]="getAttachmentUrl(letter.attachment)" target="_blank"
-                                class="btn btn-outline-primary me-2">
-                                <i class="fa fa-eye me-2"></i>عرض
-                            </a>
-                            <a [href]="getDownloadUrl(letter.attachment)" download class="btn btn-primary">
-                                <i class="fa fa-download me-2"></i>تحميل
-                            </a>
-                        </div>
+     <div class="content-section" *ngIf="letter.attachment" id="attachments">
+    <h3 class="section-title">
+        <i class="fa fa-paperclip me-2"></i>المرفقات
+    </h3>
+    <div class="section-content">
+        <!-- إذا كان هناك مرفق -->
+        <div class="attachment-card">
+            <div class="attachment-info">
+                <div class="attachment-icon">
+                    <i class="fa" [ngClass]="getFileIcon(letter.attachment)"></i>
+                </div>
+                <div class="attachment-details">
+                    <div class="attachment-name">{{ getFileName(letter.attachment) }}</div>
+                    <div class="attachment-meta">
+                        <span><i class="fa fa-calendar me-1"></i>تم الرفع في {{ letter.createdAt | date: 'dd/MM/yyyy' }}</span>
+                        <span *ngIf="getFileSize(letter.attachment)"><i class="fa fa-hdd me-1"></i>{{ getFileSize(letter.attachment) }}</span>
                     </div>
+                </div>
+            </div>
+            <div class="attachment-actions">
+                <button type="button"
+                        (click)="openAttachment(letter.attachment)"
+                        class="btn btn-outline-primary me-2">
+                    <i class="fa fa-eye me-2"></i> عرض
+                </button>
 
-                    <!-- زر رفع/استبدال الملف -->
+                <button class="btn btn-outline-success"
+                        (click)="downloadAttachment(letter.attachment)">
+                    <i class="fa fa-download me-2"></i> تحميل
+                </button>
+            </div>
+        </div>
+                    <!--
                     <button class="btn btn-warning mt-3" (click)="openUploadModal()">
                         <i class="fa fa-upload me-2"></i>
                         {{ letter.attachment ? 'استبدال الملف' : 'رفع ملف جديد' }}
-                    </button>
+                    </button> -->
                 </div>
             </div>
 

@@ -5,6 +5,7 @@ import { AuthService } from 'src/app/service/auth.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { AdministrationService } from 'src/app/service/user.service';
 import Swal from 'sweetalert2';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-letter-details',
@@ -26,6 +27,7 @@ export class LetterDetailsComponent implements OnInit {
   private usersMap: Map<string, any> = new Map();
   sectors: any[] = [];
   showCancelModal = false;
+  isOpening = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,7 +35,8 @@ export class LetterDetailsComponent implements OnInit {
     private archiveService: ArchiveService,
     private letterService: LetterService,
     private authService: AuthService,
-    private userService: AdministrationService
+    private userService: AdministrationService,
+    private sanitizer: DomSanitizer
   ) { }
 
   user = this.authService.currentUserValue;
@@ -130,25 +133,33 @@ export class LetterDetailsComponent implements OnInit {
   }
 
   openPdf(): void {
-    if (!this.pdfUrl) return;
-
-    this.pdfLoading = true;
-    if (this.pdfUrl.startsWith('http')) {
-      window.open(this.pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else if (this.pdfFilename) {
-      const baseUrl = 'http://localhost:3000/generated-files';
-      const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
-      window.open(pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else {
-      this.pdfLoading = false;
+    if (!this.pdfFilename) {
       Swal.fire({
-        icon: 'error',
-        title: 'خطأ',
-        text: 'لا يوجد ملف PDF متاح للتنزيل',
+        icon: 'warning',
+        title: 'لا يوجد ملف PDF متاح للعرض',
+        showConfirmButton: true
       });
+      return;
     }
+
+    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        // إنشاء رابط مؤقت لعرض الملف
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank'); // يفتح PDF في تاب جديد
+        // URL.revokeObjectURL(url); // ممكن تستدعي بعد فترة قصيرة للتنظيف
+      },
+      error: (err) => {
+        console.error("خطأ في جلب الملف:", err);
+        Swal.fire({
+          icon: 'warning',
+          title: 'لا يمكن عرض الملف حالياً',
+          showConfirmButton: true
+        });
+      }
+    });
   }
 
   downloadPdf() {
@@ -314,29 +325,134 @@ export class LetterDetailsComponent implements OnInit {
     return '';
   }
 
-  getAttachmentUrl(fileName: string): string {
-    if (!fileName) return '';
+  openAttachment(fileName: string): void {
+    if (this.isOpening) return;
+    this.isOpening = true;
 
-    const cleanPath = fileName.replace(/^.*[\\\/]/, '');
-    const baseUrl = 'http://localhost:3000/uploads';
-    return `${baseUrl}/${encodeURIComponent(cleanPath)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        this.isOpening = false;
+      },
+      error: () => {
+        this.isOpening = false;
+      }
+    });
   }
 
-  getDownloadUrl(fileName: string): string {
-    if (!fileName) return '';
-    const cleanPath = fileName.replace(/^.*[\\\/]/, '');
-    return `http://localhost:3000/letters/download/${encodeURIComponent(
-      cleanPath
-    )}`;
+
+
+  downloadAttachment(fileName: string): void {
+    if (!fileName) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يوجد ملف للتحميل',
+        showConfirmButton: true
+      });
+      return;
+    }
+
+    const cleanName = fileName.replace(/^.*[\\/]/, '');
+
+    const apiUrl =
+      `http://www.svu.edu.eg:8080/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = cleanName;
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'فشل تحميل الملف'
+        });
+      }
+    });
   }
 
+  // دالة للتحقق مما إذا كان النص يحتوي على جدول
+  isTableDescription(description: string): boolean {
+    if (!description) return false;
+    return description.includes('<table') && description.includes('</table>');
+  }
+
+  // دالة لاستخراج الجدول من النص
+  getTableFromDescription(description: string): string {
+    if (!this.isTableDescription(description)) return description;
+
+    // استخراج الجدول من النص
+    const tableRegex = /(<table[^>]*>[\s\S]*?<\/table>)/i;
+    const match = description.match(tableRegex);
+
+    if (match && match[1]) {
+      // إضافة تنسيقات CSS للجدول
+      return `
+        <div class="table-responsive">
+          <style>
+            .decision-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              direction: rtl;
+              font-family: Arial, sans-serif;
+            }
+            .decision-table th {
+              background-color: #f8f9fa;
+              font-weight: bold;
+              text-align: right;
+              padding: 12px;
+              border: 1px solid #dee2e6;
+            }
+            .decision-table td {
+              text-align: right;
+              padding: 10px;
+              border: 1px solid #dee2e6;
+              vertical-align: middle;
+            }
+            .decision-table tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            .decision-table tr:hover {
+              background-color: #e9ecef;
+            }
+          </style>
+          ${match[1]}
+        </div>
+      `;
+    }
+
+    return description;
+  }
+
+  // دالة لمعالجة النصوص (مع دعم الجداول)
   formatDescription(description: string): string {
     if (!description) return '';
+
+    // إذا كان النص يحتوي على جدول
+    if (this.isTableDescription(description)) {
+      return this.getTableFromDescription(description);
+    }
+
+    // إذا كان نص عادي
     return description
       .replace(/<br\s*\/?>/gi, '<br>')
       .replace(/data-start="[^"]*"/g, '')
       .replace(/data-end="[^"]*"/g, '')
-      .replace(/\\n/g, '<br>');
+      .replace(/\\n/g, '<br>')
+      // إضافة تنسيقات للعناوين والقوائم
+      .replace(/<p><strong>(.*?)<\/strong><\/p>/g, '<h4 class="description-subtitle">$1</h4>')
+      .replace(/<ul>/g, '<ul class="description-list">')
+      .replace(/<ol>/g, '<ol class="description-list">');
   }
 
   calculateDuration(startDate: string, endDate: string): string {
@@ -459,7 +575,7 @@ export class LetterDetailsComponent implements OnInit {
             Swal.fire({
               icon: 'success',
               title: 'تم إلغاء القرار',
-              text: 'تم إيقاف العمل بالقرار بنجاح',
+              text: 'تم إوقف العمل بالقرار بنجاح',
               confirmButtonText: 'حسناً'
             });
           },
@@ -477,25 +593,36 @@ export class LetterDetailsComponent implements OnInit {
     });
   }
 
-    canViewNationalId(): boolean {
+  canViewNationalId(): boolean {
     // رئيس الجامعة يمكنه رؤية كل شيء
-    if (this.user?.role === 'UniversityPresident' || 
-        this.user?.fullname === 'مكتب رئيس الجامعة' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
-        this.user?.fullname === 'أمين عام الجامعة' ||
-        this.user?.fullname === 'أمين عام الجامعة المساعد' ||
-        this.user?.fullname === 'أمين عام الجامعة المساعد2') {
+    // لو مش عامل login
+    if (!this.user || !this.user._id) {
+      return false;
+    }
+
+    // رئيس الجامعة ومناصب معينة
+    if (
+      this.user.role === 'UniversityPresident' ||
+      this.user.fullname === 'مكتب رئيس الجامعة' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
+      this.user.fullname === 'أمين عام الجامعة' ||
+      this.user.fullname === 'أمين عام الجامعة المساعد' ||
+      this.user.fullname === 'أمين عام الجامعة المساعد2'
+    ) {
       return true;
     }
-    
-    // معد القرار يمكنه رؤية الرقم الوطني لقراره فقط
-    if (this.letter?.user?._id === this.user?._id || 
-        this.letter?.user?.id === this.user?._id) {
+
+    // صاحب القرار فقط
+    if (
+      this.letter?.user?._id === this.user._id ||
+      this.letter?.user?.id === this.user._id
+    ) {
       return true;
     }
-    
+
+    //  غير ذلك
     return false;
   }
 

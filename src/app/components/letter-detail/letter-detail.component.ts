@@ -5,6 +5,7 @@ import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
 import { AuthService } from 'src/app/service/auth.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -31,6 +32,16 @@ export class LetterDetailComponent implements OnInit {
   pdfSearching = false;
   pdfSearchAttempted = false;
 
+  // إضافة: متغيرات للجداول
+  showTableModal = false;
+  tableRows = 3;
+  tableCols = 3;
+  currentTableData: any[][] = [];
+  editingTableIndex: number | null = null;
+
+  // إضافة: متغير لتخزين التركيز الحالي
+  private lastFocusedCell: { row: number, col: number } | null = null;
+
   quillModules = {
     toolbar: [
       ['bold', 'italic', 'underline'],
@@ -45,7 +56,8 @@ export class LetterDetailComponent implements OnInit {
     private loginService: LoginService,
     private letterService: LetterService,
     private cdr: ChangeDetectorRef,
-    private authService: AuthService
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
   ) { }
 
   user = this.authService.currentUserValue;
@@ -56,6 +68,11 @@ export class LetterDetailComponent implements OnInit {
 
   get rationalesArray(): FormArray {
     return this.form.get('rationales') as FormArray;
+  }
+
+  // إضافة: getter للجداول
+  get tablesArray(): FormArray {
+    return this.form.get('tables') as FormArray;
   }
 
   getDescriptionControl(index: number): FormControl {
@@ -86,8 +103,234 @@ export class LetterDetailComponent implements OnInit {
       nationalId: [''],
       phoneNumber: [''],
       descriptions: this.fb.array([]),
-      rationales: this.fb.array([])
+      rationales: this.fb.array([]),
+      tables: this.fb.array([]) // إضافة: مصفوفة الجداول
     });
+  }
+
+  // إضافة: فتح نافذة إنشاء جدول
+  openTableModal(descriptionIndex?: number) {
+    this.showTableModal = true;
+    this.editingTableIndex = descriptionIndex ?? null;
+
+    // إذا كان هناك جدول موجود، نحمله
+    if (descriptionIndex !== undefined && descriptionIndex !== null) {
+      const existingTable = this.getExistingTable(descriptionIndex);
+      if (existingTable) {
+        this.tableRows = existingTable.rows;
+        this.tableCols = existingTable.cols;
+        this.currentTableData = JSON.parse(JSON.stringify(existingTable.data));
+      } else {
+        this.resetTableModal();
+      }
+    } else {
+      this.resetTableModal();
+    }
+
+    // تأخير التركيز على الخلية الأولى
+    setTimeout(() => {
+      this.focusFirstCell();
+    }, 100);
+  }
+
+  // إضافة: إعادة تعيين نافذة الجدول
+  resetTableModal() {
+    this.tableRows = 3;
+    this.tableCols = 3;
+    this.currentTableData = this.createEmptyTable(3, 3);
+    this.lastFocusedCell = null;
+  }
+
+  // إضافة: إنشاء جدول فارغ
+  createEmptyTable(rows: number, cols: number): any[][] {
+    const table: any[][] = [];
+    for (let i = 0; i < rows; i++) {
+      table[i] = [];
+      for (let j = 0; j < cols; j++) {
+        table[i][j] = '';
+      }
+    }
+    return table;
+  }
+
+  // إضافة: تغيير حجم الجدول مع الحفاظ على التركيز
+  changeTableSize() {
+    const newRows = Math.max(1, Math.min(20, this.tableRows));
+    const newCols = Math.max(1, Math.min(10, this.tableCols));
+
+    const newTable = this.createEmptyTable(newRows, newCols);
+
+    // نسخ البيانات القديمة
+    for (let i = 0; i < Math.min(this.currentTableData.length, newRows); i++) {
+      for (let j = 0; j < Math.min(this.currentTableData[0]?.length || 0, newCols); j++) {
+        newTable[i][j] = this.currentTableData[i][j];
+      }
+    }
+
+    this.currentTableData = newTable;
+    this.tableRows = newRows;
+    this.tableCols = newCols;
+
+    // إعادة التركيز بعد تحديث الجدول
+    setTimeout(() => {
+      this.restoreFocus();
+    }, 50);
+  }
+
+  // إضافة: حفظ الجدول
+  saveTable() {
+    if (!this.currentTableData || this.currentTableData.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'الجدول فارغ!',
+        timer: 1500
+      });
+      return;
+    }
+
+    const tableHTML = this.generateTableHTML(this.currentTableData);
+
+    if (this.editingTableIndex !== null && this.editingTableIndex >= 0) {
+      // تحديث جدول موجود
+      this.descriptionsArray.at(this.editingTableIndex).setValue(tableHTML);
+    } else {
+      // إضافة جدول جديد كبند جديد
+      this.descriptionsArray.push(this.fb.control(tableHTML));
+    }
+
+    // حفظ بيانات الجدول في مصفوفة منفصلة
+    const tableData = {
+      rows: this.tableRows,
+      cols: this.tableCols,
+      data: this.currentTableData,
+      descriptionIndex: this.editingTableIndex ?? this.descriptionsArray.length - 1
+    };
+
+    if (this.editingTableIndex !== null && this.editingTableIndex >= 0) {
+      // تحديث جدول موجود في المصفوفة
+      const existingIndex = this.tablesArray.controls.findIndex(
+        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex
+      );
+      if (existingIndex >= 0) {
+        this.tablesArray.at(existingIndex).setValue(tableData);
+      } else {
+        this.tablesArray.push(this.fb.control(tableData));
+      }
+    } else {
+      this.tablesArray.push(this.fb.control(tableData));
+    }
+
+    this.closeTableModal();
+    this.cdr.detectChanges();
+
+    Swal.fire({
+      icon: 'success',
+      title: 'تم إضافة الجدول بنجاح',
+      timer: 1500,
+      showConfirmButton: false
+    });
+  }
+
+  // إضافة: توليد HTML للجدول
+  generateTableHTML(data: any[][]): string {
+    let html = '<table class="decision-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">';
+
+    data.forEach((row, rowIndex) => {
+      html += '<tr>';
+      row.forEach((cell, colIndex) => {
+        html += `<td style="border: 1px solid #000; padding: 8px; text-align: right;">${cell || ''}</td>`;
+      });
+      html += '</tr>';
+    });
+
+    html += '</table>';
+    return html;
+  }
+
+  // إضافة: الحصول على جدول موجود
+  getExistingTable(descriptionIndex: number): any {
+    const tableControl = this.tablesArray.controls.find(
+      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex
+    );
+    return tableControl ? tableControl.value : null;
+  }
+
+  // إضافة: التحقق إذا كان البند يحتوي على جدول
+  isTableDescription(index: number): boolean {
+    if (this.isEditing) {
+      // في وضع التعديل، تحقق من مصفوفة الجداول
+      const tableControl = this.tablesArray.controls.find(
+        (ctrl: any) => ctrl.value.descriptionIndex === index
+      );
+      return !!tableControl;
+    } else {
+      // في وضع العرض، تحقق من HTML
+      const desc = this.original?.descriptions?.[index] || '';
+      return desc && desc.includes('<table') && desc.includes('</table>');
+    }
+  }
+
+  safeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  // إضافة: إغلاق نافذة الجدول
+  closeTableModal() {
+    this.showTableModal = false;
+    this.editingTableIndex = null;
+    this.lastFocusedCell = null;
+    this.resetTableModal();
+  }
+
+  // إضافة: دالة لتحديث قيمة الخلية
+  updateCellValue(rowIndex: number, colIndex: number, event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = input.value;
+
+    // تحديث البيانات
+    if (this.currentTableData[rowIndex] && this.currentTableData[rowIndex][colIndex] !== undefined) {
+      this.currentTableData[rowIndex][colIndex] = value;
+    }
+
+    // حفظ التركيز
+    this.lastFocusedCell = { row: rowIndex, col: colIndex };
+  }
+
+  // إضافة: دالة لتتبع التركيز
+  trackFocus(rowIndex: number, colIndex: number) {
+    this.lastFocusedCell = { row: rowIndex, col: colIndex };
+  }
+
+  // إضافة: استعادة التركيز
+  restoreFocus() {
+    if (this.lastFocusedCell) {
+      const { row, col } = this.lastFocusedCell;
+      const cellId = `cell-${row}-${col}`;
+      const cellInput = document.getElementById(cellId);
+      if (cellInput) {
+        cellInput.focus();
+      }
+    } else {
+      this.focusFirstCell();
+    }
+  }
+
+  // إضافة: التركيز على الخلية الأولى
+  focusFirstCell() {
+    const firstCell = document.getElementById('cell-0-0');
+    if (firstCell) {
+      firstCell.focus();
+    }
+  }
+
+  // إضافة: دالة trackBy لتحسين الأداء
+  trackByRow(index: number, row: any[]): any {
+    return index;
+  }
+
+  trackByCell(index: number, cell: any): any {
+    return index;
   }
 
   private getCurrentUserRole(): void {
@@ -138,6 +381,21 @@ export class LetterDetailComponent implements OnInit {
 
   removeDescription(index: number) {
     if (this.descriptionsArray.length > 1) {
+      // حذف الجدول من مصفوفة الجداول إذا كان موجودًا
+      const tableIndex = this.tablesArray.controls.findIndex(
+        (ctrl: any) => ctrl.value.descriptionIndex === index
+      );
+      if (tableIndex >= 0) {
+        this.tablesArray.removeAt(tableIndex);
+      }
+
+      // تحديث مؤشرات الجداول المتبقية
+      this.tablesArray.controls.forEach((ctrl: any, i: number) => {
+        if (ctrl.value.descriptionIndex > index) {
+          ctrl.value.descriptionIndex -= 1;
+        }
+      });
+
       this.descriptionsArray.removeAt(index);
       this.cdr.detectChanges();
     }
@@ -167,12 +425,11 @@ export class LetterDetailComponent implements OnInit {
 
         this.original = res;
 
-        // إعادة تهيئة الفورم عند تحميل القرار أول مرة
         this.initForm();
 
-        // تحميل البنود والحيثيات في الفورم (للعرض فقط، مش edit)
         this.loadDescriptionsIntoForm();
         this.loadRationalesIntoForm();
+        this.loadTablesIntoForm(); // إضافة: تحميل الجداول
 
         this.form.patchValue({
           title: this.original?.title || '',
@@ -204,7 +461,7 @@ export class LetterDetailComponent implements OnInit {
     this.descriptionsArray.clear();
     const descriptions = this.original?.descriptions || [];
     if (Array.isArray(descriptions) && descriptions.length > 0) {
-      descriptions.forEach((desc: any) => {
+      descriptions.forEach((desc: any, index: number) => {
         const cleanDesc = desc?.toString().trim() || '';
         if (cleanDesc) this.descriptionsArray.push(this.fb.control(cleanDesc));
       });
@@ -229,15 +486,77 @@ export class LetterDetailComponent implements OnInit {
     if (this.rationalesArray.length === 0) this.rationalesArray.push(this.fb.control(''));
   }
 
+  // إضافة: تحميل الجداول من البيانات
+  private loadTablesIntoForm() {
+    this.tablesArray.clear();
+    if (this.original?.tables && Array.isArray(this.original.tables)) {
+      this.original.tables.forEach((table: any, index: number) => {
+        this.tablesArray.push(this.fb.control(table));
+      });
+    } else {
+      // إذا لم يكن هناك جداول في البيانات الأصلية، نفحص الأوصاف للعثور على الجداول
+      const descriptions = this.original?.descriptions || [];
+      descriptions.forEach((desc: string, index: number) => {
+        if (desc && desc.includes('<table') && desc.includes('</table>')) {
+          // استخراج بيانات الجدول من HTML
+          const tableData = this.extractTableDataFromHTML(desc);
+          if (tableData) {
+            this.tablesArray.push(this.fb.control({
+              rows: tableData.rows,
+              cols: tableData.cols,
+              data: tableData.data,
+              descriptionIndex: index
+            }));
+          }
+        }
+      });
+    }
+  }
+
+  // إضافة: استخراج بيانات الجدول من HTML
+  private extractTableDataFromHTML(html: string): any {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const table = doc.querySelector('table');
+
+      if (!table) return null;
+
+      const rows = table.querySelectorAll('tr');
+      const data: any[][] = [];
+
+      rows.forEach(row => {
+        const rowData: any[] = [];
+        const cells = row.querySelectorAll('td, th');
+
+        cells.forEach(cell => {
+          rowData.push(cell.textContent || cell.innerHTML || '');
+        });
+
+        data.push(rowData);
+      });
+
+      return {
+        rows: data.length,
+        cols: data[0] ? data[0].length : 0,
+        data: data
+      };
+    } catch (error) {
+      console.error('Error extracting table data from HTML:', error);
+      return null;
+    }
+  }
+
   enableEdit() {
-    console.log('======= Enabling Edit Mode =======');
     this.isEditing = true;
 
     this.descriptionsArray.clear();
     this.rationalesArray.clear();
+    this.tablesArray.clear();
 
     this.loadDescriptionsIntoForm();
     this.loadRationalesIntoForm();
+    this.loadTablesIntoForm();
 
     this.form.patchValue({
       title: this.original?.title || '',
@@ -255,7 +574,6 @@ export class LetterDetailComponent implements OnInit {
   }
 
   cancelEdit() {
-    console.log('Canceling edit mode');
     this.isEditing = false;
     this.loadLetter(this.original._id);
     this.cdr.detectChanges();
@@ -279,7 +597,6 @@ export class LetterDetailComponent implements OnInit {
       },
       error: (err) => {
         this.pdfSearching = false;
-        console.error('خطأ في جلب PDF:', err);
         this.findAndSetPdfUrl();
         this.cdr.detectChanges();
       },
@@ -412,25 +729,31 @@ export class LetterDetailComponent implements OnInit {
   }
 
   openPdfTesting(): void {
-    if (!this.pdfUrl) return;
-
-    this.pdfLoading = true;
-    if (this.pdfUrl.startsWith('http')) {
-      window.open(this.pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else if (this.pdfFilename) {
-      const baseUrl = 'http://localhost:3000/generated-files/testing';
-      const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
-      window.open(pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else {
-      this.pdfLoading = false;
+    if (!this.pdfFilename) {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
         showConfirmButton: true
       });
+      return;
     }
+
+    const apiUrl = `http://localhost:3000/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: (err) => {
+        console.error("خطأ في جلب الملف:", err);
+        Swal.fire({
+          icon: 'warning',
+          title: 'لا يمكن عرض الملف حالياً',
+          showConfirmButton: true
+        });
+      }
+    });
   }
 
   openPdf(): void {
@@ -510,11 +833,6 @@ export class LetterDetailComponent implements OnInit {
   }
 
   saveChanges() {
-    console.log('======= Saving Changes =======');
-    console.log('Current form descriptions:', this.descriptionsArray.value);
-    console.log('Current form rationales:', this.rationalesArray.value);
-
-    // Filter out empty descriptions/rationales
     const cleanedDescriptions = this.descriptionsArray.value
       .map((desc: string) => desc?.toString().trim() || '')
       .filter((desc: string) => desc !== '');
@@ -523,10 +841,9 @@ export class LetterDetailComponent implements OnInit {
       .map((rationale: string) => rationale?.toString().trim() || '')
       .filter((rationale: string) => rationale !== '');
 
-    console.log('Cleaned descriptions:', cleanedDescriptions);
-    console.log('Cleaned rationales:', cleanedRationales);
+    // حفظ الجداول
+    const tables = this.tablesArray.value;
 
-    // Construct the payload with specific fields only
     const payload: Partial<any> = {
       title: this.form.value.title || this.original.title,
       fullName: this.form.value.fullName || null,
@@ -535,6 +852,7 @@ export class LetterDetailComponent implements OnInit {
       phoneNumber: this.form.value.phoneNumber || null,
       descriptions: cleanedDescriptions,
       Rationale: cleanedRationales,
+      tables: tables // إضافة الجداول
     };
 
     if (this.form.value.startDate) {
@@ -545,30 +863,17 @@ export class LetterDetailComponent implements OnInit {
       payload['EndDate'] = new Date(this.form.value.endDate).toISOString();
     }
 
-    console.log('Sending Payload:', JSON.stringify(payload, null, 2));
-
     this.processing = true;
 
     this.letterService.updateLetter(this.original._id, payload).subscribe({
       next: (updatedLetter) => {
-        // Update local object cautiously
         this.original = {
           ...this.original,
           ...payload,
           descriptions: cleanedDescriptions,
-          Rationale: cleanedRationales
+          Rationale: cleanedRationales,
+          tables: tables
         };
-
-        // If the backend returned a Full object, consider using it
-        if (updatedLetter && updatedLetter._id) {
-          console.log('Backend returned updated object:', updatedLetter);
-          // Update specific fields from backend response if needed, 
-          // but keeping local state usually feels faster. 
-          // Usually it's better to trust the server response for the single source of truth:
-          // this.original = updatedLetter; 
-          // However, if updatedLetter is not fully populated (e.g. user field), we might lose display data.
-          // So merging is safer.
-        }
 
         this.isEditing = false;
         this.processing = false;
@@ -641,6 +946,7 @@ export class LetterDetailComponent implements OnInit {
       updateData.Rationale = cleanedRationales;
       updateData.title = this.form.value.title;
       updateData.descriptions = cleanedDescriptions;
+      updateData.tables = this.tablesArray.value;
     }
 
     let amendmentObservable;
@@ -670,6 +976,7 @@ export class LetterDetailComponent implements OnInit {
           this.original.Rationale = updateData.Rationale;
           this.original.title = this.form.value.title;
           this.original.descriptions = updateData.descriptions;
+          this.original.tables = updateData.tables;
           this.isEditing = false;
         }
 
@@ -757,11 +1064,6 @@ export class LetterDetailComponent implements OnInit {
   approveLetter(signatureType?: 'حقيقية' | 'الممسوحة ضوئيا') {
     if (!this.original?._id) return;
 
-    console.log('=== Approve Letter ===');
-    console.log('Letter ID:', this.original._id);
-    console.log('Signature Type:', signatureType);
-    console.log('Current User Role:', this.currentUserRole);
-
     this.processing = true;
 
     if (this.currentUserRole === 'supervisor') {
@@ -789,8 +1091,6 @@ export class LetterDetailComponent implements OnInit {
           },
         });
     } else if (this.currentUserRole === 'UniversityPresident') {
-      console.log('Approving with signature type:', signatureType);
-
       this.letterService.updateStatusByUniversityPresident(
         this.original._id,
         'approved',
@@ -904,14 +1204,6 @@ export class LetterDetailComponent implements OnInit {
       (this.currentUserRole === 'supervisor' && this.original?.status === 'in_progress') ||
       (this.currentUserRole === 'UniversityPresident' && this.original?.status === 'pending');
 
-    console.log('showReviewActions:', {
-      currentUserRole: this.currentUserRole,
-      status: this.original?.status,
-      hasRole,
-      correctStatus,
-      result: hasRole && correctStatus
-    });
-
     return hasRole && correctStatus;
   }
 
@@ -920,15 +1212,5 @@ export class LetterDetailComponent implements OnInit {
       (this.original?.status === 'rejected' || this.original?.status === 'amendment') &&
       !!this.original?.reasonForRejection
     );
-  }
-
-  debugData() {
-    console.log('======= DEBUG DATA =======');
-    console.log('isEditing:', this.isEditing);
-    console.log('Form valid:', this.form.valid);
-    console.log('Form value:', this.form.value);
-    console.log('Descriptions array length:', this.descriptionsArray.length);
-    console.log('Rationales array length:', this.rationalesArray.length);
-    console.log('Original data:', this.original);
   }
 }

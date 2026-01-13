@@ -596,6 +596,110 @@
     margin-right: 0;
 }
 
+/* ===================== */
+/* تنسيقات الجداول */
+.table-container {
+  margin: 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.decision-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  direction: rtl;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+
+.decision-table th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+  text-align: right;
+  padding: 12px 15px;
+  border: 1px solid #dee2e6;
+  color: #2c3e50;
+}
+
+.decision-table td {
+  text-align: right;
+  padding: 10px 15px;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.decision-table tr:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.decision-table tr:hover {
+  background-color: #e9ecef;
+}
+
+/* تحسين عرض HTML في النصوص */
+.description-text .table-responsive {
+  margin: 15px 0;
+}
+
+.description-text h4.description-subtitle {
+  color: #2c3e50;
+  font-weight: bold;
+  margin: 15px 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.description-text .description-list {
+  margin-right: 20px;
+  margin-bottom: 15px;
+}
+
+.description-text .description-list li {
+  margin-bottom: 5px;
+  line-height: 1.6;
+}
+
+/* تنسيقات خاصة للقرارات الملغاة */
+.description-item {
+  position: relative;
+}
+
+.description-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(to bottom, #6c757d, #495057);
+  border-radius: 2px;
+}
+
+/* تحسين عرض الجداول داخل القرارات الملغاة */
+.table-container .table-responsive {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+}
+
+/* إضافة تنسيقات للعناوين داخل الجداول */
+.decision-table caption {
+  caption-side: top;
+  text-align: right;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #2c3e50;
+  padding: 10px 0;
+  margin-bottom: 10px;
+}
+
+/* تحسين عرض الخلايا الفارغة */
+.decision-table td:empty::before {
+  content: "-";
+  color: #adb5bd;
+  opacity: 0.5;
+}
 /* Responsive */
 @media (max-width: 768px) {
     .canceled-alert {

@@ -4,6 +4,7 @@ import { ArchiveService } from 'src/app/service/archive.service';
 import { AuthService } from 'src/app/service/auth.service';
 import { LetterService } from 'src/app/service/letter.service';
 import Swal from 'sweetalert2';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-canceled-letter-details',
@@ -18,13 +19,15 @@ export class CanceledLetterDetailsComponent implements OnInit {
   pdfUrl: string | null = null;
   pdfFilename: string | null = null;
   pdfFile: any = null;
+  isOpening = false;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private archiveService: ArchiveService,
     private letterService: LetterService,
-    private authService: AuthService
+    private authService: AuthService,
+    private sanitizer: DomSanitizer
   ) {}
 
   user = this.authService.currentUserValue;
@@ -111,25 +114,31 @@ export class CanceledLetterDetailsComponent implements OnInit {
    * فتح ملف PDF
    */
   openPdf(): void {
-    if (!this.pdfUrl) return;
-
-    this.pdfLoading = true;
-    if (this.pdfUrl.startsWith('http')) {
-      window.open(this.pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else if (this.pdfFilename) {
-      const baseUrl = 'http://localhost:3000/generated-files';
-      const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
-      window.open(pdfUrl, '_blank');
-      this.pdfLoading = false;
-    } else {
-      this.pdfLoading = false;
+    if (!this.pdfFilename) {
       Swal.fire({
-        icon: 'error',
-        title: 'خطأ',
-        text: 'لا يوجد ملف PDF متاح',
+        icon: 'warning',
+        title: 'لا يوجد ملف PDF متاح للعرض',
+        showConfirmButton: true
       });
+      return;
     }
+
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
+
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: (err) => {
+        console.error("خطأ في جلب الملف:", err);
+        Swal.fire({
+          icon: 'warning',
+          title: 'لا يمكن عرض الملف حالياً',
+          showConfirmButton: true
+        });
+      }
+    });
   }
 
   /**
@@ -140,76 +149,31 @@ export class CanceledLetterDetailsComponent implements OnInit {
   }
 
   /**
-   * استرجاع القرار الملغي
-   */
-  // restoreDecision() {
-  //   Swal.fire({
-  //     title: 'تأكيد الاسترجاع',
-  //     html: '<p style="font-size: 16px;">هل تريد استرجاع هذا القرار وإعادة تفعيله؟</p>',
-  //     icon: 'question',
-  //     showCancelButton: true,
-  //     confirmButtonColor: '#28a745',
-  //     cancelButtonColor: '#6c757d',
-  //     confirmButtonText: 'نعم، استرجاع القرار',
-  //     cancelButtonText: 'تراجع',
-  //     reverseButtons: true
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       this.archiveService.restoreLetter(this.letter.id || this.letter._id).subscribe({
-  //         next: (res) => {
-  //           Swal.fire({
-  //             icon: 'success',
-  //             title: 'تم الاسترجاع',
-  //             text: 'تم استرجاع القرار بنجاح',
-  //             confirmButtonText: 'حسناً'
-  //           }).then(() => {
-  //             this.router.navigate(['/canceled-letters']);
-  //           });
-  //         },
-  //         error: (err) => {
-  //           console.error('خطأ في استرجاع القرار:', err);
-  //           Swal.fire({
-  //             icon: 'error',
-  //             title: 'خطأ',
-  //             text: 'حدث خطأ أثناء استرجاع القرار',
-  //             confirmButtonText: 'حسناً'
-  //           });
-  //         },
-  //       });
-  //     }
-  //   });
-  // }
-
-  /**
-   * التحقق من إمكانية استرجاع القرار
-   */
-  canRestoreDecision(): boolean {
-    return (
-      this.user?.role === 'UniversityPresident' || 
-      this.user?.fullname === 'مكتب رئيس الجامعة'
-    );
-  }
-
-  /**
    * التحقق من إمكانية عرض الرقم الوطني
    * يمكن عرضه فقط لرئيس الجامعة أو معد القرار
    */
   canViewNationalId(): boolean {
-    // رئيس الجامعة يمكنه رؤية كل شيء
-    if (this.user?.role === 'UniversityPresident' || 
-        this.user?.fullname === 'مكتب رئيس الجامعة' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
-        this.user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
-        this.user?.fullname === 'أمين عام الجامعة' ||
-        this.user?.fullname === 'أمين عام الجامعة المساعد' ||
-        this.user?.fullname === 'أمين عام الجامعة المساعد2') {
+    if (!this.user || !this.user._id) {
+      return false;
+    }
+
+    if (
+      this.user.role === 'UniversityPresident' || 
+      this.user.fullname === 'مكتب رئيس الجامعة' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
+      this.user.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
+      this.user.fullname === 'أمين عام الجامعة' ||
+      this.user.fullname === 'أمين عام الجامعة المساعد' ||
+      this.user.fullname === 'أمين عام الجامعة المساعد2'
+    ) {
       return true;
     }
     
-    // معد القرار يمكنه رؤية الرقم الوطني لقراره فقط
-    if (this.letter?.user?._id === this.user?._id || 
-        this.letter?.user?.id === this.user?._id) {
+    if (
+      this.letter?.user?._id === this.user._id || 
+      this.letter?.user?.id === this.user._id
+    ) {
       return true;
     }
     
@@ -298,28 +262,133 @@ export class CanceledLetterDetailsComponent implements OnInit {
     return iconMap[extension] || 'fa-file text-muted';
   }
 
-  getAttachmentUrl(fileName: string): string {
-    if (!fileName) return '';
-    const cleanPath = fileName.replace(/^.*[\\\/]/, '');
-    const baseUrl = 'http://localhost:3000/uploads';
-    return `${baseUrl}/${encodeURIComponent(cleanPath)}`;
+  openAttachment(fileName: string): void {
+    if (this.isOpening) return;
+    this.isOpening = true;
+  
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
+  
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        this.isOpening = false;
+      },
+      error: () => {
+        this.isOpening = false;
+      }
+    });
+  }
+  
+  downloadAttachment(fileName: string): void {
+    if (!fileName) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'لا يوجد ملف للتحميل',
+        showConfirmButton: true
+      });
+      return;
+    }
+  
+    const cleanName = fileName.replace(/^.*[\\/]/, '');
+  
+    const apiUrl =
+      `http://www.svu.edu.eg:8080/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
+  
+    this.letterService.getPDF(apiUrl).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+  
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = cleanName;
+        a.click();
+  
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'فشل تحميل الملف'
+        });
+      }
+    });
   }
 
-  getDownloadUrl(fileName: string): string {
-    if (!fileName) return '';
-    const cleanPath = fileName.replace(/^.*[\\\/]/, '');
-    return `http://localhost:3000/letters/download/${encodeURIComponent(
-      cleanPath
-    )}`;
+  /**
+   * دالة للتحقق مما إذا كان النص يحتوي على جدول
+   */
+  isTableDescription(description: string): boolean {
+    if (!description) return false;
+    return description.includes('<table') && description.includes('</table>');
   }
 
+  /**
+   * دالة لاستخراج الجدول من النص
+   */
+  getTableFromDescription(description: string): string {
+    if (!this.isTableDescription(description)) return description;
+    
+    const tableRegex = /(<table[^>]*>[\s\S]*?<\/table>)/i;
+    const match = description.match(tableRegex);
+    
+    if (match && match[1]) {
+      return `
+        <div class="table-responsive">
+          <style>
+            .decision-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 15px 0;
+              direction: rtl;
+              font-family: Arial, sans-serif;
+            }
+            .decision-table th {
+              background-color: #f8f9fa;
+              font-weight: bold;
+              text-align: right;
+              padding: 12px;
+              border: 1px solid #dee2e6;
+            }
+            .decision-table td {
+              text-align: right;
+              padding: 10px;
+              border: 1px solid #dee2e6;
+              vertical-align: middle;
+            }
+            .decision-table tr:nth-child(even) {
+              background-color: #f8f9fa;
+            }
+            .decision-table tr:hover {
+              background-color: #e9ecef;
+            }
+          </style>
+          ${match[1]}
+        </div>
+      `;
+    }
+    
+    return description;
+  }
+
+  /**
+   * دالة لمعالجة النصوص (مع دعم الجداول)
+   */
   formatDescription(description: string): string {
     if (!description) return '';
+    
+    if (this.isTableDescription(description)) {
+      return this.getTableFromDescription(description);
+    }
+    
     return description
       .replace(/<br\s*\/?>/gi, '<br>')
       .replace(/data-start="[^"]*"/g, '')
       .replace(/data-end="[^"]*"/g, '')
-      .replace(/\\n/g, '<br>');
+      .replace(/\\n/g, '<br>')
+      .replace(/<p><strong>(.*?)<\/strong><\/p>/g, '<h4 class="description-subtitle">$1</h4>')
+      .replace(/<ul>/g, '<ul class="description-list">')
+      .replace(/<ol>/g, '<ol class="description-list">');
   }
 
   getArabicOrdinal(index: number): string {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { AuthService } from 'src/app/service/auth.service';
+import { LetterService } from 'src/app/service/letter.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,6 +17,7 @@ export class ArchiveDetailComponent implements OnInit {
   loading = true;
   showUploadModal = false;
   uploading = false;
+  deleting = false;
   searchTerm = '';
   filters = {
     fromDate: '',
@@ -54,7 +56,8 @@ export class ArchiveDetailComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private archiveService: ArchiveService,
-    private authService: AuthService
+    private authService: AuthService,
+    private letterService: LetterService
   ) {}
   user = this.authService.currentUserValue;
 
@@ -347,6 +350,42 @@ export class ArchiveDetailComponent implements OnInit {
     this.router.navigate(['/letter-detail', letterId]);
   }
 
+  // وظيفة حذف القرار - جديدة
+  deleteArchive(letterId: string, letterTitle: string): void {
+    Swal.fire({
+      title: 'تأكيد الحذف',
+      text: `هل أنت متأكد من حذف "${letterTitle}"؟ لا يمكن التراجع عن هذا الإجراء.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'نعم، احذف',
+      cancelButtonText: 'إلغاء',
+      position: 'top',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.deleting = true;
+        this.letterService.deleteLetter(letterId).subscribe({
+          next: (res: any) => {
+            this.deleting = false;
+            this.showSuccess('تم حذف القرار بنجاح');
+            this.reloadData();
+          },
+          error: (err: any) => {
+            this.deleting = false;
+            console.error('خطأ أثناء الحذف:', err);
+            this.showError('حدث خطأ أثناء حذف القرار');
+          },
+        });
+      }
+    });
+  }
+
+  // دالة للتحقق من صلاحية الحذف
+  canDelete(): boolean {
+    return this.user?.role === 'UniversityPresident';
+  }
+
   getArchiveTitle(): string {
     const titles: { [key: string]: string } = {
       شخصي: 'الأرشيف الشخصي',
@@ -418,8 +457,8 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   uploadArchive(): void {
-    if (!this.newArchive.title || !this.newArchive.startDate || !this.newArchive.endDate) {
-      this.showError('الرجاء إدخال العنوان والتاريخ');
+    if (!this.newArchive.title || !this.newArchive.letterType) {
+      this.showError('الرجاء إدخال العنوان ونوع الأرشيف');
       return;
     }
 

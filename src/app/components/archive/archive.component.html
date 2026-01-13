@@ -27,7 +27,7 @@
       </tr>
 
       <!-- رئاسة الوزراء -->
-      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2'"
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
           (click)="getArchivedLettersByType('رئاسة الوزراء')" class="clickable-row">
         <td><span class="tag tag-warning">رئاسة الوزراء</span></td>
         <td>{{ statsArchived?.general }}</td>
@@ -35,7 +35,7 @@
       </tr>
 
       <!-- وزارة التعليم العالي -->
-      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2'"
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
           (click)="getArchivedLettersByType('وزارة التعليم العالي')" class="clickable-row">
         <td><span class="tag tag-success">وزارة التعليم العالي</span></td>
         <td>{{ statsArchived?.government }}</td>
@@ -65,7 +65,7 @@
       </tr>
 
         <!-- أخرى -->
-      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2'"
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
           (click)="getArchivedLettersByType('اخرى')" class="clickable-row">
         <td><span class="tag tag-secondary">أخرى</span></td>
         <td>{{ statsArchived?.other }}</td>

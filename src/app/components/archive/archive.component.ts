@@ -24,7 +24,7 @@ export class ArchiveComponent implements OnInit, OnDestroy {
 
  ngOnInit(): void {
   this.authService.currentUser$.subscribe(user => {
-    console.log('ARCHIVE USER:', user);
+    // console.log('ARCHIVE USER:', user);
     this.user = user;
   });
 

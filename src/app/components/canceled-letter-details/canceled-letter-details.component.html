@@ -86,7 +86,7 @@
                             <div class="description-number">
                                 <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
                             </div>
-                            <div class="description-text" [innerHTML]="formatDescription(desc)"></div>
+                            <div class="description-text" [innerHTML]="formatDescription(desc) | safeHtml"></div>
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                     {{ letter.breeif ? 'الوصف المختصر' : 'وصف القرار' }}
                 </h3>
                 <div class="section-content description-content"
-                    [innerHTML]="formatDescription(letter.description || letter.breeif)"></div>
+                    [innerHTML]="formatDescription(letter.description || letter.breeif) | safeHtml"></div>
             </div>
 
             <!-- قسم بنود القرار -->
@@ -114,7 +114,14 @@
                             <div class="description-number">
                                 <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
                             </div>
-                            <div class="description-text" [innerHTML]="formatDescription(desc)"></div>
+                            <div class="description-text">
+                                <!-- عرض الجداول والنصوص بشكل صحيح -->
+                                <div *ngIf="isTableDescription(desc)" class="table-container mt-3 mb-3">
+                                    <div [innerHTML]="getTableFromDescription(desc) | safeHtml"></div>
+                                </div>
+                                <!-- عرض النص العادي إذا لم يكن جدولاً -->
+                                <div *ngIf="!isTableDescription(desc)" [innerHTML]="formatDescription(desc) | safeHtml"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -255,13 +262,16 @@
                             </div>
                         </div>
                         <div class="attachment-actions">
-                            <a [href]="getAttachmentUrl(letter.attachment)" target="_blank"
-                                class="btn btn-outline-primary me-2">
-                                <i class="fa fa-eye me-2"></i>عرض
-                            </a>
-                            <a [href]="getDownloadUrl(letter.attachment)" download class="btn btn-primary">
-                                <i class="fa fa-download me-2"></i>تحميل
-                            </a>
+                             <button type="button"
+                                    (click)="openAttachment(letter.attachment)"
+                                    class="btn btn-outline-primary me-2">
+                                <i class="fa fa-eye me-2"></i> عرض
+                            </button>
+
+                            <button class="btn btn-outline-success"
+                                (click)="downloadAttachment(letter.attachment)">
+                        <i class="fa fa-download me-2"></i> تحميل
+                        </button>
                         </div>
                     </div>
                 </div>

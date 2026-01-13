@@ -51,7 +51,7 @@
 
         <a *ngIf="user?.role === 'admin'" routerLink="/department-criteria-management" routerLinkActive="active" class="menu-item">
           <i class="fa-solid fa-file-circle-plus"></i>
-          <span>ادارة المعايير</span>
+          <span>ادارة قرارات</span>
         </a>
 
         <a *ngIf="user?.role === 'supervisor' || user?.role === 'UniversityPresident'" routerLink="/pending-reviews"
