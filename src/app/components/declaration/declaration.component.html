@@ -1,5 +1,5 @@
 <!-- Modal للجدول -->
-<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" 
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'"
      tabindex="-1" role="dialog" *ngIf="showTableModal">
   <div class="modal-backdrop fade show" (click)="closeTableModal()"></div>
   <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="z-index: 1050;">
@@ -11,7 +11,7 @@
         </h5>
         <!-- <button type="button" class="btn-close btn-close-white" (click)="closeTableModal()"></button> -->
       </div>
-      
+
       <div class="modal-body">
         <!-- إعدادات حجم الجدول -->
         <div class="row mb-4">
@@ -20,7 +20,7 @@
               <i class="fa fa-arrows-up-down me-1"></i>
               عدد الصفوف:
             </label>
-            <input type="number" class="form-control" [(ngModel)]="tableRows" 
+            <input type="number" class="form-control" [(ngModel)]="tableRows"
                    min="1" max="20" (change)="changeTableSize()">
           </div>
           <div class="col-md-6">
@@ -28,7 +28,7 @@
               <i class="fa fa-arrows-left-right me-1"></i>
               عدد الأعمدة:
             </label>
-            <input type="number" class="form-control" [(ngModel)]="tableCols" 
+            <input type="number" class="form-control" [(ngModel)]="tableCols"
                    min="1" max="10" (change)="changeTableSize()">
           </div>
         </div>
@@ -39,9 +39,9 @@
             <tbody>
               <tr *ngFor="let row of currentTableData; let i = index; trackBy: trackByRow">
                 <td *ngFor="let cell of row; let j = index; trackBy: trackByCell" style="min-width: 120px;">
-                  <input 
-                    type="text" 
-                    class="form-control form-control-sm editable-cell" 
+                  <input
+                    type="text"
+                    class="form-control form-control-sm editable-cell"
                     [id]="'cell-' + i + '-' + j"
                     [value]="currentTableData[i][j]"
                     (input)="updateCellValue(i, j, $event)"
@@ -60,7 +60,7 @@
           <strong>ملاحظة:</strong> سيتم إضافة الجدول كبند جديد في القرار. يمكنك تعديل محتوى كل خلية.
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeTableModal()">
           <i class="fa fa-x-lg me-2"></i>
@@ -93,30 +93,30 @@
         معاينة PDF قبل الحفظ النهائي
       </h5>
       <p class="text-muted small mb-0">
-        يمكنك إنشاء ومعاينة PDF للقرار من البيانات الحالية قبل الحفظ النهائي. 
+        يمكنك إنشاء ومعاينة PDF للقرار من البيانات الحالية قبل الحفظ النهائي.
         هذه نسخة تجريبية يمكن تحديثها عند تعديل البيانات.
       </p>
     </div>
     <div class="col-md-4 text-end">
       <div class="btn-group" role="group">
         <!-- زر إنشاء/تحديث PDF -->
-        <button class="btn btn-primary" (click)="generateTestingPdf()" 
+        <button class="btn btn-primary" (click)="generateTestingPdf()"
                 [disabled]="pdfGenerating || submitting || messageForm.invalid">
-          <i class="fa me-2" [class.fa-file-pdf]="!pdfGenerating" 
+          <i class="fa me-2" [class.fa-file-pdf]="!pdfGenerating"
              [class.fa-spinner]="pdfGenerating" [class.fa-spin]="pdfGenerating"></i>
           {{ pdfGenerating ? 'جاري الإنشاء...' : (pdfFilename ? 'تحديث PDF' : 'إنشاء PDF') }}
         </button>
 
         <!-- زر عرض PDF -->
-        <button class="btn btn-success" (click)="openPdfTesting()" 
+        <button class="btn btn-success" (click)="openPdfTesting()"
                 [disabled]="!pdfFilename || pdfLoading || pdfGenerating">
-          <i class="fa me-2" [class.fa-eye]="!pdfLoading" 
+          <i class="fa me-2" [class.fa-eye]="!pdfLoading"
              [class.fa-spinner]="pdfLoading" [class.fa-spin]="pdfLoading"></i>
           {{ pdfLoading ? 'جاري التحميل...' : 'عرض PDF' }}
         </button>
 
         <!-- زر تنزيل PDF -->
-        <button class="btn btn-outline-primary" (click)="downloadPdf()" 
+        <button class="btn btn-outline-primary" (click)="downloadPdf()"
                 [disabled]="!pdfFilename || pdfLoading">
           <i class="fa fa-download me-2"></i>
           تنزيل PDF
@@ -410,8 +410,8 @@
                 </label>
                 <div class="btn-group">
                   <!-- زر تعديل الجدول -->
-                  <button type="button" class="btn btn-sm btn-warning me-2" 
-                          *ngIf="isTableDescription(i)" 
+                  <button type="button" class="btn btn-sm btn-warning me-2"
+                          *ngIf="isTableDescription(i)"
                           (click)="openTableModal(i)">
                     <i class="fa fa-edit me-1"></i> تعديل الجدول
                   </button>
@@ -474,6 +474,13 @@
 
         <!-- أزرار الحفظ والإلغاء -->
         <div class="d-flex justify-content-end gap-2 mt-3">
+           <!-- زر حفظ كمسودة -->
+  <button type="button" class="btn btn-outline-secondary d-flex align-items-center"
+          (click)="saveAsDraft()"
+          [disabled]="messageForm.invalid || submitting">
+    <i class="fa fa-save me-1"></i>
+    حفظ كمسودة
+  </button>
           <button type="submit" class="btn btn-primary d-flex align-items-center"
             [disabled]="messageForm.invalid || submitting">
             <ng-container *ngIf="!submitting; else loading">

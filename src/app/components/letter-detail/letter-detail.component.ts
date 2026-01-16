@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
@@ -95,7 +95,7 @@ export class LetterDetailComponent implements OnInit {
 
   private initForm() {
     this.form = this.fb.group({
-      title: [''],
+      title: ['', [Validators.required, Validators.minLength(3)]], // إضافة التحقق من الصحة
       startDate: [''],
       endDate: [''],
       fullName: [''],
@@ -833,6 +833,17 @@ export class LetterDetailComponent implements OnInit {
   }
 
   saveChanges() {
+    // التحقق من صحة النموذج
+    if (this.form.invalid) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'يرجى إكمال البيانات المطلوبة',
+        text: 'عنوان القرار مطلوب ويجب أن يكون على الأقل 3 أحرف',
+        showConfirmButton: true
+      });
+      return;
+    }
+
     const cleanedDescriptions = this.descriptionsArray.value
       .map((desc: string) => desc?.toString().trim() || '')
       .filter((desc: string) => desc !== '');
@@ -845,7 +856,7 @@ export class LetterDetailComponent implements OnInit {
     const tables = this.tablesArray.value;
 
     const payload: Partial<any> = {
-      title: this.form.value.title || this.original.title,
+      title: this.form.value.title, // استخدام العنوان من الفورم
       fullName: this.form.value.fullName || null,
       entityName: this.form.value.entityName || null,
       nationalId: this.form.value.nationalId || null,

@@ -71,3 +71,17 @@ export interface LetterDetail {
   pdfUrl?: string;
 }
 
+export interface DraftLetter extends LetterDetail {
+  isDraft: boolean;
+  savedAt: Date;
+  lastModified: Date;
+}
+
+export interface LetterDetail {
+  SaveStatus?: string;
+}
+
+export interface DraftLetterDetail extends LetterDetail {
+  SaveStatus: "مسودة" | "مكتمل";
+}
+

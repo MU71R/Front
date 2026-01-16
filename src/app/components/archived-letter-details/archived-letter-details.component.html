@@ -36,29 +36,66 @@
                     <i class="fa fa-info-circle me-1"></i>
                     {{ getStatusText(letter.status) }}
                 </div>
-                <button *ngIf="showPdfButton()" class="btn btn-pdf" (click)="openPdf()" [disabled]="pdfLoading">
+                <button *ngIf="showPdfButton() && !editMode" class="btn btn-pdf" (click)="openPdf()" [disabled]="pdfLoading">
                     <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
                     {{ pdfLoading ? 'جاري التحميل...' : 'عرض PDF' }}
                 </button>
-                <button *ngIf="canCancelDecision()" class="btn btn-danger" (click)="cancelDecision()">
+                <button *ngIf="canCancelDecision() && !editMode" class="btn btn-danger" (click)="cancelDecision()">
                     <i class="fa fa-ban me-2"></i>
                     إلغاء القرار
                 </button>
+
+                <!-- أزرار التعديل -->
+                <button *ngIf="canEditDecision() && !editMode" class="btn btn-warning" (click)="enableEditMode()">
+                    <i class="fa fa-edit me-2"></i>
+                    تعديل القرار
+                </button>
+
+                <div *ngIf="editMode" class="edit-actions d-flex gap-2">
+                    <button class="btn btn-success" (click)="saveChanges()" [disabled]="saving">
+                        <i class="fa" [ngClass]="saving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                        {{ saving ? 'جاري الحفظ...' : 'حفظ التغييرات' }}
+                    </button>
+                    <button class="btn btn-secondary" (click)="cancelEdit()" [disabled]="saving">
+                        <i class="fa fa-times me-2"></i>
+                        إلغاء التعديل
+                    </button>
+                </div>
             </div>
 
             <div class="header-content">
-                <h1 class="letter-title">{{ letter.title }}</h1>
+                <!-- عنوان القرار -->
+                <div *ngIf="!editMode">
+                    <h1 class="letter-title">{{ letter.title }}</h1>
+                </div>
+
+                <!-- عنوان القرار - وضع التعديل -->
+                <div *ngIf="editMode" class="edit-title mb-4">
+                    <label class="form-label fw-bold">
+                        <i class="fa fa-heading me-2"></i>عنوان القرار
+                    </label>
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           [(ngModel)]="editData.title"
+                           placeholder="أدخل عنوان القرار...">
+                </div>
             </div>
         </div>
 
         <div class="detail-content">
             <!-- قسم الحيثيات -->
-            <div class="content-section" *ngIf="letter.Rationale && letter.Rationale.length > 0" id="rationale">
-                <h3 class="section-title">
-                    <i class="fa fa-list-ol me-2"></i>الحيثيات
-                </h3>
+            <div class="content-section" *ngIf="(letter.Rationale && letter.Rationale.length > 0) || editMode" id="rationale">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="section-title">
+                        <i class="fa fa-list-ol me-2"></i>الحيثيات
+                    </h3>
+                    <button *ngIf="editMode" class="btn btn-sm btn-outline-primary" (click)="addRationale()">
+                        <i class="fa fa-plus me-1"></i> إضافة حيثية
+                    </button>
+                </div>
                 <div class="section-content">
-                    <div class="descriptions-list">
+                    <!-- وضع المشاهدة -->
+                    <div *ngIf="!editMode" class="descriptions-list">
                         <div class="description-item" *ngFor="let desc of letter.Rationale; let i = index">
                             <div class="description-number">
                                 <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
@@ -66,174 +103,269 @@
                             <div class="description-text" [innerHTML]="formatDescription(desc)"></div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- قسم الوصف -->
-            <div class="content-section" *ngIf="letter.description || letter.breeif" id="description">
-                <h3 class="section-title">
-                    <i class="fa fa-file-alt me-2"></i>
-                    {{ letter.breeif ? 'الوصف المختصر' : 'وصف القرار' }}
-                </h3>
-                <div class="section-content description-content"
-                    [innerHTML]="formatDescription(letter.description || letter.breeif)"></div>
-            </div>
+                    <!-- وضع التعديل -->
+                    <div *ngIf="editMode" class="edit-rationales">
+                        <div *ngFor="let rationale of editData.Rationale; let i = index; trackBy: trackByIndex"
+     class="rationale-edit-item mb-3">
 
-            <!-- قسم بنود القرار -->
-            <div class="content-section" *ngIf="letter.descriptions && letter.descriptions.length > 0"
-                id="descriptions">
-                <h3 class="section-title">
-                    <i class="fa fa-list-ol me-2"></i>بنود القرار
-                </h3>
-                <div class="section-content">
-                    <div class="descriptions-list">
-                        <div class="description-item" *ngFor="let desc of letter.descriptions; let i = index">
-                            <div class="description-number">
-                                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
-                            </div>
-                            <div class="description-text">
-                                <!-- عرض الجدول إذا كان موجوداً في هذا البند -->
-                                <div *ngIf="isTableDescription(desc)" class="table-container mt-3 mb-3">
-                                    <div [innerHTML]="getTableFromDescription(desc) | safeHtml"></div>
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                                        <span class="fw-bold">حيثية {{ i + 1 }}</span>
+                                    </div>
+                                    <button type="button" class="btn btn-danger btn-sm" (click)="removeRationale(i)"
+                                        [disabled]="editData.Rationale.length === 1"
+                                        *ngIf="editData.Rationale.length > 1">
+                                        <i class="fa fa-trash me-1"></i> حذف
+                                    </button>
                                 </div>
-                                <!-- عرض النص العادي إذا لم يكن جدولاً -->
-                                <div *ngIf="!isTableDescription(desc)" [innerHTML]="formatDescription(desc)"></div>
+                                <div class="card-body">
+                                    <textarea class="form-control rationale-textarea"
+                                              [(ngModel)]="editData.Rationale[i]"
+                                              rows="3"
+                                              placeholder="أدخل نص الحيثية..."></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- قسم معلومات القرار الجديدة -->
+            <!-- قسم الوصف -->
+            <div class="content-section" *ngIf="letter.description || letter.breeif || editMode" id="description">
+                <h3 class="section-title">
+                    <i class="fa fa-file-alt me-2"></i>
+                    {{ letter.breeif ? 'الوصف المختصر' : 'وصف القرار' }}
+                </h3>
+                <div class="section-content">
+                    <!-- وضع المشاهدة -->
+                    <div *ngIf="!editMode" class="description-content"
+                         [innerHTML]="formatDescription(letter.description || letter.breeif)"></div>
+
+                    <!-- وضع التعديل -->
+                    <div *ngIf="editMode">
+                        <div class="mb-3" *ngIf="editData.breeif !== undefined">
+                            <label class="form-label fw-bold">
+                                <i class="fa fa-file-signature me-2"></i>
+                                الوصف المختصر
+                            </label>
+                            <textarea class="form-control"
+                                      [(ngModel)]="editData.breeif"
+                                      rows="3"
+                                      placeholder="أدخل الوصف المختصر للقرار..."></textarea>
+                        </div>
+
+                        <div class="mb-3" *ngIf="editData.description !== undefined">
+                            <label class="form-label fw-bold">
+                                <i class="fa fa-file-alt me-2"></i>
+                                الوصف التفصيلي
+                            </label>
+                            <textarea class="form-control"
+                                      [(ngModel)]="editData.description"
+                                      rows="5"
+                                      placeholder="أدخل الوصف التفصيلي للقرار..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم بنود القرار -->
+            <div class="content-section" *ngIf="(letter.descriptions && letter.descriptions.length > 0) || editMode"
+                 id="descriptions">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="section-title">
+                        <i class="fa fa-list-ol me-2"></i>بنود القرار
+                    </h3>
+                    <div *ngIf="editMode" class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" (click)="addDescription()">
+                            <i class="fa fa-plus me-1"></i> إضافة بند نصي
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" (click)="addTable()">
+                            <i class="fa fa-table me-1"></i> إضافة جدول
+                        </button>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <!-- وضع المشاهدة -->
+                    <div *ngIf="!editMode" class="descriptions-list">
+                        <div class="description-item" *ngFor="let desc of letter.descriptions; let i = index">
+                            <div class="description-number">
+                                <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                            </div>
+                            <div class="description-text">
+                                <div *ngIf="isTableDescription(desc)" class="table-container mt-3 mb-3">
+                                    <div [innerHTML]="getTableFromDescription(desc) | safeHtml"></div>
+                                </div>
+                                <div *ngIf="!isTableDescription(desc)" [innerHTML]="formatDescription(desc)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- وضع التعديل -->
+                    <div *ngIf="editMode" class="edit-descriptions">
+                        <div *ngFor="let desc of editData.descriptions; let i = index; trackBy: trackByIndex"
+     class="description-edit-item mb-3">
+
+                            <div class="card">
+                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="number-badge">{{ getArabicOrdinal(i) }}</span>
+                                        <span class="fw-bold">
+                                            {{ isTableDescription(desc) ? 'جدول رقم ' + (i + 1) : 'بند رقم ' + (i + 1) }}
+                                        </span>
+                                    </div>
+                                    <div class="btn-group">
+                                        <!-- زر تعديل الجدول -->
+                                        <button type="button" class="btn btn-warning btn-sm me-2"
+                                                *ngIf="isTableDescription(desc)"
+                                                (click)="editTable(i)">
+                                            <i class="fa fa-edit me-1"></i> تعديل الجدول
+                                        </button>
+                                        <!-- زر حذف -->
+                                        <button type="button" class="btn btn-danger btn-sm" (click)="removeDescription(i)"
+                                            [disabled]="editData.descriptions.length === 1"
+                                            *ngIf="editData.descriptions.length > 1">
+                                            <i class="fa fa-trash me-1"></i> حذف
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <!-- إذا كان جدول نعرضه فقط -->
+                                    <div *ngIf="isTableDescription(desc)" class="p-3 border rounded bg-light">
+                                        <div [innerHTML]="safeHtml(desc)"></div>
+                                    </div>
+                                    <!-- إذا كان نص عادي -->
+                                    <div *ngIf="!isTableDescription(desc)">
+                                        <textarea class="form-control description-textarea"
+                                                  [(ngModel)]="editData.descriptions[i]"
+                                                  rows="4"
+                                                  placeholder="أدخل نص البند..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم معلومات القرار -->
             <div class="content-section" id="decision-info">
                 <h3 class="section-title">
                     <i class="fa fa-file-contract me-2"></i>معلومات القرار
                 </h3>
                 <div class="section-content">
                     <div class="info-grid">
-                        <!-- جهة إعداد القرار من user -->
-                        <div class="info-item" *ngIf="letter.user">
+                        <!-- معلومات ثابتة (غير قابلة للتعديل) -->
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-user"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">معد القرار:</span>
-                                <span class="info-value">{{ letter.user.fullname }}</span>
+                                <span class="info-value">{{ letter.user?.fullname || 'غير معروف' }}</span>
                             </div>
                         </div>
 
-                        <!-- دور معد القرار -->
-                        <div class="info-item" *ngIf="letter.user && letter.user.role">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-id-badge"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">الدور:</span>
-                                <span class="info-value">{{ getRoleText(letter.user.role) }}</span>
+                                <span class="info-value">{{ getRoleText(letter.user?.role) }}</span>
                             </div>
                         </div>
 
-                        <!-- قطاع معد القرار -->
-                        <div class="info-item"
-                            *ngIf="letter.user && letter.user.sector && letter.user.sector.length > 0">
-                            <div class="info-icon">
-                                <i class="fa fa-building"></i>
-                            </div>
-                            <div class="info-content">
-                                <span class="info-label">القطاع:</span>
-                                <span class="info-value">{{ letter.user.sector[0]?.sector || 'غير محدد' }}</span>
-                            </div>
-                        </div>
+                        <!-- معلومات قابلة للتعديل -->
 
-                        <!-- المعيار الرئيسي -->
-                        <div class="info-item" *ngIf="letter.mainCriteria">
+                        <!-- الأولوية -->
+                        <div class="info-item">
                             <div class="info-icon">
-                                <i class="fa fa-tasks"></i>
+                                <i class="fa fa-flag"></i>
                             </div>
                             <div class="info-content">
-                                <span class="info-label">المعيار الرئيسي:</span>
-                                <span class="info-value">{{ letter.mainCriteria.name }}</span>
-                            </div>
-                        </div>
-
-                        <!-- المعيار الفرعي -->
-                        <div class="info-item" *ngIf="letter.subCriteria">
-                            <div class="info-icon">
-                                <i class="fa fa-list"></i>
-                            </div>
-                            <div class="info-content">
-                                <span class="info-label">المعيار الفرعي:</span>
-                                <span class="info-value">{{ letter.subCriteria.name }}</span>
+                                <span class="info-label">الأولوية:</span>
+                                <span *ngIf="!editMode" class="info-value">{{ getPriorityText(letter.priority) }}</span>
+                                <select *ngIf="editMode" class="form-select form-select-sm" [(ngModel)]="editData.priority">
+                                    <option value="low">عادي</option>
+                                    <option value="medium">متوسط</option>
+                                    <option value="high">عاجل</option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- الاسم الكامل -->
-                        <div class="info-item" *ngIf="letter.fullName">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-user-circle"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">الاسم الكامل:</span>
-                                <span class="info-value">{{ letter.fullName }}</span>
+                                <span *ngIf="!editMode" class="info-value">{{ letter.fullName || 'غير محدد' }}</span>
+                                <input *ngIf="editMode" type="text" class="form-control form-control-sm"
+                                       [(ngModel)]="editData.fullName"
+                                       placeholder="أدخل الاسم الكامل...">
                             </div>
                         </div>
 
                         <!-- اسم الجهة -->
-                        <div class="info-item" *ngIf="letter.entityName">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-building"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">اسم الجهة:</span>
-                                <span class="info-value">{{ letter.entityName }}</span>
+                                <span *ngIf="!editMode" class="info-value">{{ letter.entityName || 'غير محدد' }}</span>
+                                <input *ngIf="editMode" type="text" class="form-control form-control-sm"
+                                       [(ngModel)]="editData.entityName"
+                                       placeholder="أدخل اسم الجهة...">
                             </div>
                         </div>
 
                         <!-- الرقم الوطني -->
-                        <div class="info-item" *ngIf="letter.nationalId && canViewNationalId()">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-id-card"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">الرقم الوطني:</span>
-                                <span class="info-value">{{ letter.nationalId }}</span>
+                                <span *ngIf="!editMode" class="info-value">
+                                    {{ canViewNationalId() ? (letter.nationalId || 'غير محدد') : '***' }}
+                                </span>
+                                <input *ngIf="editMode" type="text" class="form-control form-control-sm"
+                                       [(ngModel)]="editData.nationalId"
+                                       placeholder="أدخل الرقم الوطني...">
                             </div>
                         </div>
 
                         <!-- رقم الهاتف -->
-                        <div class="info-item" *ngIf="letter.phoneNumber">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-phone"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">رقم الهاتف:</span>
-                                <span class="info-value">{{ letter.phoneNumber }}</span>
+                                <span *ngIf="!editMode" class="info-value">{{ letter.phoneNumber || 'غير محدد' }}</span>
+                                <input *ngIf="editMode" type="text" class="form-control form-control-sm"
+                                       [(ngModel)]="editData.phoneNumber"
+                                       placeholder="أدخل رقم الهاتف...">
                             </div>
                         </div>
 
                         <!-- نوع التوقيع -->
-                        <div class="info-item" *ngIf="letter.signatureType">
+                        <div class="info-item">
                             <div class="info-icon">
                                 <i class="fa fa-signature"></i>
                             </div>
                             <div class="info-content">
                                 <span class="info-label">نوع التوقيع:</span>
-                                <span class="info-value">{{ letter.signatureType }}</span>
-                            </div>
-                        </div>
-
-                        <!-- الجهات المراجعة -->
-                        <div class="info-item" *ngIf="letter.supervisors && letter.supervisors.length > 0">
-                            <div class="info-icon">
-                                <i class="fa fa-user-shield"></i>
-                            </div>
-                            <div class="info-content">
-                                <span class="info-label">الجهات المراجعة:</span>
-                                <span class="info-value">
-                                    <span *ngFor="let supervisor of letter.supervisors; let last = last">
-                                        {{ supervisor.fullname }}<span *ngIf="!last">, </span>
-                                    </span>
-                                </span>
+                                <span *ngIf="!editMode" class="info-value">{{ letter.signatureType || 'غير محدد' }}</span>
+                                <select *ngIf="editMode" class="form-select form-select-sm" [(ngModel)]="editData.signatureType">
+                                    <option value="حقيقية">حقيقية</option>
+                                    <option value="الممسوحة ضوئيا">ممسوحة ضوئياً</option>
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -241,55 +373,79 @@
             </div>
 
             <!-- قسم المرفقات -->
-     <div class="content-section" *ngIf="letter.attachment" id="attachments">
-    <h3 class="section-title">
-        <i class="fa fa-paperclip me-2"></i>المرفقات
-    </h3>
-    <div class="section-content">
-        <!-- إذا كان هناك مرفق -->
-        <div class="attachment-card">
-            <div class="attachment-info">
-                <div class="attachment-icon">
-                    <i class="fa" [ngClass]="getFileIcon(letter.attachment)"></i>
+            <div class="content-section" id="attachments">
+                <div class="section-header d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="section-title">
+                        <i class="fa fa-paperclip me-2"></i>المرفقات
+                    </h3>
+                    <button *ngIf="editMode && !showAttachmentInput" class="btn btn-sm btn-outline-primary"
+                            (click)="changeAttachment()">
+                        <i class="fa fa-plus me-1"></i> {{ letter.attachment ? 'تغيير المرفق' : 'إضافة مرفق' }}
+                    </button>
                 </div>
-                <div class="attachment-details">
-                    <div class="attachment-name">{{ getFileName(letter.attachment) }}</div>
-                    <div class="attachment-meta">
-                        <span><i class="fa fa-calendar me-1"></i>تم الرفع في {{ letter.createdAt | date: 'dd/MM/yyyy' }}</span>
-                        <span *ngIf="getFileSize(letter.attachment)"><i class="fa fa-hdd me-1"></i>{{ getFileSize(letter.attachment) }}</span>
+                <div class="section-content">
+                    <!-- إذا كان هناك مرفق -->
+                    <div *ngIf="letter.attachment" class="attachment-card">
+                        <div class="attachment-info">
+                            <div class="attachment-icon">
+                                <i class="fa" [ngClass]="getFileIcon(letter.attachment)"></i>
+                            </div>
+                            <div class="attachment-details">
+                                <div class="attachment-name">{{ getFileName(letter.attachment) }}</div>
+                                <div class="attachment-meta">
+                                    <span><i class="fa fa-calendar me-1"></i>تم الرفع في {{ letter.createdAt | date: 'dd/MM/yyyy' }}</span>
+                                    <span *ngIf="getFileSize(letter.attachment)"><i class="fa fa-hdd me-1"></i>{{ getFileSize(letter.attachment) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="attachment-actions">
+                            <button type="button"
+                                    (click)="openAttachment(letter.attachment)"
+                                    class="btn btn-outline-primary me-2">
+                                <i class="fa fa-eye me-2"></i> عرض
+                            </button>
+                            <button class="btn btn-outline-success"
+                                    (click)="downloadAttachment(letter.attachment)">
+                                <i class="fa fa-download me-2"></i> تحميل
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="attachment-actions">
-                <button type="button"
-                        (click)="openAttachment(letter.attachment)"
-                        class="btn btn-outline-primary me-2">
-                    <i class="fa fa-eye me-2"></i> عرض
-                </button>
 
-                <button class="btn btn-outline-success"
-                        (click)="downloadAttachment(letter.attachment)">
-                    <i class="fa fa-download me-2"></i> تحميل
-                </button>
-            </div>
-        </div>
-                    <!--
-                    <button class="btn btn-warning mt-3" (click)="openUploadModal()">
-                        <i class="fa fa-upload me-2"></i>
-                        {{ letter.attachment ? 'استبدال الملف' : 'رفع ملف جديد' }}
-                    </button> -->
+                    <!-- حقل رفع ملف جديد في وضع التعديل -->
+                    <div *ngIf="editMode && showAttachmentInput" class="attachment-upload mt-3">
+                        <div class="input-group">
+                            <input type="file"
+                                   class="form-control"
+                                   #fileInput
+                                   (change)="onFileSelected($event)"
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt">
+                            <button class="btn btn-success" (click)="uploadAttachment()" [disabled]="!newAttachmentFile || saving">
+                                <i class="fa fa-upload me-2"></i> رفع
+                            </button>
+                            <button class="btn btn-secondary" (click)="cancelAttachmentChange()" [disabled]="saving">
+                                <i class="fa fa-times me-2"></i> إلغاء
+                            </button>
+                        </div>
+                        <small class="text-muted d-block mt-2">يمكنك رفع ملفات PDF, Word, Excel, صور أو ملفات نصية</small>
+                    </div>
+
+                    <!-- رسالة عدم وجود مرفقات -->
+                    <div *ngIf="!letter.attachment && !editMode" class="text-center py-4 text-muted">
+                        <i class="fa fa-paperclip fa-2x mb-3"></i>
+                        <p>لا توجد مرفقات لهذا القرار</p>
+                    </div>
                 </div>
             </div>
 
             <!-- قسم الجدول الزمني -->
-            <div class="content-section" *ngIf="letter.StartDate || letter.EndDate || letter.createdAt" id="timeline">
+            <div class="content-section" id="timeline">
                 <h3 class="section-title">
                     <i class="fa fa-calendar-alt me-2"></i> الجدول الزمني
                 </h3>
                 <div class="section-content">
                     <div class="timeline-info">
-                        <!-- تاريخ إنشاء القرار -->
-                        <div class="info-item" *ngIf="letter.createdAt">
+                        <!-- تاريخ إنشاء القرار (ثابت) -->
+                        <div class="info-item">
                             <div class="info-icon"><i class="fa fa-calendar-plus"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ إنشاء القرار:</span>
@@ -298,29 +454,57 @@
                         </div>
 
                         <!-- تاريخ البدء -->
-                        <div class="info-item" *ngIf="letter.StartDate">
+                        <div class="info-item">
                             <div class="info-icon"><i class="fa fa-play-circle"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ البدء:</span>
-                                <span class="info-value">{{ letter.StartDate | date:'dd/MM/yyyy' }}</span>
+                                <span *ngIf="!editMode" class="info-value">
+                                    {{ letter.StartDate ? (letter.StartDate | date:'dd/MM/yyyy') : 'غير محدد' }}
+                                </span>
+                                <div *ngIf="editMode" class="d-flex align-items-center gap-2">
+                                    <input type="date" class="form-control form-control-sm"
+                                           [(ngModel)]="editData.StartDate">
+                                    <button *ngIf="editData.StartDate" class="btn btn-sm btn-outline-danger"
+                                            (click)="editData.StartDate = ''" [disabled]="saving">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- تاريخ الانتهاء -->
-                        <div class="info-item" *ngIf="letter.EndDate">
+                        <div class="info-item">
                             <div class="info-icon"><i class="fa fa-flag-checkered"></i></div>
                             <div class="info-content">
                                 <span class="info-label">تاريخ الانتهاء:</span>
-                                <span class="info-value">{{ letter.EndDate | date:'dd/MM/yyyy' }}</span>
+                                <span *ngIf="!editMode" class="info-value">
+                                    {{ letter.EndDate ? (letter.EndDate | date:'dd/MM/yyyy') : 'غير محدد' }}
+                                </span>
+                                <div *ngIf="editMode" class="d-flex align-items-center gap-2">
+                                    <input type="date" class="form-control form-control-sm"
+                                           [(ngModel)]="editData.EndDate">
+                                    <button *ngIf="editData.EndDate" class="btn btn-sm btn-outline-danger"
+                                            (click)="editData.EndDate = ''" [disabled]="saving">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- مدة القرار -->
-                        <div class="info-item" *ngIf="letter.durationDays">
+                        <div class="info-item">
                             <div class="info-icon"><i class="fa fa-clock"></i></div>
                             <div class="info-content">
                                 <span class="info-label">مدة سريان القرار:</span>
-                                <span class="info-value">{{ letter.durationDays }}</span>
+                                <span *ngIf="!editMode" class="info-value">
+                                    {{ letter.durationDays || 0 }} يوم
+                                </span>
+                                <div *ngIf="editMode" class="input-group input-group-sm">
+                                    <input type="number" class="form-control"
+                                           [(ngModel)]="editData.durationDays"
+                                           min="0" max="3650">
+                                    <span class="input-group-text">يوم</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -368,16 +552,76 @@
     </div>
 </div>
 
-<!-- Upload Modal -->
-<div class="custom-modal" [class.show]="showUploadModal" id="uploadModal">
-    <div class="modal-content">
-        <h4 class="mb-3">رفع ملف جديد</h4>
+<!-- Modal لتحرير الجداول -->
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" tabindex="-1" role="dialog">
+    <div class="modal-backdrop fade show" (click)="closeTableModal()"></div>
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="z-index: 1050;">
+        <div class="modal-content" dir="rtl">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fa fa-table me-2"></i>
+                    {{ editingTableIndex !== null ? 'تعديل الجدول' : 'إنشاء جدول جديد' }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeTableModal()"></button>
+            </div>
 
-        <input type="file" (change)="selectNewFile($event)" class="form-control" />
+            <div class="modal-body">
+                <!-- إعدادات حجم الجدول -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa fa-arrows-up-down me-1"></i>
+                            عدد الصفوف:
+                        </label>
+                        <input type="number" class="form-control" [(ngModel)]="tableRows"
+                               min="1" max="20" (change)="changeTableSize()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">
+                            <i class="fa fa-arrows-left-right me-1"></i>
+                            عدد الأعمدة:
+                        </label>
+                        <input type="number" class="form-control" [(ngModel)]="tableCols"
+                               min="1" max="10" (change)="changeTableSize()">
+                    </div>
+                </div>
 
-        <div class="text-end mt-3">
-            <button class="btn btn-secondary me-2" (click)="closeUploadModal()">إلغاء</button>
-            <button class="btn btn-primary" (click)="uploadNewFile()">رفع</button>
+                <!-- الجدول القابل للتحرير -->
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-bordered table-hover editable-table">
+                        <tbody>
+                            <tr *ngFor="let row of currentTableData; let i = index">
+                                <td *ngFor="let cell of row; let j = index" style="min-width: 120px;">
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-sm editable-cell"
+                                        [id]="'cell-' + i + '-' + j"
+                                        [value]="currentTableData[i][j]"
+                                        (input)="updateCellValue(i, j, $event)"
+                                        [placeholder]="'خلية ' + (i+1) + '-' + (j+1)"
+                                        style="text-align: right; direction: rtl;">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="fa fa-info-circle me-2"></i>
+                    <strong>ملاحظة:</strong> سيتم إضافة الجدول كبند جديد في القرار.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeTableModal()">
+                    <i class="fa fa-times me-2"></i>
+                    إلغاء
+                </button>
+                <button type="button" class="btn btn-success" (click)="saveTable()">
+                    <i class="fa fa-check me-2"></i>
+                    {{ editingTableIndex !== null ? 'تحديث الجدول' : 'إضافة الجدول' }}
+                </button>
+            </div>
         </div>
     </div>
 </div>

@@ -10,7 +10,7 @@
 </ng-template>
 
 <!-- Modal للجدول -->
-<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'" 
+<div class="modal fade" [class.show]="showTableModal" [style.display]="showTableModal ? 'block' : 'none'"
      tabindex="-1" role="dialog" *ngIf="showTableModal">
   <div class="modal-backdrop fade show" (click)="closeTableModal()"></div>
   <div class="modal-dialog modal-xl modal-dialog-centered" role="document" style="z-index: 1050;">
@@ -22,7 +22,7 @@
         </h5>
         <!-- <button type="button" (click)="closeTableModal()"></button> -->
       </div>
-      
+
       <div class="modal-body">
         <!-- إعدادات حجم الجدول -->
         <div class="row mb-4">
@@ -31,7 +31,7 @@
               <i class="fa fa-arrows-up-down me-1"></i>
               عدد الصفوف:
             </label>
-            <input type="number" class="form-control" [(ngModel)]="tableRows" 
+            <input type="number" class="form-control" [(ngModel)]="tableRows"
                    min="1" max="20" (change)="changeTableSize()">
           </div>
           <div class="col-md-6">
@@ -39,7 +39,7 @@
               <i class="fa fa-arrows-left-right me-1"></i>
               عدد الأعمدة:
             </label>
-            <input type="number" class="form-control" [(ngModel)]="tableCols" 
+            <input type="number" class="form-control" [(ngModel)]="tableCols"
                    min="1" max="10" (change)="changeTableSize()">
           </div>
         </div>
@@ -50,9 +50,9 @@
             <tbody>
               <tr *ngFor="let row of currentTableData; let i = index; trackBy: trackByRow">
                 <td *ngFor="let cell of row; let j = index; trackBy: trackByCell" style="min-width: 120px;">
-                  <input 
-                    type="text" 
-                    class="form-control form-control-sm editable-cell" 
+                  <input
+                    type="text"
+                    class="form-control form-control-sm editable-cell"
                     [id]="'cell-' + i + '-' + j"
                     [value]="currentTableData[i][j]"
                     (input)="updateCellValue(i, j, $event)"
@@ -71,7 +71,7 @@
           <strong>ملاحظة:</strong> سيتم إضافة الجدول كبند جديد في القرار. يمكنك تعديل محتوى كل خلية.
         </div>
       </div>
-      
+
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" (click)="closeTableModal()">
           <i class="fa fa-x-lg me-2"></i>
@@ -94,9 +94,37 @@
   <div class="page-header mb-4">
     <div class="row align-items-center">
       <div class="col-md-8">
-        <h1 class="page-title text-truncate" [title]="original?.title || form.value.title">
-         عنوان القرار: {{ original?.title || form.value.title || 'تفاصيل القرار' }}
-        </h1>
+        <!-- عرض العنوان في وضع المشاهدة -->
+        <div *ngIf="!isEditing">
+          <h1 class="page-title text-truncate" [title]="original?.title || form.value.title">
+            عنوان القرار: {{ original?.title || form.value.title || 'تفاصيل القرار' }}
+          </h1>
+        </div>
+
+        <!-- تحرير العنوان في وضع التعديل -->
+        <div *ngIf="isEditing">
+          <form [formGroup]="form">
+            <div class="mb-3">
+              <label for="titleInput" class="form-label fw-bold">
+                <i class="fa fa-heading me-2"></i>
+                عنوان القرار <span class="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                class="form-control form-control-lg"
+                id="titleInput"
+                formControlName="title"
+                placeholder="أدخل عنوان القرار..."
+                dir="rtl">
+              <div *ngIf="form.get('title')?.invalid && form.get('title')?.touched"
+                   class="form-text text-danger">
+                <small *ngIf="form.get('title')?.errors?.['required']">عنوان القرار مطلوب</small>
+                <small *ngIf="form.get('title')?.errors?.['minlength']">عنوان القرار يجب أن يكون على الأقل 3 أحرف</small>
+              </div>
+            </div>
+          </form>
+        </div>
+
         <div class="page-meta d-flex flex-column flex-md-row flex-wrap gap-2 mt-2">
           <span class="meta-item">
             <i class="fa fa-calendar me-1"></i>
@@ -117,7 +145,7 @@
           </button>
 
           <div *ngIf="isEditing" class="edit-actions d-flex gap-2">
-            <button class="btn btn-success btn-save" (click)="saveChanges()" [disabled]="processing">
+            <button class="btn btn-success btn-save" (click)="saveChanges()" [disabled]="processing || form.invalid">
               <i class="fa fa-check-lg me-2"></i>
               {{ processing ? 'جاري الحفظ...' : 'حفظ' }}
             </button>
@@ -488,8 +516,8 @@
                   </div>
                   <div class="btn-group">
                     <!-- زر تعديل الجدول -->
-                    <button type="button" class="btn btn-warning btn-sm me-2" 
-                            *ngIf="isTableDescription(i)" 
+                    <button type="button" class="btn btn-warning btn-sm me-2"
+                            *ngIf="isTableDescription(i)"
                             (click)="openTableModal(i)">
                       <i class="fa fa-edit me-1"></i> تعديل الجدول
                     </button>
@@ -506,11 +534,11 @@
                     <div [innerHTML]="safeHtml(descControl.value)"></div>
                   </div>
                   <!-- إذا كان نص عادي نستخدم المحرر -->
-                  <quill-editor *ngIf="!isTableDescription(i)" 
-                                [formControl]="getDescriptionControl(i)" 
+                  <quill-editor *ngIf="!isTableDescription(i)"
+                                [formControl]="getDescriptionControl(i)"
                                 [modules]="quillModules"
                                 [styles]="{'min-height': '200px', 'border': 'none'}"
-                                [placeholder]="'أدخل نص البند ' + getArabicOrdinal(i) + '...'" 
+                                [placeholder]="'أدخل نص البند ' + getArabicOrdinal(i) + '...'"
                                 class="description-editor">
                   </quill-editor>
                 </div>

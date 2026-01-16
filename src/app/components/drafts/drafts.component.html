@@ -1,0 +1,322 @@
+<div class="container-fluid mt-4" dir="rtl">
+    <div class="row">
+        <div class="col-md-12">
+            <div
+                class="header-box mb-4 p-4 rounded-3 shadow-sm bg-gradient-primary text-white position-relative overflow-hidden">
+                <div class="position-absolute top-0 end-0 w-100 h-100 opacity-10">
+                    <div class="pattern-dots"></div>
+                </div>
+                <div class="position-relative d-flex align-items-center justify-content-between">
+                    <div>
+                        <h2 class="fw-bold mb-2 display-6">
+                            <i class="fa-solid fa-file-lines me-2"></i>مسودات القرارات
+                        </h2>
+                        <p class="opacity-90 mb-0 fs-6">
+                            <i class="fa-solid fa-circle-info me-1"></i>
+                            إدارة القرارات المحفوظة كمسودة قيد التعديل
+                        </p>
+                    </div>
+                    <div class="draft-count-badge">
+                        <span class="badge bg-white text-primary fs-5 px-3 py-2 rounded-pill">
+                            <i class="fa-solid fa-file me-2"></i>
+                            {{draftLetters.length}} مسودة
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="loading" class="text-center my-5 py-5">
+                <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;"></div>
+                <p class="text-muted fs-6">جاري تحميل المسودات...</p>
+            </div>
+
+            <div *ngIf="!loading && draftLetters.length === 0"
+                class="alert alert-light text-center border-0 shadow-sm rounded-3 py-5 my-4">
+                <div class="empty-state-icon mb-3">
+                    <i class="fa-solid fa-file-circle-question"></i>
+                </div>
+                <h5 class="text-muted mb-2">لا توجد مسودات</h5>
+                <p class="text-muted mb-3">لم تقم بحفظ أي قرارات كمسودة بعد</p>
+                <button class="btn btn-primary px-4" routerLink="/declaration">
+                    <i class="fa-solid fa-plus me-2"></i>إضافة قرار جديد
+                </button>
+            </div>
+
+            <div class="row g-4" *ngIf="!loading && draftLetters.length > 0">
+                <div class="col-12" *ngFor="let letter of draftLetters; let i = index">
+                    <div class="card shadow-sm border-0 rounded-3 letter-card h-100">
+                        <div
+                            class="card-header bg-gradient-primary border-0 rounded-top-3 text-white py-3 position-relative">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1 fw-bold fs-5">
+                                        <i class="fa-solid fa-file-lines me-2"></i>
+                                        {{ letter.title || 'بدون عنوان' }}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-3 mt-2 flex-wrap">
+                                        <span class="badge bg-white text-primary fs-7">
+                                            <i class="fa-solid fa-hashtag me-1"></i>
+                                            {{ i + 1 }}
+                                        </span>
+                                        <span class="badge status-badge fs-7 text-white bg-secondary">
+                                            مسودة
+                                        </span>
+                                        <span *ngIf="letter.letterType" class="badge bg-info text-white fs-7">
+                                            {{ getLetterTypeArabic(letter.letterType) }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-light btn-sm dropdown-toggle" type="button"
+                                        data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                        <li>
+                                            <a class="dropdown-item" (click)="editDraft(letter)">
+                                                <i class="fa-solid fa-pen-to-square me-2"></i>تعديل المسودة
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" (click)="deleteDraft(letter._id!)">
+                                                <i class="fa-solid fa-trash me-2"></i>حذف المسودة
+                                            </a>
+                                        </li>
+                                        <li *ngIf="hasPdfUrl(letter)">
+                                            <a class="dropdown-item" [href]="getPdfUrl(letter)" target="_blank">
+                                                <i class="fa-solid fa-file-pdf me-2"></i>عرض PDF
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <hr class="dropdown-divider">
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-primary fw-bold" (click)="publishDraft(letter._id!)">
+                                                <i class="fa-solid fa-paper-plane me-2"></i>نشر القرار
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body py-4">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <i class="fa-solid fa-user text-primary me-2"></i>
+                                        <strong class="text-dark">المستخدم : </strong>
+                                        <span class="text-muted">{{ getUserName(letter) }}</span>
+                                    </div>
+                                    <div class="info-item mt-3">
+                                        <i class="fa-solid fa-id-card text-primary me-2"></i>
+                                        <strong class="text-dark">الرقم القومي : </strong>
+                                        <span class="text-muted">{{ letter.nationalId || 'غير محدد' }}</span>
+                                    </div>
+                                    <div class="info-item mt-3">
+                                        <i class="fa-solid fa-phone text-primary me-2"></i>
+                                        <strong class="text-dark">رقم الهاتف : </strong>
+                                        <span class="text-muted">{{ letter.phoneNumber || 'غير محدد' }}</span>
+                                    </div>
+                                    <div class="info-item mt-3">
+                                        <i class="fa-solid fa-calendar text-primary me-2"></i>
+                                        <strong class="text-dark">تاريخ القرار : </strong>
+                                        <span class="text-muted">{{ formatDate(letter.date) }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <i class="fa-solid fa-align-left text-primary me-2"></i>
+                                        <strong class="text-dark">وصف القرار : </strong>
+                                        <div class="description-content mt-2 p-3 bg-light rounded-2 border">
+                                            <div class="text-muted lh-base description-text">
+                                                {{ getCleanDescription(getLetterContent(letter)) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- الفترات الزمنية -->
+                            <div class="time-period-section mb-4">
+                                <div class="section-header mb-3">
+                                    <h6 class="text-dark fw-bold mb-0">
+                                        <i class="fa-solid fa-calendar-days text-primary me-2"></i>
+                                        الفترة الزمنية
+                                    </h6>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="period-card border rounded-2 p-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-play text-primary me-3 fa-lg"></i>
+                                                <div>
+                                                    <p class="mb-1 fw-bold">تاريخ البدء</p>
+                                                    <p class="mb-0 text-muted">{{ formatDate(letter.StartDate) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="period-card border rounded-2 p-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-flag-checkered text-primary me-3 fa-lg"></i>
+                                                <div>
+                                                    <p class="mb-1 fw-bold">تاريخ الانتهاء</p>
+                                                    <p class="mb-0 text-muted">{{ formatDate(letter.EndDate) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- المعايير -->
+                            <div *ngIf="letter.mainCriteria || letter.subCriteria" class="criteria-section mb-4">
+                                <div class="section-header mb-3">
+                                    <h6 class="text-dark fw-bold mb-0">
+                                        <i class="fa-solid fa-list-check text-primary me-2"></i>
+                                        المعايير
+                                    </h6>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-6" *ngIf="letter.mainCriteria">
+                                        <div class="criteria-card border rounded-2 p-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-layer-group text-primary me-3 fa-lg"></i>
+                                                <div>
+                                                    <p class="mb-1 fw-bold">المعيار الرئيسي</p>
+                                                    <p class="mb-0 text-muted">{{ getMainCriteriaName(letter) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" *ngIf="letter.subCriteria">
+                                        <div class="criteria-card border rounded-2 p-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fa-solid fa-sitemap text-primary me-3 fa-lg"></i>
+                                                <div>
+                                                    <p class="mb-1 fw-bold">المعيار الفرعي</p>
+                                                    <p class="mb-0 text-muted">{{ getSubCriteriaName(letter) }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- المرفقات -->
+                            <div class="attachments-section"
+                                *ngIf="getAttachments(letter) && getAttachments(letter).length > 0">
+                                <div class="section-header mb-3">
+                                    <h6 class="text-dark fw-bold mb-0">
+                                        <i class="fa-solid fa-paperclip text-primary me-2"></i>
+                                        المرفقات
+                                        <span class="badge bg-primary ms-2 fs-7">{{ getAttachments(letter).length }}</span>
+                                    </h6>
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-xl-3 col-lg-4 col-md-6"
+                                        *ngFor="let attachment of getAttachments(letter); let i = index">
+                                        <div class="attachment-card border rounded-2 p-3 h-100">
+                                            <div *ngIf="isImage(attachment)" class="text-center">
+                                                <div class="attachment-image-container mb-2">
+                                                    <img [src]="getFullAttachmentUrl(attachment)"
+                                                        [alt]="'مرفق ' + (i + 1)" class="attachment-preview rounded-2"
+                                                        (click)="openImageModal(attachment)">
+                                                    <div class="image-overlay" (click)="openImageModal(attachment)">
+                                                        <i class="fa-solid fa-expand"></i>
+                                                    </div>
+                                                </div>
+                                                <p class="small text-muted mb-0">صورة {{ i + 1 }}</p>
+                                            </div>
+
+                                            <div *ngIf="isPdf(attachment)" class="text-center">
+                                                <div class="attachment-icon mb-2">
+                                                    <i class="fa-solid fa-file-pdf text-danger fa-2x"></i>
+                                                </div>
+                                                <p class="small text-muted mb-2">ملف PDF {{ i + 1 }}</p>
+                                                <a [href]="getFullAttachmentUrl(attachment)" target="_blank"
+                                                    class="btn btn-outline-danger btn-sm w-100">
+                                                    <i class="fa-solid fa-eye me-1"></i>عرض الملف
+                                                </a>
+                                            </div>
+
+                                            <div *ngIf="!isImage(attachment) && !isPdf(attachment)" class="text-center">
+                                                <div class="attachment-icon mb-2">
+                                                    <i class="fa-solid fa-file text-secondary fa-2x"></i>
+                                                </div>
+                                                <p class="small text-muted mb-2">ملف {{ i + 1 }}</p>
+                                                <a [href]="getFullAttachmentUrl(attachment)" target="_blank"
+                                                    class="btn btn-outline-primary btn-sm w-100">
+                                                    <i class="fa-solid fa-external-link-alt me-1"></i>فتح الرابط
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="!getAttachments(letter) || getAttachments(letter).length === 0"
+                                class="text-center py-4 border rounded-2 bg-light">
+                                <i class="fa-solid fa-file-circle-exclamation text-muted fa-2x mb-2"></i>
+                                <p class="text-muted mb-0">لا توجد مرفقات مضافة</p>
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-transparent border-0 pt-0">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="timeline-info d-flex flex-wrap gap-3">
+                                        <small class="text-muted">
+                                            <i class="fa-solid fa-calendar-plus me-1"></i>
+                                            أنشئت في: {{ formatDate(letter.createdAt) }}
+                                        </small>
+                                        <!-- <small class="text-muted" *ngIf="(letter as any).updatedAt">
+                                            <i class="fa-solid fa-pen-to-square me-1"></i>
+                                            عدلت في: {{ formatUpdatedDate(letter) }}
+                                        </small> -->
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-start">
+                                    <div class="action-buttons d-flex gap-2 justify-content-end">
+                                        <button class="btn btn-primary btn-sm px-3" (click)="editDraft(letter)">
+                                            <i class="fa-solid fa-pen-to-square me-1"></i>تعديل المسودة
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm px-3"
+                                            (click)="deleteDraft(letter._id!)">
+                                            <i class="fa-solid fa-trash me-1"></i>حذف
+                                        </button>
+                                        <button class="btn btn-success btn-sm px-3" (click)="publishDraft(letter._id!)"
+                                            *ngIf="canPublish(letter)">
+                                            <i class="fa-solid fa-paper-plane me-1"></i>نشر
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal للصورة -->
+<div *ngIf="showImageModal" class="modal-backdrop fade show" (click)="closeImageModal()"></div>
+<div *ngIf="showImageModal" class="modal fade show d-block" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content rounded-3 border-0 shadow-lg">
+            <div class="modal-header bg-gradient-primary text-white rounded-top-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-image me-2"></i>عرض الصورة
+                </h5>
+                <button type="button" class="btn-close btn-close-white" (click)="closeImageModal()"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img [src]="selectedImage" alt="صورة مرفق" class="img-fluid rounded-bottom-3">
+            </div>
+        </div>
+    </div>
+</div>

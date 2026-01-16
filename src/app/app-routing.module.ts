@@ -20,7 +20,7 @@ import { RejectedLetterDetailsComponent } from './components/rejected-letter-det
 import { DepartmentCriteriaManagementComponent } from './components/department-criteria-management/department-criteria-management.component';
 import { CanceledLettersListComponent } from './components/canceled-letters-list/canceled-letters-list.component';
 import { CanceledLetterDetailsComponent } from './components/canceled-letter-details/canceled-letter-details.component';
-
+import { DraftLettersComponent } from './components/drafts/drafts.component';
 const routes: Routes = [
   { path: 'login', component: LoginComponent, canActivate: [LoggedInGuard] },
 
@@ -30,6 +30,7 @@ const routes: Routes = [
   children: [
     { path: '', component: HomeComponent, canActivate: [AuthGuard] },
     { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
+    { path: 'drafts', component: DraftLettersComponent, canActivate: [AuthGuard] },
     { path: 'department', component: DepartmentComponent, canActivate: [AuthGuard] },
     { path: 'add-decision', component: AddadecisionComponent, canActivate: [AuthGuard] },
     { path: 'declaration', component: DeclarationComponent, canActivate: [AuthGuard] },
