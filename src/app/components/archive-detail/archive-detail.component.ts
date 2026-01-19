@@ -171,7 +171,7 @@ export class ArchiveDetailComponent implements OnInit {
     this.applyFilters();
   }
 
-  applyFilters(): void {
+applyFilters(): void {
   let filtered = [...this.letters];
 
   if (this.searchTerm) {
@@ -194,10 +194,8 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   if (this.filters.toDate) {
-    // إضافة يوم كامل إلى تاريخ الانتهاء لتضمين اليوم نفسه
     const toDatePlusOneDay = new Date(this.filters.toDate);
     toDatePlusOneDay.setDate(toDatePlusOneDay.getDate() + 1);
-
     filtered = filtered.filter(
       (letter) => new Date(letter.createdAt) < toDatePlusOneDay
     );
@@ -212,10 +210,8 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   if (this.dateRange.endDate) {
-    // نفس الحل لتاريخ انتهاء القرار
     const endDatePlusOneDay = new Date(this.dateRange.endDate);
     endDatePlusOneDay.setDate(endDatePlusOneDay.getDate() + 1);
-
     filtered = filtered.filter(
       (letter) =>
         letter.EndDate &&
@@ -241,6 +237,9 @@ export class ArchiveDetailComponent implements OnInit {
     );
   }
 
+  // تأكد أن الفرز دائمًا حسب updatedAt تنازلي (الأحدث أولاً)
+  this.sortField = 'updatedAt';
+  this.sortDirection = 'desc';
   filtered = this.sortLetters(filtered);
 
   this.filteredLetters = filtered;
@@ -248,37 +247,35 @@ export class ArchiveDetailComponent implements OnInit {
   this.calculateTotalPages();
 }
 
+
   sortLetters(letters: any[]): any[] {
-    return letters.sort((a, b) => {
-      let valueA, valueB;
+  return letters.sort((a, b) => {
+    let valueA, valueB;
 
-      switch (this.sortField) {
-        case 'title':
-          valueA = a.title?.toLowerCase() || '';
-          valueB = b.title?.toLowerCase() || '';
-          break;
-        case 'user.fullname':
-          valueA = a.user?.fullname?.toLowerCase() || '';
-          valueB = b.user?.fullname?.toLowerCase() || '';
-          break;
-        case 'createdAt':
-          valueA = new Date(a.createdAt);
-          valueB = new Date(b.createdAt);
-          break;
-        default:
-          valueA = a[this.sortField];
-          valueB = b[this.sortField];
-      }
+    switch (this.sortField) {
+      case 'title':
+        valueA = a.title?.toLowerCase() || '';
+        valueB = b.title?.toLowerCase() || '';
+        break;
+      case 'user.fullname':
+        valueA = a.user?.fullname?.toLowerCase() || '';
+        valueB = b.user?.fullname?.toLowerCase() || '';
+        break;
+      case 'updatedAt':  // استخدم updatedAt
+        valueA = new Date(a.updatedAt);
+        valueB = new Date(b.updatedAt);
+        break;
+      default:
+        valueA = a[this.sortField];
+        valueB = b[this.sortField];
+    }
 
-      if (valueA < valueB) {
-        return this.sortDirection === 'asc' ? -1 : 1;
-      }
-      if (valueA > valueB) {
-        return this.sortDirection === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
-  }
+    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
 
   sortBy(field: string): void {
     if (this.sortField === field) {

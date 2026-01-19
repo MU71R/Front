@@ -56,6 +56,9 @@ export interface DraftLetter {
   SaveStatus: "مسودة" | "مكتمل";
   transactionNumber?: number;
   createdAt: Date;
+  tables?: any[];
+  // إضافة خاصية أخرى إذا كانت موجودة
+  attachments?: string[];
 }
 
 @Injectable({

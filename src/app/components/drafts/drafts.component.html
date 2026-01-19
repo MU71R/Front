@@ -58,44 +58,10 @@
                                             <i class="fa-solid fa-hashtag me-1"></i>
                                             {{ i + 1 }}
                                         </span>
-                                        <span class="badge status-badge fs-7 text-white bg-secondary">
-                                            مسودة
-                                        </span>
                                         <span *ngIf="letter.letterType" class="badge bg-info text-white fs-7">
                                             {{ getLetterTypeArabic(letter.letterType) }}
                                         </span>
                                     </div>
-                                </div>
-                                <div class="dropdown">
-                                    <button class="btn btn-light btn-sm dropdown-toggle" type="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-ellipsis-vertical"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                        <li>
-                                            <a class="dropdown-item" (click)="editDraft(letter)">
-                                                <i class="fa-solid fa-pen-to-square me-2"></i>تعديل المسودة
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item" (click)="deleteDraft(letter._id!)">
-                                                <i class="fa-solid fa-trash me-2"></i>حذف المسودة
-                                            </a>
-                                        </li>
-                                        <li *ngIf="hasPdfUrl(letter)">
-                                            <a class="dropdown-item" [href]="getPdfUrl(letter)" target="_blank">
-                                                <i class="fa-solid fa-file-pdf me-2"></i>عرض PDF
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <hr class="dropdown-divider">
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item text-primary fw-bold" (click)="publishDraft(letter._id!)">
-                                                <i class="fa-solid fa-paper-plane me-2"></i>نشر القرار
-                                            </a>
-                                        </li>
-                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -124,17 +90,70 @@
                                         <span class="text-muted">{{ formatDate(letter.date) }}</span>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="info-item">
-                                        <i class="fa-solid fa-align-left text-primary me-2"></i>
-                                        <strong class="text-dark">وصف القرار : </strong>
-                                        <div class="description-content mt-2 p-3 bg-light rounded-2 border">
-                                            <div class="text-muted lh-base description-text">
-                                                {{ getCleanDescription(getLetterContent(letter)) }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <!-- بدلاً من قسم وصف القرار، استبدله بهذا: -->
+
+<div class="content-section mb-4">
+  <div class="section-header mb-3">
+    <h6 class="text-dark fw-bold mb-0">
+      <i class="fa-solid fa-list-check text-primary me-2"></i>
+      محتوى القرار
+    </h6>
+  </div>
+
+  <!-- البنود (Descriptions) -->
+  <div *ngIf="getDescriptions(letter).length > 0" class="mb-3">
+    <div class="content-header d-flex align-items-center mb-2">
+      <i class="fa-solid fa-bars text-success me-2"></i>
+      <strong class="text-dark">البنود:</strong>
+      <span class="badge bg-success ms-2 fs-7">{{ getDescriptions(letter).length }}</span>
+    </div>
+    <div class="descriptions-container">
+      <div *ngFor="let description of getDescriptions(letter); let i = index"
+           class="description-item mb-2 p-3 bg-light rounded-2 border">
+        <div class="d-flex align-items-start">
+          <span class="badge bg-primary me-2">{{ i + 1 }}</span>
+          <div class="flex-grow-1">
+            <div class="description-content text-muted lh-base"
+                 [innerHTML]="getCleanItemContent(description)"></div>
+            <small *ngIf="description.length > 150" class="text-muted mt-1 d-block">
+              {{ description.length }} حرف
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- الحيثيات (Rationale) -->
+  <div *ngIf="getRationales(letter).length > 0" class="mb-3">
+    <div class="content-header d-flex align-items-center mb-2">
+      <i class="fa-solid fa-gavel text-warning me-2"></i>
+      <strong class="text-dark">الحيثيات:</strong>
+      <span class="badge bg-warning ms-2 fs-7">{{ getRationales(letter).length }}</span>
+    </div>
+    <div class="rationales-container">
+      <div *ngFor="let rationale of getRationales(letter); let i = index"
+           class="rationale-item mb-2 p-3 bg-light rounded-2 border">
+        <div class="d-flex align-items-start">
+          <span class="badge bg-warning me-2">{{ i + 1 }}</span>
+          <div class="flex-grow-1">
+            <div class="rationale-content text-muted lh-base"
+                 [innerHTML]="getCleanItemContent(rationale)"></div>
+            <small *ngIf="rationale.length > 150" class="text-muted mt-1 d-block">
+              {{ rationale.length }} حرف
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- رسالة إذا لم يكن هناك محتوى -->
+  <div *ngIf="!hasContent(letter)" class="alert alert-light text-center border-0 rounded-3 py-4">
+    <i class="fa-solid fa-file-circle-exclamation text-muted fa-2x mb-2"></i>
+    <p class="text-muted mb-0">لا يوجد محتوى مضافة للقرار</p>
+  </div>
+</div>
                             </div>
 
                             <!-- الفترات الزمنية -->
@@ -206,7 +225,7 @@
                             </div>
 
                             <!-- المرفقات -->
-                            <div class="attachments-section"
+                            <!-- <div class="attachments-section"
                                 *ngIf="getAttachments(letter) && getAttachments(letter).length > 0">
                                 <div class="section-header mb-3">
                                     <h6 class="text-dark fw-bold mb-0">
@@ -255,13 +274,13 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> -->
 
-                            <div *ngIf="!getAttachments(letter) || getAttachments(letter).length === 0"
+                            <!-- <div *ngIf="!getAttachments(letter) || getAttachments(letter).length === 0"
                                 class="text-center py-4 border rounded-2 bg-light">
                                 <i class="fa-solid fa-file-circle-exclamation text-muted fa-2x mb-2"></i>
                                 <p class="text-muted mb-0">لا توجد مرفقات مضافة</p>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="card-footer bg-transparent border-0 pt-0">
@@ -289,7 +308,7 @@
                                         </button>
                                         <button class="btn btn-success btn-sm px-3" (click)="publishDraft(letter._id!)"
                                             *ngIf="canPublish(letter)">
-                                            <i class="fa-solid fa-paper-plane me-1"></i>نشر
+                                            <i class="fa-solid fa-paper-plane me-1"></i>ارسال
                                         </button>
                                     </div>
                                 </div>

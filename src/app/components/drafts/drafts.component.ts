@@ -268,6 +268,35 @@ export class DraftLettersComponent implements OnInit {
 }
 
 
+// في ملف drafts.component.ts
+// =============== دوال محتوى القرار ===============
+
+getDescriptions(letter: DraftLetter): string[] {
+  return letter.descriptions || [];
+}
+
+getRationales(letter: DraftLetter): string[] {
+  return letter.Rationale || [];
+}
+
+getCleanItemContent(content: string): string {
+  if (!content) return '';
+
+  if (content.includes('<') && content.includes('>')) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    return tempDiv.textContent || tempDiv.innerText || '';
+  }
+
+  // عرض أول 150 حرف فقط
+  return content.length > 150 ? content.substring(0, 150) + '...' : content;
+}
+
+hasContent(letter: DraftLetter): boolean {
+  return (letter.descriptions && letter.descriptions.length > 0) ||
+         (letter.Rationale && letter.Rationale.length > 0);
+}
+
   deleteDraft(id: string): void {
     Swal.fire({
       title: 'هل أنت متأكد؟',
@@ -319,13 +348,13 @@ export class DraftLettersComponent implements OnInit {
 
   publishDraft(id: string): void {
     Swal.fire({
-      title: 'نشر المسودة',
-      text: 'هل تريد نشر هذه المسودة كقرار رسمي؟',
+      title: 'ارسال المسودة',
+      text: 'هل تريد ارسال القرار  للمراجعه',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#6c757d',
-      confirmButtonText: 'نعم، انشر',
+      confirmButtonText: 'نعم، ارسال',
       cancelButtonText: 'إلغاء',
       reverseButtons: true,
     }).then((result) => {
@@ -470,4 +499,6 @@ export class DraftLettersComponent implements OnInit {
       return '';
     }
   }
+
+
 }

@@ -203,67 +203,64 @@ export class DeclarationComponent implements OnInit {
 
   // ==================== وظائف الحفظ والإرسال ====================
 
-  onSubmit() {
-    this.formSubmitted = true;
+onSubmit() {
+  this.formSubmitted = true;
 
-    if (this.messageForm.invalid) {
-      Object.keys(this.f).forEach((key) => {
-        this.f[key].markAsTouched();
-      });
-      this.contentFields.controls.forEach(control => {
-        control.markAllAsTouched();
-      });
-      this.rationaleFields.controls.forEach(control => {
-        control.markAllAsTouched();
-      });
-      this.showWarning('يرجى تصحيح الأخطاء في النموذج قبل الإرسال');
-      return;
-    }
-
-    // عرض خيارات الحفظ
-    Swal.fire({
-      title: 'خيارات حفظ القرار',
-      html: `
-        <div style="text-align: right; direction: rtl;">
-          <p style="font-size: 16px; margin-bottom: 15px;">
-            <strong>اختر طريقة حفظ القرار:</strong>
-          </p>
-          <div class="text-start">
-            <ul class="text-muted" style="padding-right: 20px;">
-              <li><strong>حفظ كمسودة:</strong> حفظ للاستكمال لاحقاً</li>
-              <li><strong>إرسال للمراجعة:</strong> إرسال للمشرف للمراجعة</li>
-              ${this.user?.role === 'UniversityPresident' ?
-                '<li><strong>اعتماد مباشر:</strong> اعتماد القرار فوراً</li>' : ''}
-            </ul>
-          </div>
-        </div>
-      `,
-      icon: 'question',
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: '<i class="fa fa-send me-1"></i> إرسال للمراجعة',
-      denyButtonText: '<i class="fa fa-save me-1"></i> حفظ كمسودة',
-      cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
-      reverseButtons: true,
-      customClass: {
-        popup: 'rtl-popup',
-        title: 'rtl-title',
-        confirmButton: 'px-4',
-        cancelButton: 'px-4',
-        denyButton: 'px-4'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // إرسال للمراجعة
-        this.submitForReview();
-      } else if (result.isDenied) {
-        // حفظ كمسودة
-        this.saveAsDraft();
-      } else {
-        this.formSubmitted = false;
-      }
-    });
+  if (this.messageForm.invalid) {
+    Object.keys(this.f).forEach(key => this.f[key].markAsTouched());
+    this.contentFields.controls.forEach(c => c.markAllAsTouched());
+    this.rationaleFields.controls.forEach(c => c.markAllAsTouched());
+    this.showWarning('يرجى تصحيح الأخطاء في النموذج قبل الإرسال');
+    return;
   }
+
+  const isPresident = this.user?.role === 'UniversityPresident';
+
+  Swal.fire({
+    title: isPresident ? 'اعتماد القرار' : 'إرسال القرار للمراجعة',
+    // html: `
+    //   <div style="text-align:right; direction:rtl;">
+    //     <p style="font-size:16px; margin-bottom:15px;">
+    //       <strong>${isPresident ? 'تأكيد اعتماد القرار' : 'اختر طريقة حفظ القرار:'}</strong>
+    //     </p>
+    //     <ul class="text-muted" style="padding-right:20px;">
+    //       <li><strong>حفظ كمسودة:</strong> حفظ للاستكمال لاحقاً</li>
+    //       <li>
+    //         <strong>${isPresident ? 'اعتماد مباشر:' : 'إرسال للمراجعة:'}</strong>
+    //         ${isPresident ? 'اعتماد القرار فوراً' : 'إرسال القرار للمشرف'}
+    //       </li>
+    //     </ul>
+    //   </div>
+    // `,
+    icon: 'question',
+    // showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: isPresident
+      ? '<i class="fa fa-check me-1"></i> اعتماد'
+      : '<i class="fa fa-send me-1"></i> إرسال للمراجعة',
+    // denyButtonText: '<i class="fa fa-save me-1"></i> حفظ كمسودة',
+    cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
+    reverseButtons: true,
+    confirmButtonColor: isPresident ? '#198754' : '#0d6efd'
+  }).then(result => {
+    if (result.isConfirmed) {
+
+      // ✅ نفس الدالة – اختلاف الحالة فقط
+      this.messageForm.patchValue({
+        status: isPresident ? 'معتمد' : 'قيد المراجعة'
+      });
+
+      this.submitForReview();
+
+    } else if (result.isDenied) {
+      this.saveAsDraft();
+    } else {
+      this.formSubmitted = false;
+    }
+  });
+}
+
+
 
   // دالة حفظ المسودة
   saveAsDraft(): void {
@@ -287,16 +284,16 @@ export class DeclarationComponent implements OnInit {
 
     Swal.fire({
       title: 'حفظ كمسودة',
-      html: `
-        <div style="text-align: right; direction: rtl;">
-          <p style="font-size: 16px; margin-bottom: 15px;">
-            <strong>هل تريد حفظ القرار كمسودة؟</strong>
-          </p>
-          <p style="font-size: 14px; color: #666;">
-            سيتم حفظ القرار في قائمة المسودات ويمكنك تعديله وإرساله لاحقاً
-          </p>
-        </div>
-      `,
+      // html: `
+      //   <div style="text-align: right; direction: rtl;">
+      //     <p style="font-size: 16px; margin-bottom: 15px;">
+      //       <strong>هل تريد حفظ القرار كمسودة؟</strong>
+      //     </p>
+      //     <p style="font-size: 14px; color: #666;">
+      //       سيتم حفظ القرار في قائمة المسودات ويمكنك تعديله وإرساله لاحقاً
+      //     </p>
+      //   </div>
+      // `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
@@ -313,33 +310,11 @@ export class DeclarationComponent implements OnInit {
     });
   }
 
-  // دالة إرسال للمراجعة
-  submitForReview(): void {
-    Swal.fire({
-      title: 'إرسال للمراجعة',
-      html: `
-        <div style="text-align: right; direction: rtl;">
-          <p style="font-size: 16px; margin-bottom: 15px;">
-            <strong>هل تريد إرسال القرار للمراجعة؟</strong>
-          </p>
-          <p style="font-size: 14px; color: #666;">
-            سيتم إرسال القرار للمشرف المختص للمراجعة والموافقة
-          </p>
-        </div>
-      `,
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: '<i class="fa fa-send me-1"></i> إرسال للمراجعة',
-      cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
-      reverseButtons: true,
-    }).then((result) => {
-      if (result.isConfirmed) {
-        this.proceedWithSave('مكتمل', 'review');
-      }
-    });
-  }
+  // دالة إرسال للمراجعة (بدون SweetAlert)
+submitForReview(): void {
+  this.proceedWithSave('مكتمل', 'review');
+}
+
 
   // دالة اعتماد مباشر (لرئيس الجامعة فقط)
   approveDirectly(): void {
@@ -486,39 +461,47 @@ export class DeclarationComponent implements OnInit {
 
   // معالجة استجابة الحفظ
   private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): void {
-    this.submitting = false;
+  this.submitting = false;
 
-    if (res.success) {
-      const message = this.getSaveSuccessMessage(saveStatus, isUpdate);
-      this.showSuccess(message);
+  if (res.success) {
+    const message = this.getSaveSuccessMessage(saveStatus, isUpdate);
+    this.showSuccess(message);
 
-      // تنظيف البيانات المحفوظة
-      this.clearSavedData();
+    // تنظيف البيانات المحفوظة فقط بدون تنقل
+    this.clearSavedData();
 
-      // تحديد الصفحة المستهدفة
-      const targetPage = saveStatus === 'مسودة' ? '/dashboard/drafts' : '/dashboard/letters';
+    // إعادة ضبط النموذج والبقاء في نفس الصفحة
+    setTimeout(() => {
+      this.cleanupForm();
+    }, 1500);
 
-      setTimeout(() => {
-        this.cleanupForm();
-        this.router.navigate([targetPage]);
-      }, 1500);
-    } else {
-      this.showError(res.message || 'حدث خطأ أثناء حفظ القرار');
-    }
+  } else {
+    this.showError(res.message || 'حدث خطأ أثناء حفظ القرار');
   }
+}
+
 
   // الحصول على رسالة النجاح المناسبة
-  private getSaveSuccessMessage(saveStatus: string, isUpdate: boolean): string {
-    if (isUpdate) {
-      return saveStatus === 'مسودة'
-        ? 'تم تحديث المسودة بنجاح'
-        : 'تم إرسال القرار بنجاح';
-    } else {
-      return saveStatus === 'مسودة'
-        ? 'تم حفظ القرار كمسودة بنجاح'
-        : 'تم إرسال القرار للمراجعة بنجاح';
-    }
+ private getSaveSuccessMessage(saveStatus: string, isUpdate: boolean): string {
+  const isPresident = this.user?.role === 'UniversityPresident';
+
+  // المسودة
+  if (saveStatus === 'مسودة') {
+    return isUpdate
+      ? 'تم تحديث المسودة بنجاح'
+      : 'تم حفظ القرار كمسودة بنجاح';
   }
+
+  // غير مسودة
+  if (isPresident) {
+    return 'تم اعتماد القرار بنجاح';
+  }
+
+  return isUpdate
+    ? 'تم إرسال القرار بنجاح'
+    : 'تم إرسال القرار للمراجعة بنجاح';
+}
+
 
   // ==================== وظائف PDF Testing ====================
 
