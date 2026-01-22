@@ -432,18 +432,27 @@ submitForReview(): void {
   }
 
   // تحديث مسودة موجودة
-  private updateExistingDraft(payload: any): void {
-    this.letterService.updateLetter(this.draftId!, payload).subscribe({
-      next: (res: any) => {
+  // في declaration.component.ts
+// تحديث مسودة موجودة
+private updateExistingDraft(payload: any): void {
+  this.letterService.updateLetter(this.draftId!, payload).subscribe({
+    next: (res: any) => {
+      // إذا كان الـ response يحتوي على _id أو success: true
+      if ((res.success === true) || (res.data && res.data._id) || res._id) {
         this.handleSaveResponse(res, payload.SaveStatus, true);
-      },
-      error: (err: any) => {
-        console.error('❌ Error updating draft:', err);
-        this.showError('حدث خطأ أثناء تحديث المسودة');
+      } else {
+        console.error('Unexpected response:', res);
+        this.showError('تعذر تحديث المسودة - استجابة غير متوقعة');
         this.submitting = false;
-      },
-    });
-  }
+      }
+    },
+    error: (err: any) => {
+      console.error('Error updating draft:', err);
+      this.showError(err?.error?.message || err?.message || 'حدث خطأ أثناء تحديث المسودة');
+      this.submitting = false;
+    },
+  });
+}
 
   // إنشاء قرار جديد
   private createNewLetter(payload: any): void {
@@ -460,23 +469,42 @@ submitForReview(): void {
   }
 
   // معالجة استجابة الحفظ
-  private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): void {
+  // دالة معالجة استجابة الحفظ
+// بدل هذه الدالة فقط
+private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): void {
   this.submitting = false;
 
-  if (res.success) {
-    const message = this.getSaveSuccessMessage(saveStatus, isUpdate);
-    this.showSuccess(message);
+  // طريقة مرنة للتحقق من النجاح
+  let isSuccess = false;
+  let message = '';
 
-    // تنظيف البيانات المحفوظة فقط بدون تنقل
+  // تحقق من بنية الـ response
+  if (res.success === true) {
+    isSuccess = true;
+    message = res.message || '';
+  } else if (res.data && res.data._id) {
+    isSuccess = true;
+    message = 'تم الحفظ بنجاح';
+  } else if (res._id) {
+    isSuccess = true;
+    message = 'تم الحفظ بنجاح';
+  }
+
+  if (isSuccess) {
+    const userMessage = this.getSaveSuccessMessage(saveStatus, isUpdate);
+    this.showSuccess(userMessage);
+
+    // تنظيف البيانات المحفوظة
     this.clearSavedData();
 
-    // إعادة ضبط النموذج والبقاء في نفس الصفحة
+    // إعادة ضبط النموذج
     setTimeout(() => {
       this.cleanupForm();
     }, 1500);
 
   } else {
-    this.showError(res.message || 'حدث خطأ أثناء حفظ القرار');
+    console.error('API Response error:', res);
+    this.showError(res.message || res.error || 'حدث خطأ غير معروف');
   }
 }
 

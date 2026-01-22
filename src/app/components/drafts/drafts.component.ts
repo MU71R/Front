@@ -72,15 +72,19 @@ export class DraftLettersComponent implements OnInit {
   }
 
   getUserName(letter: DraftLetter): string {
-    if (!letter.user) return 'غير محدد';
+  return (letter as any).fullName || 'غير محدد';
+}
 
-    if (typeof letter.user === 'object') {
-      const userObj = letter.user as any;
-      return userObj.fullname || userObj.username || userObj.email || 'غير محدد';
-    }
 
-    return 'غير محدد';
+getEntityName(letter: DraftLetter): string {
+  if ((letter as any).entityName) {
+    return (letter as any).entityName;
   }
+
+  return 'غير محدد';
+}
+
+
 
   getMainCriteriaName(letter: DraftLetter): string {
     if (!letter.mainCriteria) return 'غير محدد';
@@ -163,27 +167,25 @@ export class DraftLettersComponent implements OnInit {
 
   // =============== دوال التاريخ ===============
 
-  formatDate(dateValue: string | Date | undefined | null): string {
-    if (!dateValue) return 'غير محدد';
+ formatDate(dateValue: string | Date | undefined | null): string {
+  if (!dateValue) return 'غير محدد';
 
-    try {
-      const date = new Date(dateValue);
-      if (isNaN(date.getTime())) {
-        return 'غير محدد';
-      }
-
-      return date.toLocaleDateString('ar-EG', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } catch (error) {
-      console.error('Error formatting date:', error);
+  try {
+    const date = new Date(dateValue);
+    if (isNaN(date.getTime())) {
       return 'غير محدد';
     }
+
+    return date.toLocaleDateString('ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  } catch (error) {
+    return 'غير محدد';
   }
+}
+
 
   formatStartDate(letter: DraftLetter): string {
     return this.formatDate(letter.StartDate);
@@ -619,4 +621,10 @@ getItemType(content: string): string {
     return 'نص';
   }
 }
+
+getFullItemContent(content: string): string {
+  if (!content) return '';
+  return content;
+}
+
 }

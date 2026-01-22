@@ -69,11 +69,18 @@
                         <div class="card-body py-4">
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
+
                                     <div class="info-item">
                                         <i class="fa-solid fa-user text-primary me-2"></i>
-                                        <strong class="text-dark">المستخدم : </strong>
+                                        <strong class="text-dark">اسم الشخص   : </strong>
                                         <span class="text-muted">{{ getUserName(letter) }}</span>
                                     </div>
+                                    <div class="info-item mt-3">
+                                      <i class="fa-solid fa-building text-primary me-2"></i>
+                                      <strong class="text-dark">الجهة : </strong>
+                                      <span class="text-muted">{{ getEntityName(letter) }}</span>
+                                    </div>
+
                                     <div class="info-item mt-3">
                                         <i class="fa-solid fa-id-card text-primary me-2"></i>
                                         <strong class="text-dark">الرقم القومي : </strong>
@@ -84,134 +91,55 @@
                                         <strong class="text-dark">رقم الهاتف : </strong>
                                         <span class="text-muted">{{ letter.phoneNumber || 'غير محدد' }}</span>
                                     </div>
-                                    <div class="info-item mt-3">
+                                    <!-- <div class="info-item mt-3">
                                         <i class="fa-solid fa-calendar text-primary me-2"></i>
                                         <strong class="text-dark">تاريخ القرار : </strong>
                                         <span class="text-muted">{{ formatDate(letter.date) }}</span>
-                                    </div>
+                                    </div> -->
                                 </div>
                                 <!-- بدلاً من قسم وصف القرار، استبدله بهذا: -->
 
-<div class="content-section mb-4">
-  <div class="section-header mb-3">
-    <h6 class="text-dark fw-bold mb-0">
-      <i class="fa-solid fa-list-check text-primary me-2"></i>
-      محتوى القرار
-    </h6>
-  </div>
-
-  <!-- في قسم البنود -->
-<div *ngIf="getDescriptions(letter).length > 0" class="mb-3">
-  <div class="content-header d-flex align-items-center mb-2">
-    <i class="fa-solid fa-bars text-success me-2"></i>
-    <strong class="text-dark">البنود:</strong>
-    <span class="badge bg-success ms-2 fs-7">{{ getDescriptions(letter).length }}</span>
-  </div>
-  <div class="descriptions-container">
-    <div *ngFor="let description of getDescriptions(letter); let i = index"
-         class="description-item mb-2 p-3 bg-light rounded-2 border">
-      <div class="d-flex align-items-start">
-        <span class="badge bg-primary me-2">{{ i + 1 }}</span>
-        <div class="flex-grow-1">
-          <!-- إضافة أيقونة للجداول -->
-          <div *ngIf="isTableContent(description)" class="mb-2">
-            <span class="badge bg-info">
-              <i class="fa-solid fa-table me-1"></i>جدول
-            </span>
-          </div>
-
-          <div *ngIf="isTableContent(description)" class="table-preview">
-            <div class="small text-muted">
-              <i class="fa-solid fa-table me-1"></i>
-              جدول {{ i + 1 }} - يمكن تعديله في صفحة التحرير
-            </div>
-          </div>
-
-          <div *ngIf="!isTableContent(description)" class="description-content text-muted lh-base"
-               [innerHTML]="getCleanItemContent(description)"></div>
-
-          <small class="text-muted mt-1 d-block">
-            <i class="fa-solid fa-file me-1"></i>
-            {{ getItemType(description) }}
-            {{ description.length > 150 ? ' - ' + description.length + ' حرف' : '' }}
-          </small>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-  <!-- الحيثيات (Rationale) -->
-  <div *ngIf="getRationales(letter).length > 0" class="mb-3">
-    <div class="content-header d-flex align-items-center mb-2">
-      <i class="fa-solid fa-gavel text-warning me-2"></i>
-      <strong class="text-dark">الحيثيات:</strong>
-      <span class="badge bg-warning ms-2 fs-7">{{ getRationales(letter).length }}</span>
-    </div>
-    <div class="rationales-container">
-      <div *ngFor="let rationale of getRationales(letter); let i = index"
-           class="rationale-item mb-2 p-3 bg-light rounded-2 border">
-        <div class="d-flex align-items-start">
-          <span class="badge bg-warning me-2">{{ i + 1 }}</span>
-          <div class="flex-grow-1">
-            <div class="rationale-content text-muted lh-base"
-                 [innerHTML]="getCleanItemContent(rationale)"></div>
-            <small *ngIf="rationale.length > 150" class="text-muted mt-1 d-block">
-              {{ rationale.length }} حرف
-            </small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- رسالة إذا لم يكن هناك محتوى -->
-  <div *ngIf="!hasContent(letter)" class="alert alert-light text-center border-0 rounded-3 py-4">
-    <i class="fa-solid fa-file-circle-exclamation text-muted fa-2x mb-2"></i>
-    <p class="text-muted mb-0">لا يوجد محتوى مضافة للقرار</p>
-  </div>
-</div>
-                            </div>
+                              </div>
 
                             <!-- الفترات الزمنية -->
                             <div class="time-period-section mb-4">
                                 <div class="section-header mb-3">
-                                    <h6 class="text-dark fw-bold mb-0">
-                                        <i class="fa-solid fa-calendar-days text-primary me-2"></i>
+                                  <h6 class="text-dark fw-bold mb-0">
+                                    <i class="fa-solid fa-calendar-days text-primary me-2"></i>
                                         الفترة الزمنية
                                     </h6>
                                 </div>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <div class="period-card border rounded-2 p-3">
-                                            <div class="d-flex align-items-center">
+                                          <div class="d-flex align-items-center">
                                                 <i class="fa-solid fa-play text-primary me-3 fa-lg"></i>
                                                 <div>
-                                                    <p class="mb-1 fw-bold">تاريخ البدء</p>
+                                                  <p class="mb-1 fw-bold">تاريخ البدء</p>
                                                     <p class="mb-0 text-muted">{{ formatDate(letter.StartDate) }}</p>
                                                 </div>
-                                            </div>
+                                              </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="period-card border rounded-2 p-3">
+                                      <div class="period-card border rounded-2 p-3">
                                             <div class="d-flex align-items-center">
                                                 <i class="fa-solid fa-flag-checkered text-primary me-3 fa-lg"></i>
                                                 <div>
                                                     <p class="mb-1 fw-bold">تاريخ الانتهاء</p>
                                                     <p class="mb-0 text-muted">{{ formatDate(letter.EndDate) }}</p>
-                                                </div>
+                                                  </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                              </div>
 
-                            <!-- المعايير -->
+                              <!-- المعايير -->
                             <div *ngIf="letter.mainCriteria || letter.subCriteria" class="criteria-section mb-4">
                                 <div class="section-header mb-3">
                                     <h6 class="text-dark fw-bold mb-0">
-                                        <i class="fa-solid fa-list-check text-primary me-2"></i>
+                                      <i class="fa-solid fa-list-check text-primary me-2"></i>
                                         المعايير
                                     </h6>
                                 </div>
@@ -228,11 +156,11 @@
                                         </div>
                                     </div>
                                     <div class="col-md-6" *ngIf="letter.subCriteria">
-                                        <div class="criteria-card border rounded-2 p-3">
-                                            <div class="d-flex align-items-center">
+                                      <div class="criteria-card border rounded-2 p-3">
+                                        <div class="d-flex align-items-center">
                                                 <i class="fa-solid fa-sitemap text-primary me-3 fa-lg"></i>
                                                 <div>
-                                                    <p class="mb-1 fw-bold">المعيار الفرعي</p>
+                                                  <p class="mb-1 fw-bold">المعيار الفرعي</p>
                                                     <p class="mb-0 text-muted">{{ getSubCriteriaName(letter) }}</p>
                                                 </div>
                                             </div>
@@ -241,6 +169,60 @@
                                 </div>
                             </div>
 
+                            <div class="content-section mb-4">
+                              <div class="section-header mb-3">
+                                <h6 class="text-dark fw-bold mb-0">
+                                  <i class="fa-solid fa-list-check text-secondary me-2"></i>
+                                  حيثيات القرار
+                                </h6>
+                              </div>
+                            <div *ngFor="let rationale of getRationales(letter); let i = index"
+                                class="rationale-item mb-3 p-3 bg-white rounded-2 border">
+                              <span class="badge bg-warning me-2">{{ i + 1 }}</span>
+
+                              <div class="text-muted lh-lg"
+                                  [innerHTML]="getFullItemContent(rationale)">
+                              </div>
+                            </div>
+
+                            <div class="content-section mb-4">
+                              <div class="section-header mb-3">
+                                <h6 class="text-dark fw-bold mb-0">
+                                  <i class="fa-solid fa-list-check text-secondary me-2"></i>
+                                  بنود القرار
+                                </h6>
+                              </div>
+
+                            <!-- عرض البنود -->
+                            <div *ngFor="let description of getDescriptions(letter); let i = index"
+                                class="description-item mb-3 p-3 bg-white rounded-2 border">
+
+                              <span class="badge bg-primary me-2">{{ i + 1 }}</span>
+
+                              <!-- إذا كان جدول: اعرض الجدول نفسه -->
+                              <div *ngIf="isTableContent(description)"
+                                  class="table-responsive"
+                                  [innerHTML]="description">
+                              </div>
+
+                              <!-- إذا كان نص: اعرض النص كامل -->
+                              <div *ngIf="!isTableContent(description)"
+                                  class="text-muted lh-lg"
+                                  [innerHTML]="getFullItemContent(description)">
+                              </div>
+
+                            </div>
+
+
+
+
+
+                              <!-- رسالة إذا لم يكن هناك محتوى -->
+                              <div *ngIf="!hasContent(letter)" class="alert alert-light text-center border-0 rounded-3 py-4">
+                                <i class="fa-solid fa-file-circle-exclamation text-muted fa-2x mb-2"></i>
+                                <p class="text-muted mb-0">لا يوجد محتوى مضافة للقرار</p>
+                              </div>
+                            </div>
                             <!-- المرفقات -->
                             <!-- <div class="attachments-section"
                                 *ngIf="getAttachments(letter) && getAttachments(letter).length > 0">

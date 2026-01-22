@@ -8,7 +8,7 @@ import { map } from 'rxjs/operators';
 import { mergeMap} from 'rxjs/operators';
 import { LetterDetail, RecentActivit } from '../model/letter-detail';
 import { environment } from 'src/app/environments/environment';
-
+import { throwError } from 'rxjs';
 export interface PDFFile {
   _id: string;
   pdfurl: string;
@@ -271,14 +271,25 @@ duplicateDraft(draftId: string): Observable<{ success: boolean; message: string;
    * تحديث قرار
    * Endpoint: PUT /letters/update-letter/:id
    */
-  updateLetter(id: string, payload: Partial<LetterDetail>): Observable<LetterDetail> {
-    return this.http
-      .put<{ success: boolean; data: LetterDetail }>(
-        `${this.baseUrl}/update-letter/${id}`,
-        payload
-      )
-      .pipe(map((r) => r.data));
-  }
+  // في letter.service.ts
+updateLetter(id: string, data: any): Observable<any> {
+  return this.http.put(`${this.baseUrl}/update-letter/${id}`, data).pipe(
+    map((response: any) => {
+      // تنسيق الـ response لتكون متوافقة
+      if (response.success !== undefined) {
+        return response;
+      } else if (response._id) {
+        return { success: true, data: response };
+      } else {
+        return { success: false, message: 'Response format error' };
+      }
+    }),
+    catchError(error => {
+      console.error('Error updating letter:', error);
+      return throwError(error);
+    })
+  );
+}
 
   /**
    * جلب جميع القرارات
