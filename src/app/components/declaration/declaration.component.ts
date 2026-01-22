@@ -918,9 +918,30 @@ submitForReview(): void {
   }
 
   isTableDescription(index: number): boolean {
-    const tableData = this.getExistingTable(index);
-    return !!tableData && !!tableData.data && tableData.data.length > 0;
+  const tableData = this.getExistingTable(index);
+
+  // تحقق أولاً من وجود جدول في tablesArray
+  if (tableData) {
+    return true;
   }
+
+  // تحقق ثانياً من محتوى الحقل النصي نفسه
+  const contentField = this.contentFields.at(index);
+  const content = contentField?.get('content')?.value || '';
+
+  return this.isTableContent(content);
+}
+
+// دالة للتحقق من محتوى الجدول
+isTableContent(content: string): boolean {
+  if (!content) return false;
+  return content.includes('<table') ||
+         content.includes('<tbody>') ||
+         content.includes('<tr>') ||
+         content.includes('class="table"') ||
+         content.includes('decision-table') ||
+         content.includes('table-responsive');
+}
 
   getTableContent(index: number): string {
     const tableData = this.getExistingTable(index);

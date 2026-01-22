@@ -260,8 +260,19 @@ export class DraftLettersComponent implements OnInit {
   editDraft(letter: DraftLetter): void {
   console.log('Editing draft letter:', letter);
 
-  // حفظ المسودة كاملة بنفس المفتاح المتوقع في DeclarationComponent
-  localStorage.setItem('editingLetterDraft', JSON.stringify(letter));
+  // معالجة المسودة لاستخراج الجداول
+  const processedDraft = this.prepareDraftForEditing(letter);
+
+  // تسجيل البيانات المعالجة للتصحيح
+  console.log('Processed draft for editing:', {
+    originalDescriptionsCount: letter.descriptions?.length || 0,
+    processedDescriptionsCount: processedDraft.descriptions?.length || 0,
+    tablesCount: processedDraft.tables?.length || 0,
+    tables: processedDraft.tables
+  });
+
+  // حفظ المسودة المعالجة بنفس المفتاح المتوقع
+  localStorage.setItem('editingLetterDraft', JSON.stringify(processedDraft));
 
   // الانتقال لصفحة إنشاء / تعديل القرار
   this.router.navigate(['/declaration']);
@@ -500,5 +511,112 @@ hasContent(letter: DraftLetter): boolean {
     }
   }
 
+// في drafts.component.ts
+// =============== دوال تحويل الجداول ===============
 
+// دالة لاستخراج بيانات الجدول من HTML
+extractTableDataFromHtml(html: string): any {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const table = doc.querySelector('table');
+
+    if (!table) {
+      return null;
+    }
+
+    const rows = table.querySelectorAll('tr');
+    const data: string[][] = [];
+
+    rows.forEach(row => {
+      const rowData: string[] = [];
+      const cells = row.querySelectorAll('td, th');
+      cells.forEach(cell => {
+        const cellText = cell.textContent?.trim() || '';
+        rowData.push(cellText);
+      });
+      if (rowData.length > 0) {
+        data.push(rowData);
+      }
+    });
+
+    return {
+      rows: data.length,
+      cols: data[0]?.length || 0,
+      data: data
+    };
+  } catch (error) {
+    console.error('Error extracting table from HTML:', error);
+    return null;
+  }
+}
+
+// دالة للتحقق إذا كان المحتوى جدول
+isTableContent(content: string): boolean {
+  if (!content) return false;
+  return content.includes('<table') ||
+         content.includes('<tbody>') ||
+         content.includes('<tr>') ||
+         content.includes('class="table"') ||
+         content.includes('decision-table') ||
+         content.includes('table-responsive');
+}
+
+// دالة لمعالجة المسودة قبل الحفظ
+prepareDraftForEditing(letter: DraftLetter): any {
+  const processedLetter = JSON.parse(JSON.stringify(letter));
+  const tablesData: any[] = [];
+  const processedDescriptions: string[] = [];
+
+  // تحليل البنود لاستخراج الجداول
+  if (processedLetter.descriptions && Array.isArray(processedLetter.descriptions)) {
+    processedLetter.descriptions.forEach((description: string, index: number) => {
+      if (this.isTableContent(description)) {
+        // هذا جدول، استخراج بياناته
+        const tableData = this.extractTableDataFromHtml(description);
+        if (tableData) {
+          tablesData.push({
+            ...tableData,
+            descriptionIndex: index,
+            isTable: true
+          });
+        }
+        processedDescriptions.push(description);
+      } else {
+        // هذا بند نصي عادي
+        processedDescriptions.push(description);
+      }
+    });
+
+    processedLetter.descriptions = processedDescriptions;
+  }
+
+  // إذا كانت هناك جداول مخزنة بشكل منفصل
+  if (processedLetter.tables && Array.isArray(processedLetter.tables)) {
+    // دمج الجداول من الـ tables array
+    processedLetter.tables.forEach((table: any, index: number) => {
+      tablesData.push({
+        ...table,
+        descriptionIndex: processedDescriptions.length + index,
+        isTable: true
+      });
+    });
+  }
+
+  // حفظ بيانات الجداول في خاصية tables
+  processedLetter.tables = tablesData;
+
+  return processedLetter;
+}
+
+// دالة للتعرف على نوع المحتوى
+getItemType(content: string): string {
+  if (this.isTableContent(content)) {
+    return 'جدول';
+  } else if (content.length > 100) {
+    return 'نص طويل';
+  } else {
+    return 'نص';
+  }
+}
 }

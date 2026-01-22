@@ -100,29 +100,46 @@
     </h6>
   </div>
 
-  <!-- البنود (Descriptions) -->
-  <div *ngIf="getDescriptions(letter).length > 0" class="mb-3">
-    <div class="content-header d-flex align-items-center mb-2">
-      <i class="fa-solid fa-bars text-success me-2"></i>
-      <strong class="text-dark">البنود:</strong>
-      <span class="badge bg-success ms-2 fs-7">{{ getDescriptions(letter).length }}</span>
-    </div>
-    <div class="descriptions-container">
-      <div *ngFor="let description of getDescriptions(letter); let i = index"
-           class="description-item mb-2 p-3 bg-light rounded-2 border">
-        <div class="d-flex align-items-start">
-          <span class="badge bg-primary me-2">{{ i + 1 }}</span>
-          <div class="flex-grow-1">
-            <div class="description-content text-muted lh-base"
-                 [innerHTML]="getCleanItemContent(description)"></div>
-            <small *ngIf="description.length > 150" class="text-muted mt-1 d-block">
-              {{ description.length }} حرف
-            </small>
+  <!-- في قسم البنود -->
+<div *ngIf="getDescriptions(letter).length > 0" class="mb-3">
+  <div class="content-header d-flex align-items-center mb-2">
+    <i class="fa-solid fa-bars text-success me-2"></i>
+    <strong class="text-dark">البنود:</strong>
+    <span class="badge bg-success ms-2 fs-7">{{ getDescriptions(letter).length }}</span>
+  </div>
+  <div class="descriptions-container">
+    <div *ngFor="let description of getDescriptions(letter); let i = index"
+         class="description-item mb-2 p-3 bg-light rounded-2 border">
+      <div class="d-flex align-items-start">
+        <span class="badge bg-primary me-2">{{ i + 1 }}</span>
+        <div class="flex-grow-1">
+          <!-- إضافة أيقونة للجداول -->
+          <div *ngIf="isTableContent(description)" class="mb-2">
+            <span class="badge bg-info">
+              <i class="fa-solid fa-table me-1"></i>جدول
+            </span>
           </div>
+
+          <div *ngIf="isTableContent(description)" class="table-preview">
+            <div class="small text-muted">
+              <i class="fa-solid fa-table me-1"></i>
+              جدول {{ i + 1 }} - يمكن تعديله في صفحة التحرير
+            </div>
+          </div>
+
+          <div *ngIf="!isTableContent(description)" class="description-content text-muted lh-base"
+               [innerHTML]="getCleanItemContent(description)"></div>
+
+          <small class="text-muted mt-1 d-block">
+            <i class="fa-solid fa-file me-1"></i>
+            {{ getItemType(description) }}
+            {{ description.length > 150 ? ' - ' + description.length + ' حرف' : '' }}
+          </small>
         </div>
       </div>
     </div>
   </div>
+</div>
 
   <!-- الحيثيات (Rationale) -->
   <div *ngIf="getRationales(letter).length > 0" class="mb-3">
@@ -305,10 +322,6 @@
                                         <button class="btn btn-outline-danger btn-sm px-3"
                                             (click)="deleteDraft(letter._id!)">
                                             <i class="fa-solid fa-trash me-1"></i>حذف
-                                        </button>
-                                        <button class="btn btn-success btn-sm px-3" (click)="publishDraft(letter._id!)"
-                                            *ngIf="canPublish(letter)">
-                                            <i class="fa-solid fa-paper-plane me-1"></i>ارسال
                                         </button>
                                     </div>
                                 </div>
