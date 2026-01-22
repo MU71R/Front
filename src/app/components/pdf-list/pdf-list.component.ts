@@ -104,7 +104,7 @@ export class PdfListComponent implements OnInit {
 
   // لو الرابط مش كامل
   if (!finalUrl.startsWith('http')) {
-    finalUrl = 'https://www.svu.edu.eg:8080' + finalUrl;
+    finalUrl = 'https://localhost:3000' + finalUrl;
   }
 
   window.open(finalUrl, '_blank');

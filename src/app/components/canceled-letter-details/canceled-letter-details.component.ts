@@ -123,7 +123,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
       return;
     }
 
-    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
+    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -266,7 +266,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
     if (this.isOpening) return;
     this.isOpening = true;
   
-    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
+    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
   
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -293,7 +293,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
     const cleanName = fileName.replace(/^.*[\\/]/, '');
   
     const apiUrl =
-      `http://www.svu.edu.eg:8080/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
+      `http://localhost:3000/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
   
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
