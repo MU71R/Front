@@ -344,7 +344,10 @@ applyFilters(): void {
   }
 
   viewLetterDetails(letterId: string): void {
-    this.router.navigate(['/letter-detail', letterId]);
+  const url = this.router.serializeUrl(
+    this.router.createUrlTree(['/letter-detail', letterId])
+  );
+  window.open(url, '_blank');
   }
 
   // وظيفة حذف القرار - جديدة

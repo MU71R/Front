@@ -235,9 +235,9 @@
                         data-tooltip="عرض تفاصيل القرار">
                   <i class="fa fa-eye"></i>
                 </button>
-                
+
                 <!-- زر الحذف - يظهر فقط لرئيس الجامعة -->
-                <button *ngIf="canDelete()" 
+                <button *ngIf="canDelete()"
                         class="btn btn-danger btn-sm btn-action tooltip-wrapper ms-2"
                         (click)="deleteArchive(letter._id, letter.title)"
                         [disabled]="deleting"
