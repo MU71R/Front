@@ -45,6 +45,12 @@ export class LetterDetailsComponent implements OnInit {
 
   // متغير لتخزين الملف المحدد
   newAttachmentFile: File | null = null;
+  quillModules = {
+  toolbar: [
+    ['bold', 'italic', 'underline'],
+    ['clean']
+  ]
+};
 
   constructor(
     private route: ActivatedRoute,
@@ -220,20 +226,12 @@ export class LetterDetailsComponent implements OnInit {
       signatureType: this.letter.signatureType || 'حقيقية',
       description: this.letter.description || '',
       breeif: this.letter.breeif || '',
-      Rationale: [...this.letter.Rationale],
+       Rationale: [...this.letter.Rationale], // نسخ المصفوفة مع الـ HTML
       descriptions: [...this.letter.descriptions],
       StartDate: this.letter.StartDate || '',
       EndDate: this.letter.EndDate || '',
       durationDays: this.letter.durationDays || 0
     };
-
-    // تحويل HTML إلى نص عادي للتحرير
-    this.editData.Rationale = this.editData.Rationale.map((r: string) =>
-      this.htmlToText(r)
-    );
-    this.editData.descriptions = this.editData.descriptions.map((d: string) =>
-      this.htmlToText(d)
-    );
 
     // إذا لم تكن هناك حيثيات، نضيف واحدة فارغة
     if (this.editData.Rationale.length === 0) {
@@ -1097,7 +1095,32 @@ export class LetterDetailsComponent implements OnInit {
         },
       });
   }
+   regeneratePDF(): void {
+    this.pdfLoading = true;
 
+    this.archiveService.regeneratePDF(this.letterId).subscribe({
+      next: (response) => {
+        console.log('✅ نجح:', response);
+        Swal.fire({
+          icon: 'success',  
+          title: 'تم تحديث الـ PDF',
+        });
+        this.pdfLoading = false;
+        
+        // يمكنك تحديث البيانات أو إعادة تحميل الصفحة
+        // this.loadLetterData();
+      },
+      error: (error) => {
+        console.error('❌ خطأ:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'خطأ',
+          text: 'حدث خطاء في تحديث الـ PDF',
+        });
+        this.pdfLoading = false;
+      }
+    });
+  }
   trackByIndex(index: number): number {
   return index;
 }

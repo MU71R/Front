@@ -38,6 +38,9 @@ export class ArchiveService {
     return this.http.put(`${this.url}/update-archive-letter/${id}`, formData);
   }
 
+  regeneratePDF(letterId: string): Observable<any> {
+    return this.http.put(`${this.url}/regenerate-pdf/${letterId}`, {});
+  }
   getStatsArchived() {
     return this.http.get(this.url + '/stats-archiv');
   }

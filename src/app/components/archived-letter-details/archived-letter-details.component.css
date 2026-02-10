@@ -1334,3 +1334,28 @@
     margin-left: 0.5rem;
     margin-right: 0;
 }
+/* تنسيق Quill Editor */
+::ng-deep .ql-container {
+  font-family: 'Cairo', sans-serif;
+  font-size: 14px;
+  direction: rtl;
+  text-align: right;
+}
+
+::ng-deep .ql-editor {
+  min-height: 100px;
+  direction: rtl;
+  text-align: right;
+}
+
+::ng-deep .ql-toolbar {
+  direction: ltr; /* للأيقونات */
+  border: 1px solid #dee2e6;
+  border-radius: 4px 4px 0 0;
+}
+
+::ng-deep .ql-container {
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}

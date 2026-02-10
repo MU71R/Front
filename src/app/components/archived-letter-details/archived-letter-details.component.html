@@ -40,6 +40,10 @@
                     <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-file-pdf'"></i>
                     {{ pdfLoading ? 'جاري التحميل...' : 'عرض PDF' }}
                 </button>
+                <button *ngIf="!editMode" class="btn btn-primary" (click)="regeneratePDF()">
+    <i class="fa" [ngClass]="pdfLoading ? 'fa-spinner fa-spin' : 'fa-sync-alt'"></i>
+    {{ pdfLoading ? 'جاري التحديث...' : 'تحديث الـ PDF' }}
+</button>
                 <button *ngIf="canCancelDecision() && !editMode" class="btn btn-danger" (click)="cancelDecision()">
                     <i class="fa fa-ban me-2"></i>
                     إلغاء القرار
@@ -122,10 +126,12 @@
                                     </button>
                                 </div>
                                 <div class="card-body">
-                                    <textarea class="form-control rationale-textarea"
-                                              [(ngModel)]="editData.Rationale[i]"
-                                              rows="3"
-                                              placeholder="أدخل نص الحيثية..."></textarea>
+                                 <quill-editor 
+  [(ngModel)]="editData.Rationale[i]"
+  [modules]="quillModules"
+  [styles]="{'min-height': '100px', 'direction': 'rtl'}"
+  placeholder="أدخل نص الحيثية...">
+</quill-editor>
                                 </div>
                             </div>
                         </div>
@@ -151,10 +157,12 @@
                                 <i class="fa fa-file-signature me-2"></i>
                                 الوصف المختصر
                             </label>
-                            <textarea class="form-control"
-                                      [(ngModel)]="editData.breeif"
-                                      rows="3"
-                                      placeholder="أدخل الوصف المختصر للقرار..."></textarea>
+                          <quill-editor 
+  [(ngModel)]="editData.breeif"
+  [modules]="quillModules"
+  [styles]="{'min-height': '100px', 'direction': 'rtl'}"
+  placeholder="أدخل الوصف المختصر للقرار...">
+</quill-editor>
                         </div>
 
                         <div class="mb-3" *ngIf="editData.description !== undefined">
@@ -162,10 +170,12 @@
                                 <i class="fa fa-file-alt me-2"></i>
                                 الوصف التفصيلي
                             </label>
-                            <textarea class="form-control"
-                                      [(ngModel)]="editData.description"
-                                      rows="5"
-                                      placeholder="أدخل الوصف التفصيلي للقرار..."></textarea>
+                         <quill-editor 
+  [(ngModel)]="editData.description"
+  [modules]="quillModules"
+  [styles]="{'min-height': '100px', 'direction': 'rtl'}"
+  placeholder="أدخل الوصف التفصيلي للقرار...">
+</quill-editor>
                         </div>
                     </div>
                 </div>
@@ -238,10 +248,12 @@
                                     </div>
                                     <!-- إذا كان نص عادي -->
                                     <div *ngIf="!isTableDescription(desc)">
-                                        <textarea class="form-control description-textarea"
-                                                  [(ngModel)]="editData.descriptions[i]"
-                                                  rows="4"
-                                                  placeholder="أدخل نص البند..."></textarea>
+                                      <quill-editor 
+  [(ngModel)]="editData.descriptions[i]"
+  [modules]="quillModules"
+  [styles]="{'min-height': '120px', 'direction': 'rtl'}"
+  placeholder="أدخل نص البند...">
+</quill-editor>
                                     </div>
                                 </div>
                             </div>
