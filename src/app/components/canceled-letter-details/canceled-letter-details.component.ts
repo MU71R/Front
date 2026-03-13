@@ -27,7 +27,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
     private archiveService: ArchiveService,
     private letterService: LetterService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
   ) {}
 
   user = this.authService.currentUserValue;
@@ -56,7 +56,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
             icon: 'warning',
             title: 'تحذير',
             text: 'هذا القرار ليس ملغياً',
-            confirmButtonText: 'حسناً'
+            confirmButtonText: 'حسناً',
           }).then(() => {
             this.router.navigate(['/archive-detail']);
           });
@@ -93,7 +93,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
           this.pdfFile = response.pdfFile;
           this.pdfUrl = response.pdfFile.pdfurl;
           this.pdfFilename = this.extractFilenameFromUrl(
-            response.pdfFile.pdfurl
+            response.pdfFile.pdfurl,
           );
         }
       },
@@ -118,12 +118,12 @@ export class CanceledLetterDetailsComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
 
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -131,13 +131,13 @@ export class CanceledLetterDetailsComponent implements OnInit {
         window.open(url, '_blank');
       },
       error: (err) => {
-        console.error("خطأ في جلب الملف:", err);
+        console.error('خطأ في جلب الملف:', err);
         Swal.fire({
           icon: 'warning',
           title: 'لا يمكن عرض الملف حالياً',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -158,10 +158,11 @@ export class CanceledLetterDetailsComponent implements OnInit {
     }
 
     if (
-      this.user.role === 'UniversityPresident' || 
+      this.user.role === 'UniversityPresident' ||
       this.user.fullname === 'مكتب رئيس الجامعة' ||
       this.user.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' ||
-      this.user.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
+      this.user.fullname ===
+        'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' ||
       this.user.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' ||
       this.user.fullname === 'أمين عام الجامعة' ||
       this.user.fullname === 'أمين عام الجامعة المساعد' ||
@@ -169,14 +170,14 @@ export class CanceledLetterDetailsComponent implements OnInit {
     ) {
       return true;
     }
-    
+
     if (
-      this.letter?.user?._id === this.user._id || 
+      this.letter?.user?._id === this.user._id ||
       this.letter?.user?.id === this.user._id
     ) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -265,9 +266,9 @@ export class CanceledLetterDetailsComponent implements OnInit {
   openAttachment(fileName: string): void {
     if (this.isOpening) return;
     this.isOpening = true;
-  
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
-  
+
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
+
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
@@ -276,42 +277,41 @@ export class CanceledLetterDetailsComponent implements OnInit {
       },
       error: () => {
         this.isOpening = false;
-      }
+      },
     });
   }
-  
+
   downloadAttachment(fileName: string): void {
     if (!fileName) {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف للتحميل',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
-  
+
     const cleanName = fileName.replace(/^.*[\\/]/, '');
-  
-    const apiUrl =
-      `http://localhost:3000/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
-  
+
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
+
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
         const url = window.URL.createObjectURL(blob);
-  
+
         const a = document.createElement('a');
         a.href = url;
         a.download = cleanName;
         a.click();
-  
+
         window.URL.revokeObjectURL(url);
       },
       error: () => {
         Swal.fire({
           icon: 'error',
-          title: 'فشل تحميل الملف'
+          title: 'فشل تحميل الملف',
         });
-      }
+      },
     });
   }
 
@@ -328,10 +328,10 @@ export class CanceledLetterDetailsComponent implements OnInit {
    */
   getTableFromDescription(description: string): string {
     if (!this.isTableDescription(description)) return description;
-    
+
     const tableRegex = /(<table[^>]*>[\s\S]*?<\/table>)/i;
     const match = description.match(tableRegex);
-    
+
     if (match && match[1]) {
       return `
         <div class="table-responsive">
@@ -367,7 +367,7 @@ export class CanceledLetterDetailsComponent implements OnInit {
         </div>
       `;
     }
-    
+
     return description;
   }
 
@@ -376,29 +376,56 @@ export class CanceledLetterDetailsComponent implements OnInit {
    */
   formatDescription(description: string): string {
     if (!description) return '';
-    
+
     if (this.isTableDescription(description)) {
       return this.getTableFromDescription(description);
     }
-    
+
     return description
       .replace(/<br\s*\/?>/gi, '<br>')
       .replace(/data-start="[^"]*"/g, '')
       .replace(/data-end="[^"]*"/g, '')
       .replace(/\\n/g, '<br>')
-      .replace(/<p><strong>(.*?)<\/strong><\/p>/g, '<h4 class="description-subtitle">$1</h4>')
+      .replace(
+        /<p><strong>(.*?)<\/strong><\/p>/g,
+        '<h4 class="description-subtitle">$1</h4>',
+      )
       .replace(/<ul>/g, '<ul class="description-list">')
       .replace(/<ol>/g, '<ol class="description-list">');
   }
 
   getArabicOrdinal(index: number): string {
     const ordinals = [
-      'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
-      'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
-      'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
-      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون',
-      'حادي عشرون', 'ثاني عشرون', 'ثالث عشرون', 'رابع عشرون', 'خامس عشرون',
-      'سادس عشرون', 'سابع عشرون', 'ثامن عشرون', 'تاسع عشرون', 'ثلاثون'
+      'أولاً',
+      'ثانياً',
+      'ثالثاً',
+      'رابعاً',
+      'خامساً',
+      'سادساً',
+      'سابعاً',
+      'ثامناً',
+      'تاسعاً',
+      'عاشراً',
+      'حادي عشر',
+      'ثاني عشر',
+      'ثالث عشر',
+      'رابع عشر',
+      'خامس عشر',
+      'سادس عشر',
+      'سابع عشر',
+      'ثامن عشر',
+      'تاسع عشر',
+      'عشرون',
+      'حادي عشرون',
+      'ثاني عشرون',
+      'ثالث عشرون',
+      'رابع عشرون',
+      'خامس عشرون',
+      'سادس عشرون',
+      'سابع عشرون',
+      'ثامن عشرون',
+      'تاسع عشرون',
+      'ثلاثون',
     ];
     return ordinals[index] || `${index + 1}`;
   }

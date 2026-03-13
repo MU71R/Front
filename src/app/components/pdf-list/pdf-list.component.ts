@@ -19,8 +19,7 @@ export class PdfListComponent implements OnInit {
   pdfFile: any = null;
   pdfLoading: boolean = false;
 
-
-  constructor(private letterService: LetterService ) {}
+  constructor(private letterService: LetterService) {}
 
   ngOnInit() {
     this.loadAllPDFs();
@@ -89,28 +88,25 @@ export class PdfListComponent implements OnInit {
     return url.split('/').pop() || 'ملف غير معروف';
   }
 
-  
- openPdf(pdf: PDFFile): void {
-  if (!pdf || !pdf.pdfurl) {
-    Swal.fire({
-      icon: 'error',
-      title: 'خطأ',
-      text: 'لا يوجد ملف PDF متاح للفتح',
-    });
-    return;
+  openPdf(pdf: PDFFile): void {
+    if (!pdf || !pdf.pdfurl) {
+      Swal.fire({
+        icon: 'error',
+        title: 'خطأ',
+        text: 'لا يوجد ملف PDF متاح للفتح',
+      });
+      return;
+    }
+
+    let finalUrl = pdf.pdfurl;
+
+    // لو الرابط مش كامل
+    if (!finalUrl.startsWith('http')) {
+      finalUrl = 'https://www.svu.edu.eg:8080' + finalUrl;
+    }
+
+    window.open(finalUrl, '_blank');
   }
-
-  let finalUrl = pdf.pdfurl;
-
-  // لو الرابط مش كامل
-  if (!finalUrl.startsWith('http')) {
-    finalUrl = 'https://localhost:3000' + finalUrl;
-  }
-
-  window.open(finalUrl, '_blank');
-}
-
-
 
   downloadPDF(pdf: PDFFile) {
     const filename = this.getFileName(pdf.pdfurl);
@@ -149,7 +145,7 @@ export class PdfListComponent implements OnInit {
       admin: 'مدير النظام',
       supervisor: 'مراجع',
       UniversityPresident: 'رئيس الجامعة',
-       preparer: 'مستخدم',
+      preparer: 'مستخدم',
     };
     return roleMap[role || 'user'] || role || 'مستخدم';
   }

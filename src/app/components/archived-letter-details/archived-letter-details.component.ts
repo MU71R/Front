@@ -46,11 +46,8 @@ export class LetterDetailsComponent implements OnInit {
   // متغير لتخزين الملف المحدد
   newAttachmentFile: File | null = null;
   quillModules = {
-  toolbar: [
-    ['bold', 'italic', 'underline'],
-    ['clean']
-  ]
-};
+    toolbar: [['bold', 'italic', 'underline'], ['clean']],
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -60,8 +57,8 @@ export class LetterDetailsComponent implements OnInit {
     private authService: AuthService,
     private userService: AdministrationService,
     private sanitizer: DomSanitizer,
-    private cdr: ChangeDetectorRef
-  ) { }
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   user = this.authService.currentUserValue;
 
@@ -226,11 +223,11 @@ export class LetterDetailsComponent implements OnInit {
       signatureType: this.letter.signatureType || 'حقيقية',
       description: this.letter.description || '',
       breeif: this.letter.breeif || '',
-       Rationale: [...this.letter.Rationale], // نسخ المصفوفة مع الـ HTML
+      Rationale: [...this.letter.Rationale], // نسخ المصفوفة مع الـ HTML
       descriptions: [...this.letter.descriptions],
       StartDate: this.letter.StartDate || '',
       EndDate: this.letter.EndDate || '',
-      durationDays: this.letter.durationDays || 0
+      durationDays: this.letter.durationDays || 0,
     };
 
     // إذا لم تكن هناك حيثيات، نضيف واحدة فارغة
@@ -355,11 +352,16 @@ export class LetterDetailsComponent implements OnInit {
       }
     } else {
       // إذا لم يكن جدولاً، أنشئ جدولاً جديداً من النص
-      const lines = description.split('\n').filter((line: string) => line.trim());
+      const lines = description
+        .split('\n')
+        .filter((line: string) => line.trim());
       if (lines.length > 0) {
         this.tableRows = Math.min(lines.length, 5);
         this.tableCols = 2;
-        this.currentTableData = this.createEmptyTable(this.tableRows, this.tableCols);
+        this.currentTableData = this.createEmptyTable(
+          this.tableRows,
+          this.tableCols,
+        );
 
         // وضع النص في العمود الأول
         for (let i = 0; i < Math.min(lines.length, this.tableRows); i++) {
@@ -409,7 +411,7 @@ export class LetterDetailsComponent implements OnInit {
       breeif: this.editData.breeif?.trim() || null,
       Rationale: rationalesHtml,
       descriptions: descriptionsHtml,
-      durationDays: parseInt(this.editData.durationDays as any) || 0
+      durationDays: parseInt(this.editData.durationDays as any) || 0,
     };
 
     // إضافة التواريخ إذا كانت موجودة
@@ -422,8 +424,12 @@ export class LetterDetailsComponent implements OnInit {
     }
 
     // إزالة القيم الفارغة
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === null || updateData[key] === undefined || updateData[key] === '') {
+    Object.keys(updateData).forEach((key) => {
+      if (
+        updateData[key] === null ||
+        updateData[key] === undefined ||
+        updateData[key] === ''
+      ) {
         delete updateData[key];
       }
     });
@@ -435,7 +441,7 @@ export class LetterDetailsComponent implements OnInit {
           ...this.letter,
           ...updateData,
           Rationale: rationalesHtml,
-          descriptions: descriptionsHtml
+          descriptions: descriptionsHtml,
         };
 
         this.saving = false;
@@ -446,7 +452,7 @@ export class LetterDetailsComponent implements OnInit {
           icon: 'success',
           title: 'تم حفظ التغييرات بنجاح',
           timer: 1500,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
 
         this.cdr.detectChanges();
@@ -459,9 +465,9 @@ export class LetterDetailsComponent implements OnInit {
           icon: 'error',
           title: 'خطأ في الحفظ',
           text: err.error?.message || 'حدث خطأ أثناء حفظ التغييرات',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -488,7 +494,11 @@ export class LetterDetailsComponent implements OnInit {
 
     // نسخ البيانات القديمة
     for (let i = 0; i < Math.min(this.currentTableData.length, newRows); i++) {
-      for (let j = 0; j < Math.min(this.currentTableData[0]?.length || 0, newCols); j++) {
+      for (
+        let j = 0;
+        j < Math.min(this.currentTableData[0]?.length || 0, newCols);
+        j++
+      ) {
         newTable[i][j] = this.currentTableData[i][j];
       }
     }
@@ -503,7 +513,10 @@ export class LetterDetailsComponent implements OnInit {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
-    if (this.currentTableData[rowIndex] && this.currentTableData[rowIndex][colIndex] !== undefined) {
+    if (
+      this.currentTableData[rowIndex] &&
+      this.currentTableData[rowIndex][colIndex] !== undefined
+    ) {
       this.currentTableData[rowIndex][colIndex] = value;
     }
   }
@@ -515,7 +528,7 @@ export class LetterDetailsComponent implements OnInit {
         icon: 'error',
         title: 'خطأ',
         text: 'الجدول فارغ!',
-        timer: 1500
+        timer: 1500,
       });
       return;
     }
@@ -536,13 +549,14 @@ export class LetterDetailsComponent implements OnInit {
       icon: 'success',
       title: 'تم حفظ الجدول بنجاح',
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 
   // توليد HTML للجدول
   generateTableHTML(data: any[][]): string {
-    let html = '<table class="decision-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">';
+    let html =
+      '<table class="decision-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">';
 
     // إضافة البيانات
     data.forEach((row) => {
@@ -576,11 +590,11 @@ export class LetterDetailsComponent implements OnInit {
       const rows = table.querySelectorAll('tr');
       const data: any[][] = [];
 
-      rows.forEach(row => {
+      rows.forEach((row) => {
         const rowData: any[] = [];
         const cells = row.querySelectorAll('td, th');
 
-        cells.forEach(cell => {
+        cells.forEach((cell) => {
           rowData.push(cell.textContent || '');
         });
 
@@ -592,7 +606,7 @@ export class LetterDetailsComponent implements OnInit {
       return {
         rows: data.length,
         cols: data[0] ? data[0].length : 0,
-        data: data
+        data: data,
       };
     } catch (error) {
       console.error('Error extracting table data:', error);
@@ -633,31 +647,33 @@ export class LetterDetailsComponent implements OnInit {
     formData.append('attachment', this.newAttachmentFile);
 
     this.saving = true;
-    this.archiveService.updateLetterAttachment(this.letter._id, formData).subscribe({
-      next: (res: any) => {
-        this.letter.attachment = res.attachment || res.data?.attachment;
-        this.newAttachmentFile = null;
-        this.showAttachmentInput = false;
-        this.saving = false;
+    this.archiveService
+      .updateLetterAttachment(this.letter._id, formData)
+      .subscribe({
+        next: (res: any) => {
+          this.letter.attachment = res.attachment || res.data?.attachment;
+          this.newAttachmentFile = null;
+          this.showAttachmentInput = false;
+          this.saving = false;
 
-        Swal.fire({
-          icon: 'success',
-          title: 'تم تحديث المرفق بنجاح',
-          timer: 1500
-        });
+          Swal.fire({
+            icon: 'success',
+            title: 'تم تحديث المرفق بنجاح',
+            timer: 1500,
+          });
 
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('خطأ في رفع الملف:', err);
-        this.saving = false;
-        Swal.fire({
-          icon: 'error',
-          title: 'خطأ',
-          text: 'حدث خطأ أثناء رفع الملف',
-        });
-      },
-    });
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('خطأ في رفع الملف:', err);
+          this.saving = false;
+          Swal.fire({
+            icon: 'error',
+            title: 'خطأ',
+            text: 'حدث خطأ أثناء رفع الملف',
+          });
+        },
+      });
   }
 
   // === دوال PDF ===
@@ -672,7 +688,7 @@ export class LetterDetailsComponent implements OnInit {
           this.pdfFile = response.pdfFile;
           this.pdfUrl = response.pdfFile.pdfurl;
           this.pdfFilename = this.extractFilenameFromUrl(
-            response.pdfFile.pdfurl
+            response.pdfFile.pdfurl,
           );
         }
         this.cdr.detectChanges();
@@ -686,7 +702,10 @@ export class LetterDetailsComponent implements OnInit {
   }
 
   showPdfButton(): boolean {
-    return this.letter?.status === 'approved' && (!!this.pdfUrl || !!this.pdfFilename);
+    return (
+      this.letter?.status === 'approved' &&
+      (!!this.pdfUrl || !!this.pdfFilename)
+    );
   }
 
   openPdf(): void {
@@ -694,12 +713,12 @@ export class LetterDetailsComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
 
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online/${encodeURIComponent(this.pdfFilename)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -707,13 +726,13 @@ export class LetterDetailsComponent implements OnInit {
         window.open(url, '_blank');
       },
       error: (err) => {
-        console.error("خطأ في جلب الملف:", err);
+        console.error('خطأ في جلب الملف:', err);
         Swal.fire({
           icon: 'warning',
           title: 'لا يمكن عرض الملف حالياً',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -887,7 +906,10 @@ export class LetterDetailsComponent implements OnInit {
       .replace(/data-start="[^"]*"/g, '')
       .replace(/data-end="[^"]*"/g, '')
       .replace(/\\n/g, '<br>')
-      .replace(/<p><strong>(.*?)<\/strong><\/p>/g, '<h4 class="description-subtitle">$1</h4>')
+      .replace(
+        /<p><strong>(.*?)<\/strong><\/p>/g,
+        '<h4 class="description-subtitle">$1</h4>',
+      )
       .replace(/<ul>/g, '<ul class="description-list">')
       .replace(/<ol>/g, '<ol class="description-list">');
 
@@ -902,12 +924,36 @@ export class LetterDetailsComponent implements OnInit {
 
   getArabicOrdinal(index: number): string {
     const ordinals = [
-      'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
-      'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
-      'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
-      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون',
-      'حادي عشرون', 'ثاني عشرون', 'ثالث عشرون', 'رابع عشرون', 'خامس عشرون',
-      'سادس عشرون', 'سابع عشرون', 'ثامن عشرون', 'تاسع عشرون', 'ثلاثون'
+      'أولاً',
+      'ثانياً',
+      'ثالثاً',
+      'رابعاً',
+      'خامساً',
+      'سادساً',
+      'سابعاً',
+      'ثامناً',
+      'تاسعاً',
+      'عاشراً',
+      'حادي عشر',
+      'ثاني عشر',
+      'ثالث عشر',
+      'رابع عشر',
+      'خامس عشر',
+      'سادس عشر',
+      'سابع عشر',
+      'ثامن عشر',
+      'تاسع عشر',
+      'عشرون',
+      'حادي عشرون',
+      'ثاني عشرون',
+      'ثالث عشرون',
+      'رابع عشرون',
+      'خامس عشرون',
+      'سادس عشرون',
+      'سابع عشرون',
+      'ثامن عشرون',
+      'تاسع عشرون',
+      'ثلاثون',
     ];
     return ordinals[index] || `${index + 1}`;
   }
@@ -923,30 +969,32 @@ export class LetterDetailsComponent implements OnInit {
       cancelButtonColor: '#3085d6',
       confirmButtonText: 'نعم، إلغاء القرار',
       cancelButtonText: 'تراجع',
-      reverseButtons: true
+      reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
-        this.letterService.cancelLetter(this.letter.id || this.letter._id).subscribe({
-          next: (res) => {
-            this.letter.status = 'canceled';
-            Swal.fire({
-              icon: 'success',
-              title: 'تم إلغاء القرار',
-              text: 'تم إيقاف العمل بالقرار بنجاح',
-              confirmButtonText: 'حسناً'
-            });
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error('خطأ في إلغاء القرار:', err);
-            Swal.fire({
-              icon: 'error',
-              title: 'خطأ',
-              text: 'حدث خطأ أثناء إلغاء القرار',
-              confirmButtonText: 'حسناً'
-            });
-          },
-        });
+        this.letterService
+          .cancelLetter(this.letter.id || this.letter._id)
+          .subscribe({
+            next: (res) => {
+              this.letter.status = 'canceled';
+              Swal.fire({
+                icon: 'success',
+                title: 'تم إلغاء القرار',
+                text: 'تم إيقاف العمل بالقرار بنجاح',
+                confirmButtonText: 'حسناً',
+              });
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              console.error('خطأ في إلغاء القرار:', err);
+              Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: 'حدث خطأ أثناء إلغاء القرار',
+                confirmButtonText: 'حسناً',
+              });
+            },
+          });
       }
     });
   }
@@ -985,7 +1033,7 @@ export class LetterDetailsComponent implements OnInit {
     if (this.isOpening) return;
     this.isOpening = true;
 
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-online-uploaded/${encodeURIComponent(fileName)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -995,7 +1043,7 @@ export class LetterDetailsComponent implements OnInit {
       },
       error: () => {
         this.isOpening = false;
-      }
+      },
     });
   }
 
@@ -1004,15 +1052,14 @@ export class LetterDetailsComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف للتحميل',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
 
     const cleanName = fileName.replace(/^.*[\\/]/, '');
 
-    const apiUrl =
-      `http://localhost:3000/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/download-uploaded/${encodeURIComponent(cleanName)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -1028,9 +1075,9 @@ export class LetterDetailsComponent implements OnInit {
       error: () => {
         Swal.fire({
           icon: 'error',
-          title: 'فشل تحميل الملف'
+          title: 'فشل تحميل الملف',
         });
-      }
+      },
     });
   }
 
@@ -1042,12 +1089,15 @@ export class LetterDetailsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching sectors:', err);
-      }
+      },
     });
   }
 
-  getSectorName(sectorId: string, sectors: { _id: string, sector: string }[]): string {
-    const found = sectors.find(s => s._id === sectorId);
+  getSectorName(
+    sectorId: string,
+    sectors: { _id: string; sector: string }[],
+  ): string {
+    const found = sectors.find((s) => s._id === sectorId);
     return found ? found.sector : 'غير معروف';
   }
 
@@ -1095,18 +1145,18 @@ export class LetterDetailsComponent implements OnInit {
         },
       });
   }
-   regeneratePDF(): void {
+  regeneratePDF(): void {
     this.pdfLoading = true;
 
     this.archiveService.regeneratePDF(this.letterId).subscribe({
       next: (response) => {
-        console.log('✅ نجح:', response);
+        // console.log('✅ نجح:', response);
         Swal.fire({
-          icon: 'success',  
+          icon: 'success',
           title: 'تم تحديث الـ PDF',
         });
         this.pdfLoading = false;
-        
+
         // يمكنك تحديث البيانات أو إعادة تحميل الصفحة
         // this.loadLetterData();
       },
@@ -1118,11 +1168,10 @@ export class LetterDetailsComponent implements OnInit {
           text: 'حدث خطاء في تحديث الـ PDF',
         });
         this.pdfLoading = false;
-      }
+      },
     });
   }
   trackByIndex(index: number): number {
-  return index;
-}
-
+    return index;
+  }
 }

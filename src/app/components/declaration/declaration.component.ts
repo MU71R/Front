@@ -1,5 +1,13 @@
 import { Component, OnInit, HostListener } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn, FormArray } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+  FormArray,
+} from '@angular/forms';
 import { MainCriteria, SubCriteria } from 'src/app/model/criteria';
 import { CriteriaService } from 'src/app/service/criteria.service';
 import { LetterService } from 'src/app/service/letter.service';
@@ -8,7 +16,9 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { DomSanitizer } from '@angular/platform-browser';
 
-export function noLeadingSpaces(control: AbstractControl): ValidationErrors | null {
+export function noLeadingSpaces(
+  control: AbstractControl,
+): ValidationErrors | null {
   if (!control.value) return null;
   const value = control.value.toString();
   if (value.startsWith(' ')) {
@@ -28,7 +38,10 @@ export function dateValidator(): ValidatorFn {
   };
 }
 
-export function endDateAfterStartValidator(startDateControlName: string, endDateControlName: string): ValidatorFn {
+export function endDateAfterStartValidator(
+  startDateControlName: string,
+  endDateControlName: string,
+): ValidatorFn {
   return (formGroup: AbstractControl): ValidationErrors | null => {
     const startDate = formGroup.get(startDateControlName)?.value;
     const endDate = formGroup.get(endDateControlName)?.value;
@@ -36,7 +49,9 @@ export function endDateAfterStartValidator(startDateControlName: string, endDate
     const start = new Date(startDate);
     const end = new Date(endDate);
     if (start >= end) {
-      formGroup.get(endDateControlName)?.setErrors({ endDateBeforeStart: true });
+      formGroup
+        .get(endDateControlName)
+        ?.setErrors({ endDateBeforeStart: true });
       return { endDateBeforeStart: true };
     } else {
       formGroup.get(endDateControlName)?.setErrors(null);
@@ -74,7 +89,7 @@ export class DeclarationComponent implements OnInit {
   tableCols = 3;
   currentTableData: any[][] = [];
   editingTableIndex: number | null = null;
-  private lastFocusedCell: { row: number, col: number } | null = null;
+  private lastFocusedCell: { row: number; col: number } | null = null;
 
   // متغيرات PDF Testing
   pdfGenerating = false;
@@ -87,10 +102,7 @@ export class DeclarationComponent implements OnInit {
   originalDraftData: any = null;
 
   quillModules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      ['clean']
-    ]
+    toolbar: [['bold', 'italic', 'underline'], ['clean']],
   };
 
   constructor(
@@ -99,8 +111,8 @@ export class DeclarationComponent implements OnInit {
     private letterService: LetterService,
     private loginService: LoginService,
     private sanitizer: DomSanitizer,
-    private router: Router
-  ) { }
+    private router: Router,
+  ) {}
 
   user = this.loginService.getUserFromLocalStorage();
 
@@ -140,60 +152,84 @@ export class DeclarationComponent implements OnInit {
     // تعبئة الحقول الأساسية
     this.messageForm.patchValue({
       title: this.originalDraftData.title,
-      mainCriteria: this.originalDraftData.mainCriteria?._id || this.originalDraftData.mainCriteria,
-      subCriteria: this.originalDraftData.subCriteria?._id || this.originalDraftData.subCriteria,
+      mainCriteria:
+        this.originalDraftData.mainCriteria?._id ||
+        this.originalDraftData.mainCriteria,
+      subCriteria:
+        this.originalDraftData.subCriteria?._id ||
+        this.originalDraftData.subCriteria,
       fullName: this.originalDraftData.fullName || '',
       entityName: this.originalDraftData.entityName || '',
       nationalId: this.originalDraftData.nationalId || '',
       phoneNumber: this.originalDraftData.phoneNumber || '',
-      startDate: this.originalDraftData.StartDate ? new Date(this.originalDraftData.StartDate).toISOString().split('T')[0] : '',
-      endDate: this.originalDraftData.EndDate ? new Date(this.originalDraftData.EndDate).toISOString().split('T')[0] : '',
-      signatureType: this.originalDraftData.signatureType || ''
+      startDate: this.originalDraftData.StartDate
+        ? new Date(this.originalDraftData.StartDate).toISOString().split('T')[0]
+        : '',
+      endDate: this.originalDraftData.EndDate
+        ? new Date(this.originalDraftData.EndDate).toISOString().split('T')[0]
+        : '',
+      signatureType: this.originalDraftData.signatureType || '',
     });
 
     // تعبئة المعايير
     if (this.originalDraftData.mainCriteria) {
-      this.selectedMainCriteriaTitle = typeof this.originalDraftData.mainCriteria === 'object'
-        ? this.originalDraftData.mainCriteria.name
-        : 'المعيار الرئيسي';
+      this.selectedMainCriteriaTitle =
+        typeof this.originalDraftData.mainCriteria === 'object'
+          ? this.originalDraftData.mainCriteria.name
+          : 'المعيار الرئيسي';
     }
 
     if (this.originalDraftData.subCriteria) {
-      this.selectedSubCriteriaTitle = typeof this.originalDraftData.subCriteria === 'object'
-        ? this.originalDraftData.subCriteria.name
-        : 'المعيار الفرعي';
+      this.selectedSubCriteriaTitle =
+        typeof this.originalDraftData.subCriteria === 'object'
+          ? this.originalDraftData.subCriteria.name
+          : 'المعيار الفرعي';
     }
 
     // تحميل المعايير الفرعية إذا كان هناك معيار رئيسي
     if (this.originalDraftData.mainCriteria) {
-      const mainId = typeof this.originalDraftData.mainCriteria === 'object'
-        ? this.originalDraftData.mainCriteria._id
-        : this.originalDraftData.mainCriteria;
+      const mainId =
+        typeof this.originalDraftData.mainCriteria === 'object'
+          ? this.originalDraftData.mainCriteria._id
+          : this.originalDraftData.mainCriteria;
       this.loadSubCriteria(mainId);
     }
 
     // تعبئة الحيثيات
-    if (this.originalDraftData.Rationale && Array.isArray(this.originalDraftData.Rationale)) {
+    if (
+      this.originalDraftData.Rationale &&
+      Array.isArray(this.originalDraftData.Rationale)
+    ) {
       this.rationaleFields.clear();
       this.originalDraftData.Rationale.forEach((rationale: string) => {
-        this.rationaleFields.push(this.fb.group({
-          rationale: [rationale, Validators.required]
-        }));
+        this.rationaleFields.push(
+          this.fb.group({
+            rationale: [rationale, Validators.required],
+          }),
+        );
       });
     }
 
     // تعبئة بنود القرار
-    if (this.originalDraftData.descriptions && Array.isArray(this.originalDraftData.descriptions)) {
+    if (
+      this.originalDraftData.descriptions &&
+      Array.isArray(this.originalDraftData.descriptions)
+    ) {
       this.contentFields.clear();
       this.originalDraftData.descriptions.forEach((description: string) => {
-        this.contentFields.push(this.fb.group({
-          content: [description, Validators.required]
-        }));
+        this.contentFields.push(
+          this.fb.group({
+            content: [description, Validators.required],
+          }),
+        );
       });
     }
 
     // تعبئة الجداول إذا وجدت
-    if (this.originalDraftData.tables && Array.isArray(this.originalDraftData.tables)) {
+    if (
+      this.originalDraftData.tables &&
+      Array.isArray(this.originalDraftData.tables)
+    ) {
       this.tablesArray.clear();
       this.originalDraftData.tables.forEach((table: any) => {
         this.tablesArray.push(this.fb.control(table));
@@ -203,64 +239,60 @@ export class DeclarationComponent implements OnInit {
 
   // ==================== وظائف الحفظ والإرسال ====================
 
-onSubmit() {
-  this.formSubmitted = true;
+  onSubmit() {
+    this.formSubmitted = true;
 
-  if (this.messageForm.invalid) {
-    Object.keys(this.f).forEach(key => this.f[key].markAsTouched());
-    this.contentFields.controls.forEach(c => c.markAllAsTouched());
-    this.rationaleFields.controls.forEach(c => c.markAllAsTouched());
-    this.showWarning('يرجى تصحيح الأخطاء في النموذج قبل الإرسال');
-    return;
-  }
-
-  const isPresident = this.user?.role === 'UniversityPresident';
-
-  Swal.fire({
-    title: isPresident ? 'اعتماد القرار' : 'إرسال القرار للمراجعة',
-    // html: `
-    //   <div style="text-align:right; direction:rtl;">
-    //     <p style="font-size:16px; margin-bottom:15px;">
-    //       <strong>${isPresident ? 'تأكيد اعتماد القرار' : 'اختر طريقة حفظ القرار:'}</strong>
-    //     </p>
-    //     <ul class="text-muted" style="padding-right:20px;">
-    //       <li><strong>حفظ كمسودة:</strong> حفظ للاستكمال لاحقاً</li>
-    //       <li>
-    //         <strong>${isPresident ? 'اعتماد مباشر:' : 'إرسال للمراجعة:'}</strong>
-    //         ${isPresident ? 'اعتماد القرار فوراً' : 'إرسال القرار للمشرف'}
-    //       </li>
-    //     </ul>
-    //   </div>
-    // `,
-    icon: 'question',
-    // showDenyButton: true,
-    showCancelButton: true,
-    confirmButtonText: isPresident
-      ? '<i class="fa fa-check me-1"></i> اعتماد'
-      : '<i class="fa fa-send me-1"></i> إرسال للمراجعة',
-    // denyButtonText: '<i class="fa fa-save me-1"></i> حفظ كمسودة',
-    cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
-    reverseButtons: true,
-    confirmButtonColor: isPresident ? '#198754' : '#0d6efd'
-  }).then(result => {
-    if (result.isConfirmed) {
-
-      // ✅ نفس الدالة – اختلاف الحالة فقط
-      this.messageForm.patchValue({
-        status: isPresident ? 'معتمد' : 'قيد المراجعة'
-      });
-
-      this.submitForReview();
-
-    } else if (result.isDenied) {
-      this.saveAsDraft();
-    } else {
-      this.formSubmitted = false;
+    if (this.messageForm.invalid) {
+      Object.keys(this.f).forEach((key) => this.f[key].markAsTouched());
+      this.contentFields.controls.forEach((c) => c.markAllAsTouched());
+      this.rationaleFields.controls.forEach((c) => c.markAllAsTouched());
+      this.showWarning('يرجى تصحيح الأخطاء في النموذج قبل الإرسال');
+      return;
     }
-  });
-}
 
+    const isPresident = this.user?.role === 'UniversityPresident';
 
+    Swal.fire({
+      title: isPresident ? 'اعتماد القرار' : 'إرسال القرار للمراجعة',
+      // html: `
+      //   <div style="text-align:right; direction:rtl;">
+      //     <p style="font-size:16px; margin-bottom:15px;">
+      //       <strong>${isPresident ? 'تأكيد اعتماد القرار' : 'اختر طريقة حفظ القرار:'}</strong>
+      //     </p>
+      //     <ul class="text-muted" style="padding-right:20px;">
+      //       <li><strong>حفظ كمسودة:</strong> حفظ للاستكمال لاحقاً</li>
+      //       <li>
+      //         <strong>${isPresident ? 'اعتماد مباشر:' : 'إرسال للمراجعة:'}</strong>
+      //         ${isPresident ? 'اعتماد القرار فوراً' : 'إرسال القرار للمشرف'}
+      //       </li>
+      //     </ul>
+      //   </div>
+      // `,
+      icon: 'question',
+      // showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: isPresident
+        ? '<i class="fa fa-check me-1"></i> اعتماد'
+        : '<i class="fa fa-send me-1"></i> إرسال للمراجعة',
+      // denyButtonText: '<i class="fa fa-save me-1"></i> حفظ كمسودة',
+      cancelButtonText: '<i class="fa fa-times me-1"></i> إلغاء',
+      reverseButtons: true,
+      confirmButtonColor: isPresident ? '#198754' : '#0d6efd',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // ✅ نفس الدالة – اختلاف الحالة فقط
+        this.messageForm.patchValue({
+          status: isPresident ? 'معتمد' : 'قيد المراجعة',
+        });
+
+        this.submitForReview();
+      } else if (result.isDenied) {
+        this.saveAsDraft();
+      } else {
+        this.formSubmitted = false;
+      }
+    });
+  }
 
   // دالة حفظ المسودة
   saveAsDraft(): void {
@@ -311,10 +343,9 @@ onSubmit() {
   }
 
   // دالة إرسال للمراجعة (بدون SweetAlert)
-submitForReview(): void {
-  this.proceedWithSave('مكتمل', 'review');
-}
-
+  submitForReview(): void {
+    this.proceedWithSave('مكتمل', 'review');
+  }
 
   // دالة اعتماد مباشر (لرئيس الجامعة فقط)
   approveDirectly(): void {
@@ -350,7 +381,10 @@ submitForReview(): void {
   }
 
   // دالة رئيسية للحفظ
-  private proceedWithSave(saveStatus: 'مسودة' | 'مكتمل', actionType: 'draft' | 'review' | 'approve'): void {
+  private proceedWithSave(
+    saveStatus: 'مسودة' | 'مكتمل',
+    actionType: 'draft' | 'review' | 'approve',
+  ): void {
     this.submitting = true;
     this.successMsg = '';
     this.errorMsg = '';
@@ -366,16 +400,23 @@ submitForReview(): void {
   }
 
   // تجهيز البيانات للحفظ
-  private prepareLetterData(saveStatus: 'مسودة' | 'مكتمل', actionType: 'draft' | 'review' | 'approve'): any {
-    const contentTexts = this.contentFields.controls.map(control => {
-      const htmlContent = control.get('content')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
+  private prepareLetterData(
+    saveStatus: 'مسودة' | 'مكتمل',
+    actionType: 'draft' | 'review' | 'approve',
+  ): any {
+    const contentTexts = this.contentFields.controls
+      .map((control) => {
+        const htmlContent = control.get('content')?.value || '';
+        return htmlContent.trim();
+      })
+      .filter((text) => text.length > 0);
 
-    const rationaleTexts = this.rationaleFields.controls.map(control => {
-      const htmlContent = control.get('rationale')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
+    const rationaleTexts = this.rationaleFields.controls
+      .map((control) => {
+        const htmlContent = control.get('rationale')?.value || '';
+        return htmlContent.trim();
+      })
+      .filter((text) => text.length > 0);
 
     const tables = this.tablesArray.value;
 
@@ -384,7 +425,7 @@ submitForReview(): void {
     let transactionNumber: number | null = null;
 
     if (saveStatus === 'مسودة') {
-      status = 'مسودة' // المسودة ليس لها status
+      status = 'مسودة'; // المسودة ليس لها status
       transactionNumber = null; // المسودة ليس لها transactionNumber
     } else {
       if (actionType === 'approve') {
@@ -427,32 +468,34 @@ submitForReview(): void {
       // إضافة معلومات المستخدم للمسودة
       user: this.user?._id,
       userName: this.user?.fullname || localStorage.getItem('fullname') || '',
-      userId: localStorage.getItem('userId') || ''
+      userId: localStorage.getItem('userId') || '',
     };
   }
 
   // تحديث مسودة موجودة
   // في declaration.component.ts
-// تحديث مسودة موجودة
-private updateExistingDraft(payload: any): void {
-  this.letterService.updateLetter(this.draftId!, payload).subscribe({
-    next: (res: any) => {
-      // إذا كان الـ response يحتوي على _id أو success: true
-      if ((res.success === true) || (res.data && res.data._id) || res._id) {
-        this.handleSaveResponse(res, payload.SaveStatus, true);
-      } else {
-        console.error('Unexpected response:', res);
-        this.showError('تعذر تحديث المسودة - استجابة غير متوقعة');
+  // تحديث مسودة موجودة
+  private updateExistingDraft(payload: any): void {
+    this.letterService.updateLetter(this.draftId!, payload).subscribe({
+      next: (res: any) => {
+        // إذا كان الـ response يحتوي على _id أو success: true
+        if (res.success === true || (res.data && res.data._id) || res._id) {
+          this.handleSaveResponse(res, payload.SaveStatus, true);
+        } else {
+          console.error('Unexpected response:', res);
+          this.showError('تعذر تحديث المسودة - استجابة غير متوقعة');
+          this.submitting = false;
+        }
+      },
+      error: (err: any) => {
+        console.error('Error updating draft:', err);
+        this.showError(
+          err?.error?.message || err?.message || 'حدث خطأ أثناء تحديث المسودة',
+        );
         this.submitting = false;
-      }
-    },
-    error: (err: any) => {
-      console.error('Error updating draft:', err);
-      this.showError(err?.error?.message || err?.message || 'حدث خطأ أثناء تحديث المسودة');
-      this.submitting = false;
-    },
-  });
-}
+      },
+    });
+  }
 
   // إنشاء قرار جديد
   private createNewLetter(payload: any): void {
@@ -470,79 +513,82 @@ private updateExistingDraft(payload: any): void {
 
   // معالجة استجابة الحفظ
   // دالة معالجة استجابة الحفظ
-// بدل هذه الدالة فقط
-private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): void {
-  this.submitting = false;
+  // بدل هذه الدالة فقط
+  private handleSaveResponse(
+    res: any,
+    saveStatus: string,
+    isUpdate: boolean,
+  ): void {
+    this.submitting = false;
 
-  // طريقة مرنة للتحقق من النجاح
-  let isSuccess = false;
-  let message = '';
+    // طريقة مرنة للتحقق من النجاح
+    let isSuccess = false;
+    let message = '';
 
-  // تحقق من بنية الـ response
-  if (res.success === true) {
-    isSuccess = true;
-    message = res.message || '';
-  } else if (res.data && res.data._id) {
-    isSuccess = true;
-    message = 'تم الحفظ بنجاح';
-  } else if (res._id) {
-    isSuccess = true;
-    message = 'تم الحفظ بنجاح';
+    // تحقق من بنية الـ response
+    if (res.success === true) {
+      isSuccess = true;
+      message = res.message || '';
+    } else if (res.data && res.data._id) {
+      isSuccess = true;
+      message = 'تم الحفظ بنجاح';
+    } else if (res._id) {
+      isSuccess = true;
+      message = 'تم الحفظ بنجاح';
+    }
+
+    if (isSuccess) {
+      const userMessage = this.getSaveSuccessMessage(saveStatus, isUpdate);
+      this.showSuccess(userMessage);
+
+      // تنظيف البيانات المحفوظة
+      this.clearSavedData();
+
+      // إعادة ضبط النموذج
+      setTimeout(() => {
+        this.cleanupForm();
+      }, 1500);
+    } else {
+      console.error('API Response error:', res);
+      this.showError(res.message || res.error || 'حدث خطأ غير معروف');
+    }
   }
-
-  if (isSuccess) {
-    const userMessage = this.getSaveSuccessMessage(saveStatus, isUpdate);
-    this.showSuccess(userMessage);
-
-    // تنظيف البيانات المحفوظة
-    this.clearSavedData();
-
-    // إعادة ضبط النموذج
-    setTimeout(() => {
-      this.cleanupForm();
-    }, 1500);
-
-  } else {
-    console.error('API Response error:', res);
-    this.showError(res.message || res.error || 'حدث خطأ غير معروف');
-  }
-}
-
 
   // الحصول على رسالة النجاح المناسبة
- private getSaveSuccessMessage(saveStatus: string, isUpdate: boolean): string {
-  const isPresident = this.user?.role === 'UniversityPresident';
+  private getSaveSuccessMessage(saveStatus: string, isUpdate: boolean): string {
+    const isPresident = this.user?.role === 'UniversityPresident';
 
-  // المسودة
-  if (saveStatus === 'مسودة') {
+    // المسودة
+    if (saveStatus === 'مسودة') {
+      return isUpdate ? 'تم تحديث المسودة بنجاح' : 'تم حفظ القرار كمسودة بنجاح';
+    }
+
+    // غير مسودة
+    if (isPresident) {
+      return 'تم اعتماد القرار بنجاح';
+    }
+
     return isUpdate
-      ? 'تم تحديث المسودة بنجاح'
-      : 'تم حفظ القرار كمسودة بنجاح';
+      ? 'تم إرسال القرار بنجاح'
+      : 'تم إرسال القرار للمراجعة بنجاح';
   }
-
-  // غير مسودة
-  if (isPresident) {
-    return 'تم اعتماد القرار بنجاح';
-  }
-
-  return isUpdate
-    ? 'تم إرسال القرار بنجاح'
-    : 'تم إرسال القرار للمراجعة بنجاح';
-}
-
 
   // ==================== وظائف PDF Testing ====================
 
   private prepareLetterDataForPDF(): any {
-    const contentTexts = this.contentFields.controls.map(control => {
-      const htmlContent = control.get('content')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
+    const contentTexts = this.contentFields.controls
+      .map((control) => {
+        const htmlContent = control.get('content')?.value || '';
+        return htmlContent.trim();
+      })
+      .filter((text) => text.length > 0);
 
-    const rationaleTexts = this.rationaleFields.controls.map(control => {
-      const htmlContent = control.get('rationale')?.value || '';
-      return htmlContent.trim();
-    }).filter(text => text.length > 0);
+    const rationaleTexts = this.rationaleFields.controls
+      .map((control) => {
+        const htmlContent = control.get('rationale')?.value || '';
+        return htmlContent.trim();
+      })
+      .filter((text) => text.length > 0);
 
     const tables = this.tablesArray.value;
 
@@ -565,7 +611,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       entityName: this.f['entityName'].value || null,
       nationalId: this.f['nationalId'].value || null,
       phoneNumber: this.f['phoneNumber'].value || null,
-      tables: tables
+      tables: tables,
     };
   }
 
@@ -575,10 +621,10 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       Object.keys(this.f).forEach((key) => {
         this.f[key].markAsTouched();
       });
-      this.contentFields.controls.forEach(control => {
+      this.contentFields.controls.forEach((control) => {
         control.markAllAsTouched();
       });
-      this.rationaleFields.controls.forEach(control => {
+      this.rationaleFields.controls.forEach((control) => {
         control.markAllAsTouched();
       });
 
@@ -586,7 +632,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
         icon: 'warning',
         title: 'يرجى إكمال جميع الحقول المطلوبة',
         text: 'يجب ملء جميع البيانات الإلزامية قبل إنشاء PDF',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
@@ -606,7 +652,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
           title: 'تم إنشاء PDF بنجاح',
           text: 'يمكنك الآن معاينة القرار قبل الحفظ النهائي',
           timer: 2000,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
       },
       error: (err) => {
@@ -616,9 +662,9 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
           icon: 'error',
           title: 'حدث خطأ',
           text: err?.error?.message || 'لم نتمكن من إنشاء PDF',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -629,12 +675,12 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
         text: 'يرجى إنشاء PDF أولاً',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
 
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
 
     this.pdfLoading = true;
 
@@ -651,9 +697,9 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
           icon: 'warning',
           title: 'لا يمكن عرض الملف حالياً',
           text: 'يرجى المحاولة مرة أخرى',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -663,7 +709,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للتنزيل',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
@@ -704,12 +750,14 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
         phoneNumber: [''],
         startDate: ['', [dateValidator()]],
         endDate: ['', [dateValidator()]],
-        date: [{ value: new Date().toISOString().split('T')[0], disabled: true }],
+        date: [
+          { value: new Date().toISOString().split('T')[0], disabled: true },
+        ],
       },
-      { validators: endDateAfterStartValidator('startDate', 'endDate') }
+      { validators: endDateAfterStartValidator('startDate', 'endDate') },
     );
 
-    this.messageForm.get('mainCriteria')?.valueChanges.subscribe(value => {
+    this.messageForm.get('mainCriteria')?.valueChanges.subscribe((value) => {
       if (value) {
         this.loadSubCriteria(value);
       } else {
@@ -723,7 +771,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
 
   createRationaleField(): FormGroup {
     return this.fb.group({
-      rationale: ['', [Validators.required]]
+      rationale: ['', [Validators.required]],
     });
   }
 
@@ -733,7 +781,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
 
   createContentField(): FormGroup {
     return this.fb.group({
-      content: ['', [Validators.required]]
+      content: ['', [Validators.required]],
     });
   }
 
@@ -769,7 +817,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
   removeContentField(index: number): void {
     if (this.contentFields.length > 1) {
       const tableIndex = this.tablesArray.controls.findIndex(
-        (ctrl: any) => ctrl.value.descriptionIndex === index
+        (ctrl: any) => ctrl.value.descriptionIndex === index,
       );
       if (tableIndex >= 0) {
         this.tablesArray.removeAt(tableIndex);
@@ -796,7 +844,8 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
 
   openTableModal(descriptionIndex?: number): void {
     this.showTableModal = true;
-    this.editingTableIndex = descriptionIndex !== undefined ? descriptionIndex : null;
+    this.editingTableIndex =
+      descriptionIndex !== undefined ? descriptionIndex : null;
 
     if (descriptionIndex !== undefined && descriptionIndex !== null) {
       const existingTable = this.getExistingTable(descriptionIndex);
@@ -841,7 +890,11 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
     const newTable = this.createEmptyTable(newRows, newCols);
 
     for (let i = 0; i < Math.min(this.currentTableData.length, newRows); i++) {
-      for (let j = 0; j < Math.min(this.currentTableData[0]?.length || 0, newCols); j++) {
+      for (
+        let j = 0;
+        j < Math.min(this.currentTableData[0]?.length || 0, newCols);
+        j++
+      ) {
         newTable[i][j] = this.currentTableData[i][j];
       }
     }
@@ -861,7 +914,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
         icon: 'error',
         title: 'خطأ',
         text: 'الجدول فارغ!',
-        timer: 1500
+        timer: 1500,
       });
       return;
     }
@@ -870,7 +923,10 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       rows: this.tableRows,
       cols: this.tableCols,
       data: this.currentTableData,
-      descriptionIndex: this.editingTableIndex !== null ? this.editingTableIndex : this.contentFields.length
+      descriptionIndex:
+        this.editingTableIndex !== null
+          ? this.editingTableIndex
+          : this.contentFields.length,
     };
 
     const tableHTML = this.generateTableHTML(this.currentTableData);
@@ -880,7 +936,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       contentField.get('content')?.setValue(tableHTML);
 
       const existingIndex = this.tablesArray.controls.findIndex(
-        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex
+        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex,
       );
       if (existingIndex >= 0) {
         this.tablesArray.at(existingIndex).setValue(tableData);
@@ -902,7 +958,7 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
       icon: 'success',
       title: 'تم إضافة الجدول بنجاح',
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 
@@ -940,36 +996,38 @@ private handleSaveResponse(res: any, saveStatus: string, isUpdate: boolean): voi
 
   getExistingTable(descriptionIndex: number): any {
     const tableControl = this.tablesArray.controls.find(
-      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex
+      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex,
     );
     return tableControl ? tableControl.value : null;
   }
 
   isTableDescription(index: number): boolean {
-  const tableData = this.getExistingTable(index);
+    const tableData = this.getExistingTable(index);
 
-  // تحقق أولاً من وجود جدول في tablesArray
-  if (tableData) {
-    return true;
+    // تحقق أولاً من وجود جدول في tablesArray
+    if (tableData) {
+      return true;
+    }
+
+    // تحقق ثانياً من محتوى الحقل النصي نفسه
+    const contentField = this.contentFields.at(index);
+    const content = contentField?.get('content')?.value || '';
+
+    return this.isTableContent(content);
   }
 
-  // تحقق ثانياً من محتوى الحقل النصي نفسه
-  const contentField = this.contentFields.at(index);
-  const content = contentField?.get('content')?.value || '';
-
-  return this.isTableContent(content);
-}
-
-// دالة للتحقق من محتوى الجدول
-isTableContent(content: string): boolean {
-  if (!content) return false;
-  return content.includes('<table') ||
-         content.includes('<tbody>') ||
-         content.includes('<tr>') ||
-         content.includes('class="table"') ||
-         content.includes('decision-table') ||
-         content.includes('table-responsive');
-}
+  // دالة للتحقق من محتوى الجدول
+  isTableContent(content: string): boolean {
+    if (!content) return false;
+    return (
+      content.includes('<table') ||
+      content.includes('<tbody>') ||
+      content.includes('<tr>') ||
+      content.includes('class="table"') ||
+      content.includes('decision-table') ||
+      content.includes('table-responsive')
+    );
+  }
 
   getTableContent(index: number): string {
     const tableData = this.getExistingTable(index);
@@ -1003,7 +1061,10 @@ isTableContent(content: string): boolean {
     const input = event.target as HTMLInputElement;
     const value = input.value;
 
-    if (this.currentTableData[rowIndex] && this.currentTableData[rowIndex][colIndex] !== undefined) {
+    if (
+      this.currentTableData[rowIndex] &&
+      this.currentTableData[rowIndex][colIndex] !== undefined
+    ) {
       this.currentTableData[rowIndex][colIndex] = value;
     }
 
@@ -1051,7 +1112,9 @@ isTableContent(content: string): boolean {
       this.filteredMainCriteria = [...this.mainCriteriaList];
 
       setTimeout(() => {
-        const searchInput = document.querySelector('input[placeholder="ابحث عن المعيار الرئيسي..."]') as HTMLInputElement;
+        const searchInput = document.querySelector(
+          'input[placeholder="ابحث عن المعيار الرئيسي..."]',
+        ) as HTMLInputElement;
         if (searchInput) {
           searchInput.focus();
         }
@@ -1114,7 +1177,7 @@ isTableContent(content: string): boolean {
     } else {
       const lowerSearchTerm = searchTerm.toLowerCase().trim();
       this.filteredMainCriteria = this.mainCriteriaList.filter((criteria) =>
-        criteria.name.toLowerCase().includes(lowerSearchTerm)
+        criteria.name.toLowerCase().includes(lowerSearchTerm),
       );
     }
   }
@@ -1158,7 +1221,7 @@ isTableContent(content: string): boolean {
     } else {
       const lowerSearchTerm = searchTerm.toLowerCase().trim();
       this.filteredSubCriteria = this.subCriteriaList.filter((criteria) =>
-        criteria.name.toLowerCase().includes(lowerSearchTerm)
+        criteria.name.toLowerCase().includes(lowerSearchTerm),
       );
     }
   }
@@ -1197,7 +1260,9 @@ isTableContent(content: string): boolean {
 
   showFieldError(fieldName: string): boolean {
     const field = this.f[fieldName];
-    return field.invalid && (field.dirty || field.touched || this.formSubmitted);
+    return (
+      field.invalid && (field.dirty || field.touched || this.formSubmitted)
+    );
   }
 
   showFormSummary(): boolean {
@@ -1237,7 +1302,11 @@ isTableContent(content: string): boolean {
   }
 
   cancel() {
-    this.showConfirm('تأكيد الإلغاء', 'هل تريد إلغاء العملية؟', 'question').then((result) => {
+    this.showConfirm(
+      'تأكيد الإلغاء',
+      'هل تريد إلغاء العملية؟',
+      'question',
+    ).then((result) => {
       if (result.isConfirmed) {
         this.cleanupForm();
       }

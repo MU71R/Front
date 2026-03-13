@@ -43,7 +43,8 @@
       </tr>
 
       <!-- الجامعة -->
-      <tr (click)="getArchivedLettersByType('عامة')" class="clickable-row">
+            <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد'|| user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
+          (click)="getArchivedLettersByType('عامة')" class="clickable-row">
         <td><span class="tag tag-primary">العام</span></td>
         <td>{{ statsArchived?.university }}</td>
         <td><button class="view-btn">عرض</button></td>

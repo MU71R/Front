@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-draft-letters',
   templateUrl: './drafts.component.html',
-  styleUrls: ['./drafts.component.css']
+  styleUrls: ['./drafts.component.css'],
 })
 export class DraftLettersComponent implements OnInit {
   draftLetters: DraftLetter[] = [];
@@ -16,7 +16,7 @@ export class DraftLettersComponent implements OnInit {
 
   constructor(
     private letterService: LetterService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -25,7 +25,8 @@ export class DraftLettersComponent implements OnInit {
   }
 
   checkAuth(): void {
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem('token') || localStorage.getItem('authToken');
     if (!token) {
       Swal.fire({
         icon: 'warning',
@@ -72,19 +73,16 @@ export class DraftLettersComponent implements OnInit {
   }
 
   getUserName(letter: DraftLetter): string {
-  return (letter as any).fullName || 'غير محدد';
-}
-
-
-getEntityName(letter: DraftLetter): string {
-  if ((letter as any).entityName) {
-    return (letter as any).entityName;
+    return (letter as any).fullName || 'غير محدد';
   }
 
-  return 'غير محدد';
-}
+  getEntityName(letter: DraftLetter): string {
+    if ((letter as any).entityName) {
+      return (letter as any).entityName;
+    }
 
-
+    return 'غير محدد';
+  }
 
   getMainCriteriaName(letter: DraftLetter): string {
     if (!letter.mainCriteria) return 'غير محدد';
@@ -111,17 +109,17 @@ getEntityName(letter: DraftLetter): string {
   getLetterTypeArabic(type: string | undefined): string {
     if (!type) return 'غير محدد';
 
-    const types: {[key: string]: string} = {
+    const types: { [key: string]: string } = {
       'رئاسة الوزراء': 'رئاسة الوزراء',
       'رئاسة الجمهورية': 'رئاسة الجمهورية',
       'وزارة التعليم العالي': 'وزارة التعليم العالي',
-      'عامة': 'عامة',
-      'اخرى': 'أخرى',
-      'administrative': 'إداري',
-      'academic': 'أكاديمي',
-      'financial': 'مالي',
-      'technical': 'فني',
-      'other': 'أخرى'
+      عامة: 'عامة',
+      اخرى: 'أخرى',
+      administrative: 'إداري',
+      academic: 'أكاديمي',
+      financial: 'مالي',
+      technical: 'فني',
+      other: 'أخرى',
     };
 
     return types[type] || type;
@@ -135,7 +133,7 @@ getEntityName(letter: DraftLetter): string {
     return imageExtensions.some(
       (ext) =>
         attachment.toLowerCase().endsWith(ext) ||
-        attachment.toLowerCase().includes(ext)
+        attachment.toLowerCase().includes(ext),
     );
   }
 
@@ -150,7 +148,7 @@ getEntityName(letter: DraftLetter): string {
     if (attachment.startsWith('http')) {
       return attachment;
     } else {
-      const baseUrl = 'http://localhost:3000';
+      const baseUrl = 'http://www.svu.edu.eg:8080';
       return `${baseUrl}${attachment}`;
     }
   }
@@ -167,25 +165,24 @@ getEntityName(letter: DraftLetter): string {
 
   // =============== دوال التاريخ ===============
 
- formatDate(dateValue: string | Date | undefined | null): string {
-  if (!dateValue) return 'غير محدد';
+  formatDate(dateValue: string | Date | undefined | null): string {
+    if (!dateValue) return 'غير محدد';
 
-  try {
-    const date = new Date(dateValue);
-    if (isNaN(date.getTime())) {
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        return 'غير محدد';
+      }
+
+      return date.toLocaleDateString('ar-EG', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch (error) {
       return 'غير محدد';
     }
-
-    return date.toLocaleDateString('ar-EG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  } catch (error) {
-    return 'غير محدد';
   }
-}
-
 
   formatStartDate(letter: DraftLetter): string {
     return this.formatDate(letter.StartDate);
@@ -207,7 +204,8 @@ getEntityName(letter: DraftLetter): string {
 
   loadDrafts(): void {
     this.loading = true;
-    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem('token') || localStorage.getItem('authToken');
 
     if (!token) {
       Swal.fire({
@@ -224,7 +222,7 @@ getEntityName(letter: DraftLetter): string {
 
     this.letterService.getDraftLetters().subscribe({
       next: (response) => {
-        console.log('Loaded draft letters response:', response);
+        // console.log('Loaded draft letters response:', response);
         this.draftLetters = response.data || [];
         this.loading = false;
       },
@@ -260,55 +258,56 @@ getEntityName(letter: DraftLetter): string {
   // =============== دوال الإجراءات ===============
 
   editDraft(letter: DraftLetter): void {
-  console.log('Editing draft letter:', letter);
+    // console.log('Editing draft letter:', letter);
 
-  // معالجة المسودة لاستخراج الجداول
-  const processedDraft = this.prepareDraftForEditing(letter);
+    // معالجة المسودة لاستخراج الجداول
+    const processedDraft = this.prepareDraftForEditing(letter);
 
-  // تسجيل البيانات المعالجة للتصحيح
-  console.log('Processed draft for editing:', {
-    originalDescriptionsCount: letter.descriptions?.length || 0,
-    processedDescriptionsCount: processedDraft.descriptions?.length || 0,
-    tablesCount: processedDraft.tables?.length || 0,
-    tables: processedDraft.tables
-  });
+    // تسجيل البيانات المعالجة للتصحيح
+    // console.log('Processed draft for editing:', {
+    //   originalDescriptionsCount: letter.descriptions?.length || 0,
+    //   processedDescriptionsCount: processedDraft.descriptions?.length || 0,
+    //   tablesCount: processedDraft.tables?.length || 0,
+    //   tables: processedDraft.tables,
+    // });
 
-  // حفظ المسودة المعالجة بنفس المفتاح المتوقع
-  localStorage.setItem('editingLetterDraft', JSON.stringify(processedDraft));
+    // حفظ المسودة المعالجة بنفس المفتاح المتوقع
+    localStorage.setItem('editingLetterDraft', JSON.stringify(processedDraft));
 
-  // الانتقال لصفحة إنشاء / تعديل القرار
-  this.router.navigate(['/declaration']);
-}
-
-
-// في ملف drafts.component.ts
-// =============== دوال محتوى القرار ===============
-
-getDescriptions(letter: DraftLetter): string[] {
-  return letter.descriptions || [];
-}
-
-getRationales(letter: DraftLetter): string[] {
-  return letter.Rationale || [];
-}
-
-getCleanItemContent(content: string): string {
-  if (!content) return '';
-
-  if (content.includes('<') && content.includes('>')) {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = content;
-    return tempDiv.textContent || tempDiv.innerText || '';
+    // الانتقال لصفحة إنشاء / تعديل القرار
+    this.router.navigate(['/declaration']);
   }
 
-  // عرض أول 150 حرف فقط
-  return content.length > 150 ? content.substring(0, 150) + '...' : content;
-}
+  // في ملف drafts.component.ts
+  // =============== دوال محتوى القرار ===============
 
-hasContent(letter: DraftLetter): boolean {
-  return (letter.descriptions && letter.descriptions.length > 0) ||
-         (letter.Rationale && letter.Rationale.length > 0);
-}
+  getDescriptions(letter: DraftLetter): string[] {
+    return letter.descriptions || [];
+  }
+
+  getRationales(letter: DraftLetter): string[] {
+    return letter.Rationale || [];
+  }
+
+  getCleanItemContent(content: string): string {
+    if (!content) return '';
+
+    if (content.includes('<') && content.includes('>')) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      return tempDiv.textContent || tempDiv.innerText || '';
+    }
+
+    // عرض أول 150 حرف فقط
+    return content.length > 150 ? content.substring(0, 150) + '...' : content;
+  }
+
+  hasContent(letter: DraftLetter): boolean {
+    return (
+      (letter.descriptions && letter.descriptions.length > 0) ||
+      (letter.Rationale && letter.Rationale.length > 0)
+    );
+  }
 
   deleteDraft(id: string): void {
     Swal.fire({
@@ -381,32 +380,34 @@ hasContent(letter: DraftLetter): boolean {
             const publishPayload = {
               ...draft,
               SaveStatus: 'مكتمل',
-              status: 'pending'
+              status: 'pending',
             };
 
             // استخدام updateLetter لتحويلها إلى قرار كامل
-            this.letterService.updateLetter(id, publishPayload as any).subscribe({
-              next: (response) => {
-                this.loadDrafts();
-                Swal.fire({
-                  title: 'تم النشر!',
-                  text: 'تم تحويل المسودة إلى قرار رسمي بنجاح.',
-                  icon: 'success',
-                  confirmButtonColor: '#3085d6',
-                  confirmButtonText: 'حسناً',
-                });
-              },
-              error: (err) => {
-                console.error('Error publishing draft:', err);
-                Swal.fire({
-                  icon: 'error',
-                  title: 'خطأ',
-                  text: 'فشل في نشر المسودة: ' + err.message,
-                  confirmButtonText: 'حسناً',
-                  confirmButtonColor: '#d33',
-                });
-              }
-            });
+            this.letterService
+              .updateLetter(id, publishPayload as any)
+              .subscribe({
+                next: (response) => {
+                  this.loadDrafts();
+                  Swal.fire({
+                    title: 'تم النشر!',
+                    text: 'تم تحويل المسودة إلى قرار رسمي بنجاح.',
+                    icon: 'success',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'حسناً',
+                  });
+                },
+                error: (err) => {
+                  console.error('Error publishing draft:', err);
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'فشل في نشر المسودة: ' + err.message,
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#d33',
+                  });
+                },
+              });
           },
           error: (err) => {
             console.error('Error fetching draft:', err);
@@ -417,7 +418,7 @@ hasContent(letter: DraftLetter): boolean {
               confirmButtonText: 'حسناً',
               confirmButtonColor: '#d33',
             });
-          }
+          },
         });
       }
     });
@@ -457,7 +458,7 @@ hasContent(letter: DraftLetter): boolean {
               confirmButtonText: 'حسناً',
               confirmButtonColor: '#d33',
             });
-          }
+          },
         });
       }
     });
@@ -478,13 +479,17 @@ hasContent(letter: DraftLetter): boolean {
   }
 
   getSignatureTypeArabic(signatureType: string | undefined): string {
-    return signatureType ? this.letterService.getSignatureTypeArabic(signatureType) : 'غير محدد';
+    return signatureType
+      ? this.letterService.getSignatureTypeArabic(signatureType)
+      : 'غير محدد';
   }
 
   // =============== دوال عرض البيانات ===============
 
   getTransactionNumber(letter: DraftLetter): string {
-    return letter.transactionNumber ? letter.transactionNumber.toString() : 'غير معين';
+    return letter.transactionNumber
+      ? letter.transactionNumber.toString()
+      : 'غير معين';
   }
 
   // دالة للتحقق من وجود رابط PDF
@@ -513,118 +518,124 @@ hasContent(letter: DraftLetter): boolean {
     }
   }
 
-// في drafts.component.ts
-// =============== دوال تحويل الجداول ===============
+  // في drafts.component.ts
+  // =============== دوال تحويل الجداول ===============
 
-// دالة لاستخراج بيانات الجدول من HTML
-extractTableDataFromHtml(html: string): any {
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const table = doc.querySelector('table');
+  // دالة لاستخراج بيانات الجدول من HTML
+  extractTableDataFromHtml(html: string): any {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const table = doc.querySelector('table');
 
-    if (!table) {
+      if (!table) {
+        return null;
+      }
+
+      const rows = table.querySelectorAll('tr');
+      const data: string[][] = [];
+
+      rows.forEach((row) => {
+        const rowData: string[] = [];
+        const cells = row.querySelectorAll('td, th');
+        cells.forEach((cell) => {
+          const cellText = cell.textContent?.trim() || '';
+          rowData.push(cellText);
+        });
+        if (rowData.length > 0) {
+          data.push(rowData);
+        }
+      });
+
+      return {
+        rows: data.length,
+        cols: data[0]?.length || 0,
+        data: data,
+      };
+    } catch (error) {
+      console.error('Error extracting table from HTML:', error);
       return null;
     }
+  }
 
-    const rows = table.querySelectorAll('tr');
-    const data: string[][] = [];
+  // دالة للتحقق إذا كان المحتوى جدول
+  isTableContent(content: string): boolean {
+    if (!content) return false;
+    return (
+      content.includes('<table') ||
+      content.includes('<tbody>') ||
+      content.includes('<tr>') ||
+      content.includes('class="table"') ||
+      content.includes('decision-table') ||
+      content.includes('table-responsive')
+    );
+  }
 
-    rows.forEach(row => {
-      const rowData: string[] = [];
-      const cells = row.querySelectorAll('td, th');
-      cells.forEach(cell => {
-        const cellText = cell.textContent?.trim() || '';
-        rowData.push(cellText);
+  // دالة لمعالجة المسودة قبل الحفظ
+  prepareDraftForEditing(letter: DraftLetter): any {
+    const processedLetter = JSON.parse(JSON.stringify(letter));
+    const tablesData: any[] = [];
+    const processedDescriptions: string[] = [];
+
+    // تحليل البنود لاستخراج الجداول
+    if (
+      processedLetter.descriptions &&
+      Array.isArray(processedLetter.descriptions)
+    ) {
+      processedLetter.descriptions.forEach(
+        (description: string, index: number) => {
+          if (this.isTableContent(description)) {
+            // هذا جدول، استخراج بياناته
+            const tableData = this.extractTableDataFromHtml(description);
+            if (tableData) {
+              tablesData.push({
+                ...tableData,
+                descriptionIndex: index,
+                isTable: true,
+              });
+            }
+            processedDescriptions.push(description);
+          } else {
+            // هذا بند نصي عادي
+            processedDescriptions.push(description);
+          }
+        },
+      );
+
+      processedLetter.descriptions = processedDescriptions;
+    }
+
+    // إذا كانت هناك جداول مخزنة بشكل منفصل
+    if (processedLetter.tables && Array.isArray(processedLetter.tables)) {
+      // دمج الجداول من الـ tables array
+      processedLetter.tables.forEach((table: any, index: number) => {
+        tablesData.push({
+          ...table,
+          descriptionIndex: processedDescriptions.length + index,
+          isTable: true,
+        });
       });
-      if (rowData.length > 0) {
-        data.push(rowData);
-      }
-    });
+    }
 
-    return {
-      rows: data.length,
-      cols: data[0]?.length || 0,
-      data: data
-    };
-  } catch (error) {
-    console.error('Error extracting table from HTML:', error);
-    return null;
-  }
-}
+    // حفظ بيانات الجداول في خاصية tables
+    processedLetter.tables = tablesData;
 
-// دالة للتحقق إذا كان المحتوى جدول
-isTableContent(content: string): boolean {
-  if (!content) return false;
-  return content.includes('<table') ||
-         content.includes('<tbody>') ||
-         content.includes('<tr>') ||
-         content.includes('class="table"') ||
-         content.includes('decision-table') ||
-         content.includes('table-responsive');
-}
-
-// دالة لمعالجة المسودة قبل الحفظ
-prepareDraftForEditing(letter: DraftLetter): any {
-  const processedLetter = JSON.parse(JSON.stringify(letter));
-  const tablesData: any[] = [];
-  const processedDescriptions: string[] = [];
-
-  // تحليل البنود لاستخراج الجداول
-  if (processedLetter.descriptions && Array.isArray(processedLetter.descriptions)) {
-    processedLetter.descriptions.forEach((description: string, index: number) => {
-      if (this.isTableContent(description)) {
-        // هذا جدول، استخراج بياناته
-        const tableData = this.extractTableDataFromHtml(description);
-        if (tableData) {
-          tablesData.push({
-            ...tableData,
-            descriptionIndex: index,
-            isTable: true
-          });
-        }
-        processedDescriptions.push(description);
-      } else {
-        // هذا بند نصي عادي
-        processedDescriptions.push(description);
-      }
-    });
-
-    processedLetter.descriptions = processedDescriptions;
+    return processedLetter;
   }
 
-  // إذا كانت هناك جداول مخزنة بشكل منفصل
-  if (processedLetter.tables && Array.isArray(processedLetter.tables)) {
-    // دمج الجداول من الـ tables array
-    processedLetter.tables.forEach((table: any, index: number) => {
-      tablesData.push({
-        ...table,
-        descriptionIndex: processedDescriptions.length + index,
-        isTable: true
-      });
-    });
+  // دالة للتعرف على نوع المحتوى
+  getItemType(content: string): string {
+    if (this.isTableContent(content)) {
+      return 'جدول';
+    } else if (content.length > 100) {
+      return 'نص طويل';
+    } else {
+      return 'نص';
+    }
   }
 
-  // حفظ بيانات الجداول في خاصية tables
-  processedLetter.tables = tablesData;
-
-  return processedLetter;
-}
-
-// دالة للتعرف على نوع المحتوى
-getItemType(content: string): string {
-  if (this.isTableContent(content)) {
-    return 'جدول';
-  } else if (content.length > 100) {
-    return 'نص طويل';
-  } else {
-    return 'نص';
+  getFullItemContent(content: string): string {
+    if (!content) return '';
+    return content;
   }
-}
-
-getFullItemContent(content: string): string {
-  if (!content) return '';
-  return content;
-}
-
 }

@@ -27,7 +27,7 @@ export class NotificationService {
   }
 
   private initializeSocketConnection(): void {
-    this.socket = io('http://localhost:3000', {
+    this.socket = io('http://www.svu.edu.eg:8080', {
       transports: ['websocket', 'polling'],
     });
 
@@ -45,11 +45,10 @@ export class NotificationService {
     });
 
     this.socket.on('connect', () => {
-      this.fetchNotificationsFromServer();  
+      this.fetchNotificationsFromServer();
     });
 
-    this.socket.on('disconnect', () => {
-    });
+    this.socket.on('disconnect', () => {});
   }
 
   private getAuthHeaders(): HttpHeaders {
@@ -98,7 +97,7 @@ export class NotificationService {
     return this.http.post<Notification>(
       `${this.API_URL}/${notificationId}`,
       { seen: true },
-      { headers: this.getAuthHeaders() }
+      { headers: this.getAuthHeaders() },
     );
   }
 
@@ -108,7 +107,7 @@ export class NotificationService {
       {},
       {
         headers: this.getAuthHeaders(),
-      }
+      },
     );
   }
 
@@ -119,8 +118,7 @@ export class NotificationService {
   }
 
   clearAllNotifications() {
-    return this.http.delete(`${this.API_URL}/clearAll`, {
-      });
+    return this.http.delete(`${this.API_URL}/clearAll`, {});
   }
 
   sendTestNotification() {
@@ -129,7 +127,7 @@ export class NotificationService {
       {},
       {
         headers: this.getAuthHeaders(),
-      }
+      },
     );
   }
 

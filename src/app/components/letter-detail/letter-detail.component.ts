@@ -1,6 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, FormControl, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  FormControl,
+  Validators,
+} from '@angular/forms';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { LoginService } from 'src/app/service/login.service';
 import { LetterService } from 'src/app/service/letter.service';
@@ -40,13 +46,10 @@ export class LetterDetailComponent implements OnInit {
   editingTableIndex: number | null = null;
 
   // إضافة: متغير لتخزين التركيز الحالي
-  private lastFocusedCell: { row: number, col: number } | null = null;
+  private lastFocusedCell: { row: number; col: number } | null = null;
 
   quillModules = {
-    toolbar: [
-      ['bold', 'italic', 'underline'],
-      ['clean']
-    ]
+    toolbar: [['bold', 'italic', 'underline'], ['clean']],
   };
 
   constructor(
@@ -57,8 +60,8 @@ export class LetterDetailComponent implements OnInit {
     private letterService: LetterService,
     private cdr: ChangeDetectorRef,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
-  ) { }
+    private sanitizer: DomSanitizer,
+  ) {}
 
   user = this.authService.currentUserValue;
 
@@ -104,7 +107,7 @@ export class LetterDetailComponent implements OnInit {
       phoneNumber: [''],
       descriptions: this.fb.array([]),
       rationales: this.fb.array([]),
-      tables: this.fb.array([]) // إضافة: مصفوفة الجداول
+      tables: this.fb.array([]), // إضافة: مصفوفة الجداول
     });
   }
 
@@ -162,7 +165,11 @@ export class LetterDetailComponent implements OnInit {
 
     // نسخ البيانات القديمة
     for (let i = 0; i < Math.min(this.currentTableData.length, newRows); i++) {
-      for (let j = 0; j < Math.min(this.currentTableData[0]?.length || 0, newCols); j++) {
+      for (
+        let j = 0;
+        j < Math.min(this.currentTableData[0]?.length || 0, newCols);
+        j++
+      ) {
         newTable[i][j] = this.currentTableData[i][j];
       }
     }
@@ -184,7 +191,7 @@ export class LetterDetailComponent implements OnInit {
         icon: 'error',
         title: 'خطأ',
         text: 'الجدول فارغ!',
-        timer: 1500
+        timer: 1500,
       });
       return;
     }
@@ -204,13 +211,14 @@ export class LetterDetailComponent implements OnInit {
       rows: this.tableRows,
       cols: this.tableCols,
       data: this.currentTableData,
-      descriptionIndex: this.editingTableIndex ?? this.descriptionsArray.length - 1
+      descriptionIndex:
+        this.editingTableIndex ?? this.descriptionsArray.length - 1,
     };
 
     if (this.editingTableIndex !== null && this.editingTableIndex >= 0) {
       // تحديث جدول موجود في المصفوفة
       const existingIndex = this.tablesArray.controls.findIndex(
-        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex
+        (ctrl: any) => ctrl.value.descriptionIndex === this.editingTableIndex,
       );
       if (existingIndex >= 0) {
         this.tablesArray.at(existingIndex).setValue(tableData);
@@ -228,13 +236,14 @@ export class LetterDetailComponent implements OnInit {
       icon: 'success',
       title: 'تم إضافة الجدول بنجاح',
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 
   // إضافة: توليد HTML للجدول
   generateTableHTML(data: any[][]): string {
-    let html = '<table class="decision-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">';
+    let html =
+      '<table class="decision-table" style="width: 100%; border-collapse: collapse; margin: 10px 0; direction: rtl;">';
 
     data.forEach((row, rowIndex) => {
       html += '<tr>';
@@ -251,7 +260,7 @@ export class LetterDetailComponent implements OnInit {
   // إضافة: الحصول على جدول موجود
   getExistingTable(descriptionIndex: number): any {
     const tableControl = this.tablesArray.controls.find(
-      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex
+      (ctrl: any) => ctrl.value.descriptionIndex === descriptionIndex,
     );
     return tableControl ? tableControl.value : null;
   }
@@ -261,7 +270,7 @@ export class LetterDetailComponent implements OnInit {
     if (this.isEditing) {
       // في وضع التعديل، تحقق من مصفوفة الجداول
       const tableControl = this.tablesArray.controls.find(
-        (ctrl: any) => ctrl.value.descriptionIndex === index
+        (ctrl: any) => ctrl.value.descriptionIndex === index,
       );
       return !!tableControl;
     } else {
@@ -289,7 +298,10 @@ export class LetterDetailComponent implements OnInit {
     const value = input.value;
 
     // تحديث البيانات
-    if (this.currentTableData[rowIndex] && this.currentTableData[rowIndex][colIndex] !== undefined) {
+    if (
+      this.currentTableData[rowIndex] &&
+      this.currentTableData[rowIndex][colIndex] !== undefined
+    ) {
       this.currentTableData[rowIndex][colIndex] = value;
     }
 
@@ -336,7 +348,10 @@ export class LetterDetailComponent implements OnInit {
   private getCurrentUserRole(): void {
     const user = this.loginService.getUserFromLocalStorage();
     if (user && user.role) {
-      this.currentUserRole = user.role === 'UniversityPresident' ? 'UniversityPresident' : 'supervisor';
+      this.currentUserRole =
+        user.role === 'UniversityPresident'
+          ? 'UniversityPresident'
+          : 'supervisor';
     } else {
       const userData = localStorage.getItem('user');
       if (userData) {
@@ -360,12 +375,36 @@ export class LetterDetailComponent implements OnInit {
 
   getArabicOrdinal(index: number): string {
     const ordinals = [
-      'أولاً', 'ثانياً', 'ثالثاً', 'رابعاً', 'خامساً',
-      'سادساً', 'سابعاً', 'ثامناً', 'تاسعاً', 'عاشراً',
-      'حادي عشر', 'ثاني عشر', 'ثالث عشر', 'رابع عشر', 'خامس عشر',
-      'سادس عشر', 'سابع عشر', 'ثامن عشر', 'تاسع عشر', 'عشرون',
-      'الواحد والعشرون', 'الثاني والعشرون', 'الثالث والعشرون', 'الرابع والعشرون', 'الخامس والعشرون',
-      'السادس والعشرون', 'السابع والعشرون', 'الثامن والعشرون', 'التاسع والعشرون', 'الثلاثون',
+      'أولاً',
+      'ثانياً',
+      'ثالثاً',
+      'رابعاً',
+      'خامساً',
+      'سادساً',
+      'سابعاً',
+      'ثامناً',
+      'تاسعاً',
+      'عاشراً',
+      'حادي عشر',
+      'ثاني عشر',
+      'ثالث عشر',
+      'رابع عشر',
+      'خامس عشر',
+      'سادس عشر',
+      'سابع عشر',
+      'ثامن عشر',
+      'تاسع عشر',
+      'عشرون',
+      'الواحد والعشرون',
+      'الثاني والعشرون',
+      'الثالث والعشرون',
+      'الرابع والعشرون',
+      'الخامس والعشرون',
+      'السادس والعشرون',
+      'السابع والعشرون',
+      'الثامن والعشرون',
+      'التاسع والعشرون',
+      'الثلاثون',
     ];
     return ordinals[index] || `${index + 1}`;
   }
@@ -383,7 +422,7 @@ export class LetterDetailComponent implements OnInit {
     if (this.descriptionsArray.length > 1) {
       // حذف الجدول من مصفوفة الجداول إذا كان موجودًا
       const tableIndex = this.tablesArray.controls.findIndex(
-        (ctrl: any) => ctrl.value.descriptionIndex === index
+        (ctrl: any) => ctrl.value.descriptionIndex === index,
       );
       if (tableIndex >= 0) {
         this.tablesArray.removeAt(tableIndex);
@@ -438,7 +477,7 @@ export class LetterDetailComponent implements OnInit {
           fullName: this.original?.fullName || '',
           entityName: this.original?.entityName || '',
           nationalId: this.original?.nationalId || '',
-          phoneNumber: this.original?.phoneNumber || ''
+          phoneNumber: this.original?.phoneNumber || '',
         });
 
         this.loadPdfByLetterId(id);
@@ -451,9 +490,9 @@ export class LetterDetailComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'حدث خطأ أثناء تحميل القرار',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -466,16 +505,20 @@ export class LetterDetailComponent implements OnInit {
         if (cleanDesc) this.descriptionsArray.push(this.fb.control(cleanDesc));
       });
     }
-    if (this.descriptionsArray.length === 0) this.descriptionsArray.push(this.fb.control(''));
+    if (this.descriptionsArray.length === 0)
+      this.descriptionsArray.push(this.fb.control(''));
   }
 
   private loadRationalesIntoForm() {
     this.rationalesArray.clear();
     let rationales = [];
     if (this.original?.Rationale) {
-      if (Array.isArray(this.original.Rationale)) rationales = this.original.Rationale;
-      else if (typeof this.original.Rationale === 'string') rationales = [this.original.Rationale];
-      else if (typeof this.original.Rationale === 'object') rationales = Object.values(this.original.Rationale);
+      if (Array.isArray(this.original.Rationale))
+        rationales = this.original.Rationale;
+      else if (typeof this.original.Rationale === 'string')
+        rationales = [this.original.Rationale];
+      else if (typeof this.original.Rationale === 'object')
+        rationales = Object.values(this.original.Rationale);
     }
     if (rationales.length > 0) {
       rationales.forEach((rat: any) => {
@@ -483,7 +526,8 @@ export class LetterDetailComponent implements OnInit {
         if (cleanRat) this.rationalesArray.push(this.fb.control(cleanRat));
       });
     }
-    if (this.rationalesArray.length === 0) this.rationalesArray.push(this.fb.control(''));
+    if (this.rationalesArray.length === 0)
+      this.rationalesArray.push(this.fb.control(''));
   }
 
   // إضافة: تحميل الجداول من البيانات
@@ -501,12 +545,14 @@ export class LetterDetailComponent implements OnInit {
           // استخراج بيانات الجدول من HTML
           const tableData = this.extractTableDataFromHTML(desc);
           if (tableData) {
-            this.tablesArray.push(this.fb.control({
-              rows: tableData.rows,
-              cols: tableData.cols,
-              data: tableData.data,
-              descriptionIndex: index
-            }));
+            this.tablesArray.push(
+              this.fb.control({
+                rows: tableData.rows,
+                cols: tableData.cols,
+                data: tableData.data,
+                descriptionIndex: index,
+              }),
+            );
           }
         }
       });
@@ -525,11 +571,11 @@ export class LetterDetailComponent implements OnInit {
       const rows = table.querySelectorAll('tr');
       const data: any[][] = [];
 
-      rows.forEach(row => {
+      rows.forEach((row) => {
         const rowData: any[] = [];
         const cells = row.querySelectorAll('td, th');
 
-        cells.forEach(cell => {
+        cells.forEach((cell) => {
           rowData.push(cell.textContent || cell.innerHTML || '');
         });
 
@@ -539,7 +585,7 @@ export class LetterDetailComponent implements OnInit {
       return {
         rows: data.length,
         cols: data[0] ? data[0].length : 0,
-        data: data
+        data: data,
       };
     } catch (error) {
       console.error('Error extracting table data from HTML:', error);
@@ -565,7 +611,7 @@ export class LetterDetailComponent implements OnInit {
       fullName: this.original?.fullName || '',
       entityName: this.original?.entityName || '',
       nationalId: this.original?.nationalId || '',
-      phoneNumber: this.original?.phoneNumber || ''
+      phoneNumber: this.original?.phoneNumber || '',
     });
 
     setTimeout(() => {
@@ -589,7 +635,9 @@ export class LetterDetailComponent implements OnInit {
         if (response.success && response.pdfFile) {
           this.pdfFile = response.pdfFile;
           this.pdfUrl = response.pdfFile.pdfurl;
-          this.pdfFilename = this.extractFilenameFromUrl(response.pdfFile.pdfurl);
+          this.pdfFilename = this.extractFilenameFromUrl(
+            response.pdfFile.pdfurl,
+          );
         } else {
           this.findAndSetPdfUrl();
         }
@@ -613,7 +661,7 @@ export class LetterDetailComponent implements OnInit {
     if (this.original?.approvals && this.original.approvals.length > 0) {
       const presidentApproval = this.original.approvals.find(
         (approval: any) =>
-          approval.role === 'UniversityPresident' && approval.approved === true
+          approval.role === 'UniversityPresident' && approval.approved === true,
       );
 
       if (presidentApproval) {
@@ -701,7 +749,7 @@ export class LetterDetailComponent implements OnInit {
         },
         error: () => {
           this.pdfGenerating = false;
-        }
+        },
       });
   }
 
@@ -719,12 +767,12 @@ export class LetterDetailComponent implements OnInit {
         Swal.fire({
           icon: 'info',
           title: 'نسخة تجريبية',
-          text: 'يمكن إنشاؤها عدة مرات'
+          text: 'يمكن إنشاؤها عدة مرات',
         });
       },
       error: () => {
         this.pdfGenerating = false;
-      }
+      },
     });
   }
 
@@ -733,12 +781,12 @@ export class LetterDetailComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
 
-    const apiUrl = `http://localhost:3000/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
+    const apiUrl = `http://www.svu.edu.eg:8080/api/letters/view-pdf-onlineTesting/${encodeURIComponent(this.pdfFilename)}`;
 
     this.letterService.getPDF(apiUrl).subscribe({
       next: (blob: Blob) => {
@@ -746,13 +794,13 @@ export class LetterDetailComponent implements OnInit {
         window.open(url, '_blank');
       },
       error: (err) => {
-        console.error("خطأ في جلب الملف:", err);
+        console.error('خطأ في جلب الملف:', err);
         Swal.fire({
           icon: 'warning',
           title: 'لا يمكن عرض الملف حالياً',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -764,7 +812,7 @@ export class LetterDetailComponent implements OnInit {
       window.open(this.pdfUrl, '_blank');
       this.pdfLoading = false;
     } else if (this.pdfFilename) {
-      const baseUrl = 'http://localhost:3000/generated-files';
+      const baseUrl = 'http://www.svu.edu.eg:8080/generated-files';
       const pdfUrl = `${baseUrl}/${encodeURIComponent(this.pdfFilename)}`;
       window.open(pdfUrl, '_blank');
       this.pdfLoading = false;
@@ -773,7 +821,7 @@ export class LetterDetailComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للعرض',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
     }
   }
@@ -794,7 +842,7 @@ export class LetterDetailComponent implements OnInit {
       Swal.fire({
         icon: 'warning',
         title: 'لا يوجد ملف PDF متاح للتنزيل',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
     }
   }
@@ -839,7 +887,7 @@ export class LetterDetailComponent implements OnInit {
         icon: 'warning',
         title: 'يرجى إكمال البيانات المطلوبة',
         text: 'عنوان القرار مطلوب ويجب أن يكون على الأقل 3 أحرف',
-        showConfirmButton: true
+        showConfirmButton: true,
       });
       return;
     }
@@ -863,7 +911,7 @@ export class LetterDetailComponent implements OnInit {
       phoneNumber: this.form.value.phoneNumber || null,
       descriptions: cleanedDescriptions,
       Rationale: cleanedRationales,
-      tables: tables // إضافة الجداول
+      tables: tables, // إضافة الجداول
     };
 
     if (this.form.value.startDate) {
@@ -883,7 +931,7 @@ export class LetterDetailComponent implements OnInit {
           ...payload,
           descriptions: cleanedDescriptions,
           Rationale: cleanedRationales,
-          tables: tables
+          tables: tables,
         };
 
         this.isEditing = false;
@@ -893,7 +941,7 @@ export class LetterDetailComponent implements OnInit {
           icon: 'success',
           title: 'تم الحفظ بنجاح',
           showConfirmButton: false,
-          timer: 1500
+          timer: 1500,
         });
 
         this.cdr.detectChanges();
@@ -905,16 +953,16 @@ export class LetterDetailComponent implements OnInit {
           icon: 'error',
           title: 'حدث خطأ أثناء الحفظ',
           text: err.error?.message || 'يرجى المحاولة مرة أخرى',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
   onRationaleChange() {
     this.form.controls['rationale'].setValue(
       this.stripHtml(this.form.value.rationale || ''),
-      { emitEvent: false }
+      { emitEvent: false },
     );
   }
 
@@ -934,7 +982,7 @@ export class LetterDetailComponent implements OnInit {
         icon: 'error',
         title: 'يرجى إدخال سبب التعديل',
         showConfirmButton: false,
-        timer: 1500
+        timer: 1500,
       });
       return;
     }
@@ -967,15 +1015,16 @@ export class LetterDetailComponent implements OnInit {
         this.original._id,
         'amendment',
         this.amendmentReason,
-        this.isEditing ? updateData : undefined
+        this.isEditing ? updateData : undefined,
       );
     } else {
-      amendmentObservable = this.letterService.updateStatusByUniversityPresident(
-        this.original._id,
-        'amendment',
-        this.amendmentReason,
-        this.isEditing ? updateData : undefined
-      );
+      amendmentObservable =
+        this.letterService.updateStatusByUniversityPresident(
+          this.original._id,
+          'amendment',
+          this.amendmentReason,
+          this.isEditing ? updateData : undefined,
+        );
     }
 
     amendmentObservable.subscribe({
@@ -999,7 +1048,7 @@ export class LetterDetailComponent implements OnInit {
           icon: 'success',
           title: 'تم إرسال القرار للتعديل',
           showConfirmButton: false,
-          timer: 1500
+          timer: 1500,
         });
       },
       error: (err) => {
@@ -1008,9 +1057,9 @@ export class LetterDetailComponent implements OnInit {
         Swal.fire({
           icon: 'error',
           title: 'حدث خطأ أثناء إرسال التعديل',
-          showConfirmButton: true
+          showConfirmButton: true,
         });
-      }
+      },
     });
   }
 
@@ -1023,7 +1072,7 @@ export class LetterDetailComponent implements OnInit {
       confirmButtonColor: '#d33',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'نعم، رفض',
-      cancelButtonText: 'إلغاء'
+      cancelButtonText: 'إلغاء',
     }).then((result) => {
       if (result.isConfirmed) {
         this.processing = true;
@@ -1035,15 +1084,16 @@ export class LetterDetailComponent implements OnInit {
             this.original._id,
             'rejected',
             '',
-            undefined
+            undefined,
           );
         } else {
-          rejectionObservable = this.letterService.updateStatusByUniversityPresident(
-            this.original._id,
-            'rejected',
-            '',
-            undefined
-          );
+          rejectionObservable =
+            this.letterService.updateStatusByUniversityPresident(
+              this.original._id,
+              'rejected',
+              '',
+              undefined,
+            );
         }
 
         rejectionObservable.subscribe({
@@ -1055,7 +1105,7 @@ export class LetterDetailComponent implements OnInit {
               icon: 'success',
               title: 'تم رفض القرار',
               showConfirmButton: false,
-              timer: 1500
+              timer: 1500,
             });
           },
           error: (err) => {
@@ -1064,9 +1114,9 @@ export class LetterDetailComponent implements OnInit {
             Swal.fire({
               icon: 'error',
               title: 'حدث خطأ أثناء رفض القرار',
-              showConfirmButton: true
+              showConfirmButton: true,
             });
-          }
+          },
         });
       }
     });
@@ -1088,7 +1138,7 @@ export class LetterDetailComponent implements OnInit {
               icon: 'success',
               title: 'تم إرسال القرار للرئيس',
               showConfirmButton: false,
-              timer: 1500
+              timer: 1500,
             });
           },
           error: (err) => {
@@ -1097,44 +1147,46 @@ export class LetterDetailComponent implements OnInit {
             Swal.fire({
               icon: 'error',
               title: 'حدث خطأ أثناء الإرسال',
-              showConfirmButton: true
+              showConfirmButton: true,
             });
           },
         });
     } else if (this.currentUserRole === 'UniversityPresident') {
-      this.letterService.updateStatusByUniversityPresident(
-        this.original._id,
-        'approved',
-        undefined,
-        signatureType
-      ).subscribe({
-        next: () => {
-          this.original.status = 'approved';
-          this.original.signatureType = signatureType;
+      this.letterService
+        .updateStatusByUniversityPresident(
+          this.original._id,
+          'approved',
+          undefined,
+          signatureType,
+        )
+        .subscribe({
+          next: () => {
+            this.original.status = 'approved';
+            this.original.signatureType = signatureType;
 
-          this.generatePdf(signatureType || 'حقيقية');
+            this.generatePdf(signatureType || 'حقيقية');
 
-          this.processing = false;
-          this.showPresidentOptions = false;
+            this.processing = false;
+            this.showPresidentOptions = false;
 
-          Swal.fire({
-            icon: 'success',
-            title: 'تمت الموافقة وإنشاء PDF',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        },
-        error: (err) => {
-          console.error('Error approving by president:', err);
-          this.processing = false;
-          Swal.fire({
-            icon: 'error',
-            title: 'حدث خطأ أثناء الموافقة',
-            text: err.error?.message || 'حاول مرة أخرى',
-            showConfirmButton: true
-          });
-        },
-      });
+            Swal.fire({
+              icon: 'success',
+              title: 'تمت الموافقة وإنشاء PDF',
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          },
+          error: (err) => {
+            console.error('Error approving by president:', err);
+            this.processing = false;
+            Swal.fire({
+              icon: 'error',
+              title: 'حدث خطأ أثناء الموافقة',
+              text: err.error?.message || 'حاول مرة أخرى',
+              showConfirmButton: true,
+            });
+          },
+        });
     }
   }
 
@@ -1177,23 +1229,35 @@ export class LetterDetailComponent implements OnInit {
 
   getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'approved': return 'badge bg-success';
-      case 'pending': return 'badge bg-warning text-dark';
-      case 'rejected': return 'badge bg-danger';
-      case 'amendment': return 'badge bg-warning text-dark';
-      case 'in_progress': return 'badge bg-info text-dark';
-      default: return 'badge bg-secondary';
+      case 'approved':
+        return 'badge bg-success';
+      case 'pending':
+        return 'badge bg-warning text-dark';
+      case 'rejected':
+        return 'badge bg-danger';
+      case 'amendment':
+        return 'badge bg-warning text-dark';
+      case 'in_progress':
+        return 'badge bg-info text-dark';
+      default:
+        return 'badge bg-secondary';
     }
   }
 
   getStatusText(status: string): string {
     switch (status) {
-      case 'approved': return 'تمت الموافقة';
-      case 'pending': return 'قيد المراجعة لدى الرئيس';
-      case 'rejected': return 'مرفوض';
-      case 'amendment': return 'قيد التعديل';
-      case 'in_progress': return 'قيد المعالجة';
-      default: return 'غير محدد';
+      case 'approved':
+        return 'تمت الموافقة';
+      case 'pending':
+        return 'قيد المراجعة لدى الرئيس';
+      case 'rejected':
+        return 'مرفوض';
+      case 'amendment':
+        return 'قيد التعديل';
+      case 'in_progress':
+        return 'قيد المعالجة';
+      default:
+        return 'غير محدد';
     }
   }
 
@@ -1210,17 +1274,22 @@ export class LetterDetailComponent implements OnInit {
   }
 
   showReviewActions(): boolean {
-    const hasRole = this.currentUserRole === 'supervisor' || this.currentUserRole === 'UniversityPresident';
+    const hasRole =
+      this.currentUserRole === 'supervisor' ||
+      this.currentUserRole === 'UniversityPresident';
     const correctStatus =
-      (this.currentUserRole === 'supervisor' && this.original?.status === 'in_progress') ||
-      (this.currentUserRole === 'UniversityPresident' && this.original?.status === 'pending');
+      (this.currentUserRole === 'supervisor' &&
+        this.original?.status === 'in_progress') ||
+      (this.currentUserRole === 'UniversityPresident' &&
+        this.original?.status === 'pending');
 
     return hasRole && correctStatus;
   }
 
   showRejectionDetails(): boolean {
     return (
-      (this.original?.status === 'rejected' || this.original?.status === 'amendment') &&
+      (this.original?.status === 'rejected' ||
+        this.original?.status === 'amendment') &&
       !!this.original?.reasonForRejection
     );
   }
