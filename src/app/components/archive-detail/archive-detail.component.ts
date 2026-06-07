@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ArchiveService } from 'src/app/service/archive.service';
 import { AuthService } from 'src/app/service/auth.service';
 import { LetterService } from 'src/app/service/letter.service';
+import { CriteriaService } from 'src/app/service/criteria.service';
+import { MainCriteria, SubCriteria } from 'src/app/model/criteria';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -35,20 +37,38 @@ export class ArchiveDetailComponent implements OnInit {
   pageSize = 10;
   totalPages = 1;
 
-  sortField = 'createdAt';
+  sortField = 'updatedAt';
   sortDirection = 'desc';
 
   uniqueSenders: string[] = [];
   uniqueMainCriteria: string[] = [];
   filteredSubCriteria: string[] = [];
 
+  // ==================== Criteria Dropdown ====================
+  mainCriteriaList: MainCriteria[] = [];
+  subCriteriaList: SubCriteria[] = [];
+  filteredMainCriteriaDropdown: MainCriteria[] = [];
+  filteredSubCriteriaDropdown: SubCriteria[] = [];
+  loadingSubCriteria = false;
+
+  mainSearchTerm = '';
+  subSearchTerm = '';
+  showMainDropdown = false;
+  showSubDropdown = false;
+  selectedMainCriteriaTitle = '';
+  selectedSubCriteriaTitle = '';
+
   newArchive = {
     title: '',
     description: '',
     startDate: '',
     endDate: '',
-    transactionNumber: '' ,
+    transactionNumber: '',
     letterType: 'رئاسة الجمهورية',
+    mainCriteriaId: '',
+    subCriteriaId: '',
+    nationalId: '',
+    fullName: '',
     file: null as File | null,
   };
 
@@ -57,11 +77,14 @@ export class ArchiveDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private archiveService: ArchiveService,
     private authService: AuthService,
-    private letterService: LetterService
+    private letterService: LetterService,
+    private criteriaService: CriteriaService,
   ) {}
+
   user = this.authService.currentUserValue;
 
   ngOnInit(): void {
+    this.loadMainCriteria();
     this.route.queryParams.subscribe((params) => {
       this.type = params['type'] || localStorage.getItem('archiveType') || '';
       if (this.type) {
@@ -76,6 +99,130 @@ export class ArchiveDetailComponent implements OnInit {
       }
     });
   }
+
+  // ==================== Criteria Dropdown Methods ====================
+
+  private loadMainCriteria(): void {
+    this.criteriaService.getAllMainCriteria().subscribe({
+      next: (criteria: MainCriteria[]) => {
+        this.mainCriteriaList = criteria;
+        this.filteredMainCriteriaDropdown = [];
+      },
+      error: (err: any) => {
+        console.error('خطأ في تحميل المعايير الرئيسية:', err);
+      },
+    });
+  }
+
+  private loadSubCriteria(mainCriteriaId: string): void {
+    if (!mainCriteriaId) return;
+    this.loadingSubCriteria = true;
+    this.subCriteriaList = [];
+    this.filteredSubCriteriaDropdown = [];
+    this.newArchive.subCriteriaId = '';
+    this.selectedSubCriteriaTitle = '';
+    this.subSearchTerm = '';
+
+    this.criteriaService.getSubCriteriaById(mainCriteriaId).subscribe({
+      next: (criteria: SubCriteria[]) => {
+        if (Array.isArray(criteria)) {
+          this.subCriteriaList = criteria;
+          this.filteredSubCriteriaDropdown = [...criteria];
+        }
+        this.loadingSubCriteria = false;
+      },
+      error: (err: any) => {
+        console.error('خطأ في تحميل المعايير الفرعية:', err);
+        this.loadingSubCriteria = false;
+      },
+    });
+  }
+
+  toggleMainDropdown(): void {
+    this.showMainDropdown = !this.showMainDropdown;
+    if (this.showMainDropdown) {
+      this.mainSearchTerm = '';
+      this.filteredMainCriteriaDropdown = [...this.mainCriteriaList];
+      setTimeout(() => {
+        const input = document.querySelector(
+          '.main-criteria-search',
+        ) as HTMLInputElement;
+        if (input) input.focus();
+      }, 100);
+    }
+  }
+
+  toggleSubDropdown(): void {
+    if (!this.newArchive.mainCriteriaId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'يرجى اختيار المعيار الرئيسي أولاً',
+        showConfirmButton: false,
+        timer: 2000,
+        position: 'top-start',
+      });
+      return;
+    }
+    this.showSubDropdown = !this.showSubDropdown;
+    if (this.showSubDropdown) {
+      this.filteredSubCriteriaDropdown = [...this.subCriteriaList];
+    }
+  }
+
+  filterMainCriteriaDropdown(searchTerm: string): void {
+    this.mainSearchTerm = searchTerm;
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredMainCriteriaDropdown = [...this.mainCriteriaList];
+    } else {
+      const lower = searchTerm.toLowerCase().trim();
+      this.filteredMainCriteriaDropdown = this.mainCriteriaList.filter((c) =>
+        c.name.toLowerCase().includes(lower),
+      );
+    }
+  }
+
+  filterSubCriteriaDropdown(searchTerm: string): void {
+    this.subSearchTerm = searchTerm;
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredSubCriteriaDropdown = [...this.subCriteriaList];
+    } else {
+      const lower = searchTerm.toLowerCase().trim();
+      this.filteredSubCriteriaDropdown = this.subCriteriaList.filter((c) =>
+        c.name.toLowerCase().includes(lower),
+      );
+    }
+  }
+
+  selectMainCriteria(criteriaId: string, criteriaName: string): void {
+    this.newArchive.mainCriteriaId = criteriaId;
+    this.selectedMainCriteriaTitle = criteriaName;
+    this.mainSearchTerm = '';
+    this.filteredMainCriteriaDropdown = [];
+    this.showMainDropdown = false;
+    this.newArchive.subCriteriaId = '';
+    this.selectedSubCriteriaTitle = '';
+    this.loadSubCriteria(criteriaId);
+  }
+
+  selectSubCriteria(criteriaId: string, criteriaName: string): void {
+    this.newArchive.subCriteriaId = criteriaId;
+    this.selectedSubCriteriaTitle = criteriaName;
+    this.subSearchTerm = '';
+    this.filteredSubCriteriaDropdown = [...this.subCriteriaList];
+    this.showSubDropdown = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    const clickedInside = target.closest('.criteria-search-dropdown');
+    if (!clickedInside) {
+      this.showMainDropdown = false;
+      this.showSubDropdown = false;
+    }
+  }
+
+  // ==================== Archive Data Methods ====================
 
   trackByLetterId(index: number, letter: any): string {
     return letter._id;
@@ -139,7 +286,6 @@ export class ArchiveDetailComponent implements OnInit {
     const senders = this.letters
       .map((letter) => letter.user?.fullname)
       .filter((name) => name && name.trim() !== '');
-
     this.uniqueSenders = [...new Set(senders)].sort();
   }
 
@@ -147,135 +293,133 @@ export class ArchiveDetailComponent implements OnInit {
     const mainCriteria = this.letters
       .map((letter) => letter.mainCriteria?.name)
       .filter((name) => name && name.trim() !== '');
-
     this.uniqueMainCriteria = [...new Set(mainCriteria)].sort();
   }
 
   onMainCriteriaChange(): void {
     this.filters.subCriteria = '';
-
     if (this.filters.mainCriteria) {
       const lettersWithSelectedMainCriteria = this.letters.filter(
-        letter => letter.mainCriteria?.name === this.filters.mainCriteria
+        (letter) => letter.mainCriteria?.name === this.filters.mainCriteria,
       );
-
       const subCriteriaNames = lettersWithSelectedMainCriteria
-        .map(letter => letter.subCriteria?.name)
-        .filter(name => name && name.trim() !== '');
-
+        .map((letter) => letter.subCriteria?.name)
+        .filter((name) => name && name.trim() !== '');
       this.filteredSubCriteria = [...new Set(subCriteriaNames)].sort();
     } else {
       this.filteredSubCriteria = [];
     }
-
     this.applyFilters();
   }
 
-applyFilters(): void {
-  let filtered = [...this.letters];
+  applyFilters(): void {
+    let filtered = [...this.letters];
 
-  if (this.searchTerm) {
-    const term = this.searchTerm.toLowerCase();
-    filtered = filtered.filter(
-      (letter) =>
-        letter.title?.toLowerCase().includes(term) ||
-        letter.user?.fullname?.toLowerCase().includes(term) ||
-        letter.breeif?.toLowerCase().includes(term) ||
-        letter.mainCriteria?.name?.toLowerCase().includes(term) ||
-        letter.subCriteria?.name?.toLowerCase().includes(term)
-    );
-  }
-
-  // حل مشكلة التاريخ - FIXED
-  if (this.filters.fromDate) {
-    filtered = filtered.filter(
-      (letter) => new Date(letter.createdAt) >= new Date(this.filters.fromDate)
-    );
-  }
-
-  if (this.filters.toDate) {
-    const toDatePlusOneDay = new Date(this.filters.toDate);
-    toDatePlusOneDay.setDate(toDatePlusOneDay.getDate() + 1);
-    filtered = filtered.filter(
-      (letter) => new Date(letter.createdAt) < toDatePlusOneDay
-    );
-  }
-
-  if (this.dateRange.startDate) {
-    filtered = filtered.filter(
-      (letter) =>
-        letter.StartDate &&
-        new Date(letter.StartDate) >= new Date(this.dateRange.startDate)
-    );
-  }
-
-  if (this.dateRange.endDate) {
-    const endDatePlusOneDay = new Date(this.dateRange.endDate);
-    endDatePlusOneDay.setDate(endDatePlusOneDay.getDate() + 1);
-    filtered = filtered.filter(
-      (letter) =>
-        letter.EndDate &&
-        new Date(letter.EndDate) < endDatePlusOneDay
-    );
-  }
-
-  if (this.filters.sender) {
-    filtered = filtered.filter(
-      (letter) => letter.user?.fullname === this.filters.sender
-    );
-  }
-
-  if (this.filters.mainCriteria) {
-    filtered = filtered.filter(
-      (letter) => letter.mainCriteria?.name === this.filters.mainCriteria
-    );
-  }
-
-  if (this.filters.subCriteria) {
-    filtered = filtered.filter(
-      (letter) => letter.subCriteria?.name === this.filters.subCriteria
-    );
-  }
-
-  // تأكد أن الفرز دائمًا حسب updatedAt تنازلي (الأحدث أولاً)
-  this.sortField = 'updatedAt';
-  this.sortDirection = 'desc';
-  filtered = this.sortLetters(filtered);
-
-  this.filteredLetters = filtered;
-  this.currentPage = 1;
-  this.calculateTotalPages();
-}
-
-
-  sortLetters(letters: any[]): any[] {
-  return letters.sort((a, b) => {
-    let valueA, valueB;
-
-    switch (this.sortField) {
-      case 'title':
-        valueA = a.title?.toLowerCase() || '';
-        valueB = b.title?.toLowerCase() || '';
-        break;
-      case 'user.fullname':
-        valueA = a.user?.fullname?.toLowerCase() || '';
-        valueB = b.user?.fullname?.toLowerCase() || '';
-        break;
-      case 'updatedAt':  // استخدم updatedAt
-        valueA = new Date(a.updatedAt);
-        valueB = new Date(b.updatedAt);
-        break;
-      default:
-        valueA = a[this.sortField];
-        valueB = b[this.sortField];
+    if (this.searchTerm) {
+      const term = this.searchTerm.toLowerCase();
+filtered = filtered.filter(
+  (letter) =>
+    letter.title?.toLowerCase().includes(term) ||
+    letter.user?.fullname?.toLowerCase().includes(term) ||
+    letter.breeif?.toLowerCase().includes(term) ||
+    letter.mainCriteria?.name?.toLowerCase().includes(term) ||
+    letter.subCriteria?.name?.toLowerCase().includes(term) ||
+    letter.transactionNumber?.toString().includes(term),  // ✅ رقم القرار
+);
     }
 
-    if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
-    if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
-    return 0;
-  });
-}
+    if (this.filters.fromDate) {
+      filtered = filtered.filter(
+        (letter) =>
+          new Date(letter.createdAt) >= new Date(this.filters.fromDate),
+      );
+    }
 
+    if (this.filters.toDate) {
+      const toDatePlusOneDay = new Date(this.filters.toDate);
+      toDatePlusOneDay.setDate(toDatePlusOneDay.getDate() + 1);
+      filtered = filtered.filter(
+        (letter) => new Date(letter.createdAt) < toDatePlusOneDay,
+      );
+    }
+
+    if (this.dateRange.startDate) {
+      filtered = filtered.filter(
+        (letter) =>
+          letter.StartDate &&
+          new Date(letter.StartDate) >= new Date(this.dateRange.startDate),
+      );
+    }
+
+    if (this.dateRange.endDate) {
+      const endDatePlusOneDay = new Date(this.dateRange.endDate);
+      endDatePlusOneDay.setDate(endDatePlusOneDay.getDate() + 1);
+      filtered = filtered.filter(
+        (letter) =>
+          letter.EndDate && new Date(letter.EndDate) < endDatePlusOneDay,
+      );
+    }
+
+    if (this.filters.sender) {
+      filtered = filtered.filter(
+        (letter) => letter.user?.fullname === this.filters.sender,
+      );
+    }
+
+    if (this.filters.mainCriteria) {
+      filtered = filtered.filter(
+        (letter) => letter.mainCriteria?.name === this.filters.mainCriteria,
+      );
+    }
+
+    if (this.filters.subCriteria) {
+      filtered = filtered.filter(
+        (letter) => letter.subCriteria?.name === this.filters.subCriteria,
+      );
+    }
+
+    // ✅ بدون hardcode للـ sortField — بيستخدم القيمة الحالية (default: updatedAt desc)
+    filtered = this.sortLetters(filtered);
+
+    this.filteredLetters = filtered;
+    this.currentPage = 1;
+    this.calculateTotalPages();
+  }
+
+  sortLetters(letters: any[]): any[] {
+    return letters.sort((a, b) => {
+      let valueA: any, valueB: any;
+
+      switch (this.sortField) {
+        case 'title':
+          valueA = a.title?.toLowerCase() || '';
+          valueB = b.title?.toLowerCase() || '';
+          break;
+        case 'user.fullname':
+          valueA = a.user?.fullname?.toLowerCase() || '';
+          valueB = b.user?.fullname?.toLowerCase() || '';
+          break;
+        case 'updatedAt':
+        default:
+          // ✅ اللي مالهوش updatedAt أو التاريخ بايظ ينزل للآخر دايمًا
+          const tsA = a.updatedAt ? new Date(a.updatedAt).getTime() : NaN;
+          const tsB = b.updatedAt ? new Date(b.updatedAt).getTime() : NaN;
+
+          const validA = !isNaN(tsA);
+          const validB = !isNaN(tsB);
+
+          if (!validA && !validB) return 0;   // الاتنين بايظين → تساوي
+          if (!validA) return 1;               // A بايظ → ينزل تحت
+          if (!validB) return -1;              // B بايظ → ينزل تحت
+
+          return this.sortDirection === 'asc' ? tsA - tsB : tsB - tsA;
+      }
+
+      if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+      if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
 
   sortBy(field: string): void {
     if (this.sortField === field) {
@@ -296,12 +440,9 @@ applyFilters(): void {
       mainCriteria: '',
       subCriteria: '',
     };
-    this.dateRange = {
-      startDate: '',
-      endDate: '',
-    };
+    this.dateRange = { startDate: '', endDate: '' };
     this.filteredSubCriteria = [];
-    this.sortField = 'createdAt';
+    this.sortField = 'updatedAt';
     this.sortDirection = 'desc';
     this.currentPage = 1;
     this.applyFilters();
@@ -314,21 +455,17 @@ applyFilters(): void {
   getPages(): number[] {
     const pages = [];
     const maxVisiblePages = 5;
-
     let startPage = Math.max(
       1,
-      this.currentPage - Math.floor(maxVisiblePages / 2)
+      this.currentPage - Math.floor(maxVisiblePages / 2),
     );
     let endPage = Math.min(this.totalPages, startPage + maxVisiblePages - 1);
-
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
-
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-
     return pages;
   }
 
@@ -344,13 +481,12 @@ applyFilters(): void {
   }
 
   viewLetterDetails(letterId: string): void {
-  const url = this.router.serializeUrl(
-    this.router.createUrlTree(['/letter-detail', letterId])
-  );
-  window.open(url, '_blank');
+    const url = this.router.serializeUrl(
+      this.router.createUrlTree(['/letter-detail', letterId]),
+    );
+    window.open(url, '_blank');
   }
 
-  // وظيفة حذف القرار - جديدة
   deleteArchive(letterId: string, letterTitle: string): void {
     Swal.fire({
       title: 'تأكيد الحذف',
@@ -381,7 +517,6 @@ applyFilters(): void {
     });
   }
 
-  // دالة للتحقق من صلاحية الحذف
   canDelete(): boolean {
     return this.user?.role === 'UniversityPresident';
   }
@@ -395,6 +530,7 @@ applyFilters(): void {
       'رئاسة الوزراء': 'أرشيف رئاسة الوزراء',
       عامة: 'الأرشيف العام',
       اخرى: 'الأرشيف اخرى',
+      'تعيين قيادات': 'أرشيف تعيين قيادات',
     };
     return titles[this.type] || `أرشيف ${this.type}`;
   }
@@ -408,6 +544,7 @@ applyFilters(): void {
       'رئاسة الوزراء': 'قرارات مجلس الوزراء الرسمية',
       عامة: 'قرارات ووثائق الجامعة الرسمية',
       اخرى: 'قرارات ووثائق الجامعة الرسمية',
+      'تعيين قيادات': 'قرارات تعيين قيادات الجامعية',
     };
     return (
       subtitles[this.type] || 'قائمة القرارت والأوامر المعتمدة ضمن هذا التصنيف'
@@ -431,18 +568,36 @@ applyFilters(): void {
       'رئاسة الوزراء',
       'رئاسة الجمهورية',
       'وزارة التعليم العالي',
-      'اخرى'
+      'اخرى',
+      'تعيين قيادات',
     ];
     return allowed.includes(this.type);
   }
 
   openUploadModal(): void {
     this.showUploadModal = true;
+    this.selectedMainCriteriaTitle = '';
+    this.selectedSubCriteriaTitle = '';
+    this.newArchive.mainCriteriaId = '';
+    this.newArchive.subCriteriaId = '';
+    this.showMainDropdown = false;
+    this.showSubDropdown = false;
+    const typeMap: { [key: string]: string } = {
+      'رئاسة الجمهورية': 'رئاسة الجمهورية',
+      'رئاسة الوزراء': 'رئاسة الوزراء',
+      'وزارة التعليم العالي': 'وزارة التعليم العالي',
+      عامة: 'عامة',
+      'تعيين قيادات': 'تعيين قيادات',
+      اخرى: 'اخرى',
+    };
+    this.newArchive.letterType = typeMap[this.type] || 'رئاسة الجمهورية';
   }
 
   closeUploadModal(): void {
     this.showUploadModal = false;
     this.newArchive.file = null;
+    this.showMainDropdown = false;
+    this.showSubDropdown = false;
   }
 
   onFileSelected(event: any): void {
@@ -457,23 +612,35 @@ applyFilters(): void {
   }
 
   uploadArchive(): void {
-    if (!this.newArchive.title || !this.newArchive.letterType) {
-      this.showError('الرجاء إدخال العنوان ونوع الأرشيف');
-      return;
+ // ✅ بس المعيار الرئيسي والفرعي
+if (this.newArchive.letterType === 'تعيين قيادات') {
+  if (!this.newArchive.mainCriteriaId) {
+    this.showError('المعيار الرئيسي مطلوب لأرشيف تعيين قيادات');
+    return;
+  }
+  if (!this.newArchive.subCriteriaId) {
+    this.showError('المعيار الفرعي مطلوب لأرشيف تعيين قيادات');
+    return;
+  }
+}
+
+    // التحقق من صحة رقم القرار إذا تم إدخاله
+    if (this.newArchive.transactionNumber) {
+      const transactionNumber = Number(this.newArchive.transactionNumber);
+      if (isNaN(transactionNumber)) {
+        this.showError('رقم القرار يجب أن يكون رقماً');
+        return;
+      }
     }
 
-    const start = new Date(this.newArchive.startDate);
-    const end = new Date(this.newArchive.endDate);
-
-    if (end <= start) {
-      this.showError('تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء');
-      return;
-    }
-
-    let transactionNumber = Number(this.newArchive.transactionNumber);
-    if(isNaN(transactionNumber)){
-      this.showError('رقم القرار يجب أن يكون رقم');
-      return;
+    // التحقق من التواريخ
+    if (this.newArchive.startDate && this.newArchive.endDate) {
+      const start = new Date(this.newArchive.startDate);
+      const end = new Date(this.newArchive.endDate);
+      if (end <= start) {
+        this.showError('تاريخ الانتهاء يجب أن يكون بعد تاريخ البدء');
+        return;
+      }
     }
 
     this.uploading = true;
@@ -481,13 +648,23 @@ applyFilters(): void {
     const formData = new FormData();
     formData.append('title', this.newArchive.title);
     formData.append('breeif', this.newArchive.description || '');
-    formData.append('transactionNumber', this.newArchive.transactionNumber || '');
+    formData.append(
+      'transactionNumber',
+      this.newArchive.transactionNumber || '',
+    );
     formData.append('letterType', this.newArchive.letterType);
-    formData.append('startDate', this.newArchive.startDate);
-    formData.append('endDate', this.newArchive.endDate);
-    if (this.newArchive.file) {
-      formData.append('file', this.newArchive.file);
-    }
+    if (this.newArchive.startDate)
+      formData.append('startDate', this.newArchive.startDate);
+    if (this.newArchive.endDate)
+      formData.append('endDate', this.newArchive.endDate);
+    if (this.newArchive.mainCriteriaId)
+      formData.append('mainCriteria', this.newArchive.mainCriteriaId);
+    if (this.newArchive.subCriteriaId)
+      formData.append('subCriteria', this.newArchive.subCriteriaId);
+    if (this.newArchive.nationalId)
+      formData.append('nationalId', this.newArchive.nationalId);
+    if (this.newArchive.file) formData.append('file', this.newArchive.file);
+    if (this.newArchive.fullName) formData.append('fullName', this.newArchive.fullName);
 
     this.archiveService.addArchive(formData).subscribe({
       next: (res: any) => {
@@ -523,8 +700,16 @@ applyFilters(): void {
       startDate: '',
       endDate: '',
       letterType: 'رئاسة الجمهورية',
+      mainCriteriaId: '',
+      subCriteriaId: '',
+      nationalId: '',
+      fullName: '',
       file: null,
     };
+    this.selectedMainCriteriaTitle = '';
+    this.selectedSubCriteriaTitle = '';
+    this.showMainDropdown = false;
+    this.showSubDropdown = false;
   }
 
   private showSuccess(message: string): void {

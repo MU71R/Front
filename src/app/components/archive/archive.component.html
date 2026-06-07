@@ -65,6 +65,13 @@
         <td><button class="view-btn">عرض</button></td>
       </tr>
 
+     <!-- رئاسة الجمهورية -->
+      <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد'|| user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
+          (click)="getArchivedLettersByType('تعيين قيادات')" class="clickable-row">
+        <td><span class="tag tag-danger">تعيين قيادات</span></td>
+        <td>{{ statsArchived?.leadership }}</td>
+        <td><button class="view-btn">عرض</button></td>
+      </tr>
         <!-- أخرى -->
       <tr *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
           (click)="getArchivedLettersByType('اخرى')" class="clickable-row">

@@ -23,7 +23,7 @@ export interface Letter {
   nationalId?: string;
   phoneNumber?: string;
   
-  letterType?: 'رئاسة الوزراء' | 'رئاسة الجمهورية' | 'وزارة التعليم العالي' | 'عامة' | 'اخرى';
+  letterType?: 'رئاسة الوزراء' | 'رئاسة الجمهورية' | 'وزارة التعليم العالي' | 'عامة' | 'اخرى' | 'تعيين قيادات';
   attachment?: string;
   breeif?: string;
   signatureType?: 'الممسوحة ضوئيا' | 'حقيقية';

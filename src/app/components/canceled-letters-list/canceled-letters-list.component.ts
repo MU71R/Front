@@ -307,6 +307,7 @@ export class CanceledLettersListComponent implements OnInit {
       'وزارة التعليم العالي': 'fa-graduation-cap',
       'رئاسة الوزراء': 'fa-landmark',
       'اخرى': 'fa-file',
+      'تعيين قيادات': 'fa-user-tie',
       'عامة': 'fa-file',
     };
     return iconMap[type] || 'fa-file';

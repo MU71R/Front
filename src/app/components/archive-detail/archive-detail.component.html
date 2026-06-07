@@ -10,7 +10,9 @@
         </div>
       </div>
       <div class="col-12 col-md-4 col-lg-3">
-        <button class="btn btn-light btn-add" *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'" (click)="openUploadModal()" [disabled]="loading">
+        <button class="btn btn-light btn-add"
+          *ngIf="user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة'"
+          (click)="openUploadModal()" [disabled]="loading">
           <i class="fa fa-plus-circle me-2"></i>
           <span class="d-none d-sm-inline">إضافة مستند جديد</span>
           <span class="d-inline d-sm-none">إضافة</span>
@@ -27,7 +29,8 @@
           <div class="col-12 col-md-4">
             <label class="form-label fw-semibold">بحث في القرارات</label>
             <div class="search-input-group">
-              <input type="text" class="form-control" placeholder="ابحث في العناوين، الجهات ..."
+              <!-- ✅ placeholder محدث يشمل رقم القرار -->
+              <input type="text" class="form-control" placeholder="ابحث في العناوين، الجهات، أرقام القرارات ..."
                 [(ngModel)]="searchTerm" (input)="applyFilters()" />
               <i class="fa fa-search search-icon"></i>
             </div>
@@ -61,7 +64,8 @@
 
           <div class="col-12 col-sm-6 col-md-2">
             <label class="form-label fw-semibold">المعيار الفرعي</label>
-            <select class="form-select" [(ngModel)]="filters.subCriteria" (change)="applyFilters()" [disabled]="!filters.mainCriteria">
+            <select class="form-select" [(ngModel)]="filters.subCriteria" (change)="applyFilters()"
+              [disabled]="!filters.mainCriteria">
               <option value="">جميع المعايير الفرعية</option>
               <option *ngFor="let subCriteria of filteredSubCriteria" [value]="subCriteria">{{ subCriteria }}</option>
             </select>
@@ -95,9 +99,7 @@
                   عرض {{ filteredLetters.length }} من أصل {{ letters.length }}
                 </span>
               </div>
-              <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">
-                إظهار الكل
-              </button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="resetFilters()">إظهار الكل</button>
             </div>
           </div>
         </div>
@@ -131,18 +133,15 @@
     </p>
     <button
       *ngIf="(user?.role === 'UniversityPresident' || user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة' || isSpecialArchive()) && letters?.length === 0"
-      class="btn btn-primary"
-      (click)="openUploadModal()"
-    >
+      class="btn btn-primary" (click)="openUploadModal()">
       <i class="fa fa-plus me-2"></i>إضافة أول قرار
     </button>
-
     <button *ngIf="letters.length > 0" class="btn btn-outline-primary" (click)="resetFilters()">
       <i class="fa fa-refresh me-2"></i>عرض جميع القرارت
     </button>
   </div>
 
-  <!-- Letters Table - مع زر الحذف -->
+  <!-- Letters Table -->
   <div *ngIf="!loading && filteredLetters.length > 0" class="letters-table-container">
     <div class="table-wrapper">
       <table class="table table-hover table-striped letters-table">
@@ -160,88 +159,66 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let letter of filteredLetters; let i = index; trackBy: trackByLetterId" class="letter-row">
-            <!-- # -->
+          <tr *ngFor="let letter of paginatedLetters; let i = index; trackBy: trackByLetterId" class="letter-row">
             <td data-label="#">
               <span class="badge bg-primary">{{ (currentPage - 1) * pageSize + i + 1 }}</span>
             </td>
-
-            <!-- عنوان القرار -->
             <td data-label="عنوان القرار">
               <div class="cell-content tooltip-wrapper" [attr.data-tooltip]="letter.title">
                 <i class="fa fa-envelope text-primary me-2"></i>
                 <span class="text-truncate">{{ letter.title }}</span>
               </div>
             </td>
-
-            <!-- الجهة -->
             <td data-label="الجهه">
               <div class="cell-content tooltip-wrapper" [attr.data-tooltip]="letter.user?.fullname || 'غير محدد'">
                 <i class="fa fa-user-circle text-primary me-2"></i>
                 <span class="text-truncate">{{ letter.user?.fullname || 'غير محدد' }}</span>
               </div>
             </td>
-
-            <!-- المعيار الرئيسي -->
             <td data-label="المعيار الرئيسي">
               <span class="badge bg-info tooltip-wrapper text-truncate"
-                    [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
+                [attr.data-tooltip]="letter.mainCriteria?.name || 'غير محدد'">
                 <i class="fa fa-folder me-1"></i>
                 {{ letter.mainCriteria?.name || 'غير محدد' }}
               </span>
             </td>
-
-            <!-- المعيار الفرعي -->
             <td data-label="المعيار الفرعي">
               <span class="badge bg-secondary tooltip-wrapper text-truncate"
-                    [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
+                [attr.data-tooltip]="letter.subCriteria?.name || 'غير محدد'">
                 <i class="fa fa-file me-1"></i>
                 {{ letter.subCriteria?.name || 'غير محدد' }}
               </span>
             </td>
-
-            <!-- تاريخ الإنشاء -->
             <td data-label="تاريخ الإنشاء">
               <div class="cell-content tooltip-wrapper"
-                   [attr.data-tooltip]="letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
+                [attr.data-tooltip]="letter.updatedAt ? (letter.updatedAt | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
-                <span class="text-truncate">{{ letter.createdAt ? (letter.createdAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
+                <span class="text-truncate">{{ letter.updatedAt ? (letter.updatedAt | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
-
-            <!-- تاريخ بدء القرار -->
             <td data-label="تاريخ بدء القرار">
               <div class="cell-content tooltip-wrapper"
-                   [attr.data-tooltip]="letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
+                [attr.data-tooltip]="letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
                 <span class="text-truncate">{{ letter.StartDate ? (letter.StartDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
-
-            <!-- تاريخ انتهاء القرار -->
             <td data-label="تاريخ انتهاء القرار">
               <div class="cell-content tooltip-wrapper"
-                   [attr.data-tooltip]="letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
+                [attr.data-tooltip]="letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy - hh:mm a') : 'غير محدد'">
                 <i class="fa fa-clock text-info me-2"></i>
                 <span class="text-truncate">{{ letter.EndDate ? (letter.EndDate | date: 'dd/MM/yyyy') : 'غير محدد' }}</span>
               </div>
             </td>
-
-            <!-- الإجراءات - مع زر الحذف -->
             <td data-label="الإجراءات">
               <div class="actions-cell">
                 <button class="btn btn-primary btn-sm btn-action tooltip-wrapper"
-                        (click)="viewLetterDetails(letter._id)"
-                        data-tooltip="عرض تفاصيل القرار">
+                  (click)="viewLetterDetails(letter._id)" data-tooltip="عرض تفاصيل القرار">
                   <i class="fa fa-eye"></i>
                 </button>
-
-                <!-- زر الحذف - يظهر فقط لرئيس الجامعة -->
-                <button *ngIf="canDelete()"
-                        class="btn btn-danger btn-sm btn-action tooltip-wrapper ms-2"
-                        (click)="deleteArchive(letter._id, letter.title)"
-                        [disabled]="deleting"
-                        data-tooltip="حذف القرار">
+                <button *ngIf="canDelete()" class="btn btn-danger btn-sm btn-action tooltip-wrapper ms-2"
+                  (click)="deleteArchive(letter._id, letter.title)" [disabled]="deleting"
+                  data-tooltip="حذف القرار">
                   <i class="fa fa-trash"></i>
                 </button>
               </div>
@@ -253,7 +230,8 @@
   </div>
 
   <!-- Upload Modal -->
-  <div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة' || user?.role === 'UniversityPresident')"  class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
+  <div *ngIf="showUploadModal && (user?.fullname === 'مكتب رئيس الجامعة' || user?.fullname === 'نائب رئيس الجامعة لشئون التعليم والطلاب' || user?.fullname === 'نائب رئيس الجامعة لشئون الدراسات العليا والبحوث' || user?.fullname === 'نائب رئيس الجامعة لشئون البيئة وخدمة المجتمع' || user?.fullname === 'أمين عام الجامعة' || user?.fullname === 'أمين عام الجامعة المساعد' || user?.fullname === 'أمين عام الجامعة المساعد2' || user?.fullname === 'امين مجلس الجامعة' || user?.role === 'UniversityPresident')"
+    class="modal-overlay" (click)="closeUploadModal()" dir="rtl">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-content">
         <div class="modal-header">
@@ -271,53 +249,187 @@
 
         <div class="modal-body">
           <form (ngSubmit)="uploadArchive()" #archiveForm="ngForm">
+
+            <!-- عنوان المستند -->
             <div class="form-group mb-3">
-              <label class="form-label fw-semibold">عنوان المستند <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold">
+                عنوان المستند <span class="text-danger"></span>
+              </label>
               <input type="text" class="form-control form-control-lg" [(ngModel)]="newArchive.title" name="title"
-                placeholder="مثال: قرار رقم ٢٤٥ لسنة ٢٠٢٣" required />
+                placeholder="مثال: قرار رقم ٢٤٥ لسنة ٢٠٢٣"ng build --configuration=production />
             </div>
+
+            <!-- رقم القرار -->
             <div class="form-group mb-3">
-              <label class="form-label fw-semibold">رقم القرار</label>
-              <input
-                type="text"
-                class="form-control form-control-lg"
-                [(ngModel)]="newArchive.transactionNumber"
-                name="transactionNumber"
-                placeholder="مثال: 245/1"
-              />
+              <label class="form-label fw-semibold">
+                رقم القرار
+                <!-- ✅ شيلنا النجمة الحمرا والـ required لتعيين قيادات -->
+                <span class="text-muted small">(اختياري)</span>
+              </label>
+              <input type="text" class="form-control form-control-lg" [(ngModel)]="newArchive.transactionNumber"
+                name="transactionNumber" placeholder="مثال: 245" />
             </div>
+
+            <!-- المعيار الرئيسي -->
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">
+                المعيار الرئيسي
+                <!-- ✅ النجمة الحمرا باقية للمعيار الرئيسي لأنه إجباري لتعيين قيادات -->
+                <span *ngIf="newArchive.letterType === 'تعيين قيادات'" class="text-danger">*</span>
+              </label>
+              <div class="criteria-search-dropdown position-relative">
+                <button
+                  type="button"
+                  class="form-control dropdown-btn text-start d-flex justify-content-between align-items-center"
+                  (click)="toggleMainDropdown()">
+                  <span class="text-truncate">
+                    <span *ngIf="selectedMainCriteriaTitle; else mainPlaceholder">
+                      {{ selectedMainCriteriaTitle }}
+                    </span>
+                    <ng-template #mainPlaceholder>
+                      <span class="text-muted">اختر المعيار الرئيسي...</span>
+                    </ng-template>
+                  </span>
+                  <i class="fa fa-chevron-down ms-2" [class.fa-chevron-up]="showMainDropdown"></i>
+                </button>
+
+                <div *ngIf="showMainDropdown"
+                  class="dropdown-results border rounded shadow-sm bg-white position-absolute w-100"
+                  style="z-index: 9999; top: 100%; max-height: 280px; overflow: hidden;">
+                  <div class="p-2 border-bottom">
+                    <input type="text" class="form-control form-control-sm main-criteria-search"
+                      placeholder="ابحث عن المعيار الرئيسي..."
+                      [(ngModel)]="mainSearchTerm"
+                      [ngModelOptions]="{standalone: true}"
+                      (input)="filterMainCriteriaDropdown(mainSearchTerm)"
+                      (click)="$event.stopPropagation()"
+                      autocomplete="off" />
+                  </div>
+                  <div class="overflow-auto" style="max-height: 220px;">
+                    <div *ngIf="filteredMainCriteriaDropdown.length === 0" class="text-center p-3 text-muted">
+                      <i class="fa fa-search me-2"></i>
+                      {{ mainSearchTerm ? 'لا توجد نتائج للبحث عن "' + mainSearchTerm + '"' : 'لا توجد معايير رئيسية' }}
+                    </div>
+                    <div *ngFor="let criteria of filteredMainCriteriaDropdown"
+                      class="dropdown-item cursor-pointer p-3 d-flex align-items-center"
+                      [class.bg-light]="newArchive.mainCriteriaId === criteria._id"
+                      (click)="selectMainCriteria(criteria._id || '', criteria.name)">
+                      <i class="fa fa-folder me-2 text-primary"></i>
+                      <span class="flex-grow-1">{{ criteria.name }}</span>
+                      <i *ngIf="newArchive.mainCriteriaId === criteria._id" class="fa fa-check text-success"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- المعيار الفرعي -->
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">
+                المعيار الفرعي
+                <!-- ✅ النجمة الحمرا باقية للمعيار الفرعي لأنه إجباري لتعيين قيادات -->
+                <span *ngIf="newArchive.letterType === 'تعيين قيادات'" class="text-danger">*</span>
+                <span *ngIf="!newArchive.mainCriteriaId" class="text-muted small">(اختر المعيار الرئيسي أولاً)</span>
+              </label>
+              <div class="criteria-search-dropdown position-relative">
+                <button
+                  type="button"
+                  class="form-control dropdown-btn text-start d-flex justify-content-between align-items-center"
+                  (click)="toggleSubDropdown()"
+                  [disabled]="!newArchive.mainCriteriaId">
+                  <span class="text-truncate">
+                    <span *ngIf="selectedSubCriteriaTitle; else subPlaceholder">
+                      {{ selectedSubCriteriaTitle }}
+                    </span>
+                    <ng-template #subPlaceholder>
+                      <span class="text-muted">اختر المعيار الفرعي...</span>
+                    </ng-template>
+                  </span>
+                  <i class="fa fa-chevron-down ms-2" [class.fa-chevron-up]="showSubDropdown"></i>
+                </button>
+
+                <div *ngIf="showSubDropdown"
+                  class="dropdown-results border rounded shadow-sm bg-white position-absolute w-100"
+                  style="z-index: 9999; top: 100%; max-height: 280px; overflow: hidden;">
+                  <div class="p-2 border-bottom">
+                    <input type="text" class="form-control form-control-sm"
+                      placeholder="ابحث عن المعيار الفرعي..."
+                      [(ngModel)]="subSearchTerm"
+                      [ngModelOptions]="{standalone: true}"
+                      (input)="filterSubCriteriaDropdown(subSearchTerm)"
+                      (click)="$event.stopPropagation()"
+                      autocomplete="off" />
+                  </div>
+                  <div class="overflow-auto" style="max-height: 220px;">
+                    <div *ngIf="loadingSubCriteria" class="text-center p-4">
+                      <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                      <p class="text-muted small mt-2 mb-0">جاري تحميل المعايير الفرعية...</p>
+                    </div>
+                    <div *ngIf="!loadingSubCriteria && filteredSubCriteriaDropdown.length === 0"
+                      class="text-center p-3 text-muted">
+                      <i class="fa fa-search me-2"></i>
+                      {{ subSearchTerm ? 'لا توجد نتائج للبحث عن "' + subSearchTerm + '"' : 'لا توجد معايير فرعية لهذا المعيار' }}
+                    </div>
+                    <div *ngFor="let criteria of filteredSubCriteriaDropdown"
+                      class="dropdown-item cursor-pointer p-3 d-flex align-items-center"
+                      [class.bg-light]="newArchive.subCriteriaId === criteria._id"
+                      (click)="selectSubCriteria(criteria._id, criteria.name)">
+                      <i class="fa fa-file me-2 text-success"></i>
+                      <span class="flex-grow-1">{{ criteria.name }}</span>
+                      <i *ngIf="newArchive.subCriteriaId === criteria._id" class="fa fa-check text-success"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- الرقم القومي -->
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">
+                الرقم القومي
+                <!-- ✅ شيلنا النجمة الحمرا والـ required لتعيين قيادات -->
+                <span class="text-muted small">(اختياري)</span>
+              </label>
+              <input type="text" class="form-control form-control-lg" [(ngModel)]="newArchive.nationalId"
+                name="nationalId" placeholder="ادخل الرقم القومي" maxlength="14" />
+            </div>
+
+            <!-- اسم الشخصية -->
+            <div class="form-group mb-3">
+              <label class="form-label fw-semibold">
+                اسم الشخصية
+                <span class="text-muted small">(اختياري)</span>
+              </label>
+              <input type="text" class="form-control form-control-lg"
+                [(ngModel)]="newArchive.fullName"
+                name="fullName"
+                placeholder="ادخل اسم الشخصية" />
+            </div>
+
+            <!-- الوصف -->
             <div class="form-group mb-3">
               <label class="form-label fw-semibold">الوصف</label>
               <textarea class="form-control" rows="3" [(ngModel)]="newArchive.description" name="description"
                 placeholder="وصف مختصر للمستند..."></textarea>
             </div>
 
+            <!-- التواريخ -->
             <div class="row g-2 mb-3">
               <div class="col-12 col-sm-6">
                 <div class="form-group">
                   <label class="form-label fw-semibold">تاريخ البدء</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    [(ngModel)]="newArchive.startDate"
-                    name="startDate"
-                  />
+                  <input type="date" class="form-control" [(ngModel)]="newArchive.startDate" name="startDate" />
                 </div>
               </div>
-
               <div class="col-12 col-sm-6">
                 <div class="form-group">
                   <label class="form-label fw-semibold">تاريخ الانتهاء</label>
-                  <input
-                    type="date"
-                    class="form-control"
-                    [(ngModel)]="newArchive.endDate"
-                    name="endDate"
-                  />
+                  <input type="date" class="form-control" [(ngModel)]="newArchive.endDate" name="endDate" />
                 </div>
               </div>
             </div>
 
+            <!-- نوع الأرشيف -->
             <div class="row g-2 mb-3">
               <div class="col-12 col-sm-6">
                 <div class="form-group">
@@ -327,12 +439,14 @@
                     <option value="رئاسة الوزراء">رئاسة الوزراء</option>
                     <option value="وزارة التعليم العالي">وزارة التعليم العالي</option>
                     <option value="عامة">الجامعة</option>
+                    <option value="تعيين قيادات">تعيين قيادات</option>
                     <option value="اخرى">اخرى</option>
                   </select>
                 </div>
               </div>
             </div>
 
+            <!-- رفع الملف -->
             <div class="form-group mb-4">
               <label class="form-label fw-semibold">رفع الملف</label>
               <div class="file-upload-area" [class.active]="newArchive.file" [class.has-file]="newArchive.file">
