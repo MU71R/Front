@@ -277,6 +277,7 @@ export class ArchiveDetailComponent implements OnInit {
   }
 
   initializeFilters(): void {
+    this.pageSize = this.letters.length || 10;
     this.extractUniqueSenders();
     this.extractUniqueMainCriteria();
     this.applyFilters();
