@@ -313,22 +313,30 @@ export class ArchiveDetailComponent implements OnInit {
     this.applyFilters();
   }
 
-  applyFilters(): void {
+applyFilters(): void {
     let filtered = [...this.letters];
 
     if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-filtered = filtered.filter(
-  (letter) =>
-    letter.title?.toLowerCase().includes(term) ||
-    letter.user?.fullname?.toLowerCase().includes(term) ||
-    letter.breeif?.toLowerCase().includes(term) ||
-    letter.mainCriteria?.name?.toLowerCase().includes(term) ||
-    letter.subCriteria?.name?.toLowerCase().includes(term) ||
-    letter.transactionNumber?.toString().includes(term),  // ✅ رقم القرار
-);
-    }
+      const term = this.searchTerm.toLowerCase().trim();
+      const isNumericSearch = /^\d+$/.test(term);
 
+      if (isNumericSearch) {
+        // ✅ بحث برقم القرار -> exact match فقط
+        filtered = filtered.filter(
+          (letter) => letter.transactionNumber?.toString() === term,
+        );
+      } else {
+        // بحث نصي عادي
+        filtered = filtered.filter(
+          (letter) =>
+            letter.title?.toLowerCase().includes(term) ||
+            letter.user?.fullname?.toLowerCase().includes(term) ||
+            letter.breeif?.toLowerCase().includes(term) ||
+            letter.mainCriteria?.name?.toLowerCase().includes(term) ||
+            letter.subCriteria?.name?.toLowerCase().includes(term),
+        );
+      }
+    }
     if (this.filters.fromDate) {
       filtered = filtered.filter(
         (letter) =>

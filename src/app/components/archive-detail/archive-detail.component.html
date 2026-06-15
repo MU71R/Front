@@ -147,7 +147,7 @@
       <table class="table table-hover table-striped letters-table">
         <thead class="table-primary">
           <tr>
-            <th scope="col" width="5%">#</th>
+            <th scope="col" width="6%">رقم القرار</th>
             <th scope="col" width="16%">عنوان القرار</th>
             <th scope="col" width="11%">الجهه</th>
             <th scope="col" width="12%">المعيار الرئيسي</th>
@@ -161,7 +161,7 @@
         <tbody>
           <tr *ngFor="let letter of paginatedLetters; let i = index; trackBy: trackByLetterId" class="letter-row">
             <td data-label="#">
-              <span class="badge bg-primary">{{ (currentPage - 1) * pageSize + i + 1 }}</span>
+              <span class="badge bg-primary"> {{ letter.transactionNumber }}</span>
             </td>
             <td data-label="عنوان القرار">
               <div class="cell-content tooltip-wrapper" [attr.data-tooltip]="letter.title">
